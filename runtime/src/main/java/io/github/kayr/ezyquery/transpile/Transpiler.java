@@ -52,10 +52,12 @@ public class Transpiler {
     register(
         BinaryExpr.class,
         binaryExpr -> {
-          Result begin = new Result("(", Collections.emptyList());
           Result left = transpile(binaryExpr.getLeft());
           Result right = transpile(binaryExpr.getRight());
-          return left.append(binaryExpr.getOperator().symbol()).append(" ").append(right);
+          return left.append(" ")
+              .append(binaryExpr.getOperator().symbol())
+              .append(" ")
+              .append(right);
         });
 
     register(
@@ -83,9 +85,9 @@ public class Transpiler {
           Result sqlExpr = transpile(unaryExpr.getLeft());
           switch (unaryExpr.getType()) {
             case MINUS:
-              return sqlExpr.append("-(").append(sqlExpr).append(")");
+              return sqlExpr.append("-").append(sqlExpr);
             case PLUS:
-              return sqlExpr.append("+(").append(sqlExpr).append(")");
+              return sqlExpr.append("+").append(sqlExpr);
             case IS_NOT_NULL:
               return sqlExpr.append(" is not null");
             case IS_NULL:
@@ -110,6 +112,13 @@ public class Transpiler {
 
           return new Result(field.getSqlField(), Collections.emptyList());
         });
+
+    register(
+        ParensExpr.class,
+        parensExpr -> {
+          Result sqlExpr = transpile(parensExpr.getExpr());
+          return new Result("(").append(sqlExpr).append(")");
+        });
   }
 
   private Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, Result>> handlers =
@@ -130,13 +139,17 @@ public class Transpiler {
       this.sql = sql;
     }
 
-
     Result append(String sql) {
       return new Result(this.sql + sql, params);
     }
 
     Result append(Result sql) {
       return new Result(this.sql + sql.getSql(), Elf.combine(this.params, sql.params));
+    }
+
+    @Override
+    public String toString() {
+      return "Result{" + "sql='" + sql + '\'' + ", params=" + params + '}';
     }
   }
 }

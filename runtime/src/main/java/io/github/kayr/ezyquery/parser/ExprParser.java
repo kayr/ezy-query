@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery.parser;
 
 import io.github.kayr.ezyquery.ast.*;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -12,7 +13,7 @@ import net.sf.jsqlparser.schema.Column;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+/** In the future, we can implement a custom lightweight sql parser */
 public class ExprParser {
 
   String expression;
@@ -24,8 +25,12 @@ public class ExprParser {
 
   @lombok.SneakyThrows
   public EzyExpr parse() {
-    Expression cond = CCJSqlParserUtil.parseCondExpression(expression);
-    return toEzyExpr(cond);
+    try {
+      Expression cond = CCJSqlParserUtil.parseCondExpression(expression, false);
+      return toEzyExpr(cond);
+    } catch (JSQLParserException e) {
+      throw new EzyParseException("Failed to parse statement: " + e.getMessage(), e);
+    }
   }
 
   public static EzyExpr parseExpr(String expression) {
@@ -48,7 +53,7 @@ public class ExprParser {
       //noinspection unchecked
       return (Function<Expression, EzyExpr>) handlers.get(clazz);
     }
-    throw new EzyParseException("UnSupported Expression: [" + clazz + "]: " + expression);
+    throw new EzyParseException("UnSupported Expression: [" + clazz.getSimpleName() + "]: " + expression);
   }
 
   public void initHandlers() {
@@ -185,7 +190,7 @@ public class ExprParser {
           } else return new VariableExpr(sv.getFullyQualifiedName());
         });
 
-    register(Parenthesis.class, parenExpr -> toEzyExpr(parenExpr.getExpression()));
+    register(Parenthesis.class, parenExpr -> new ParensExpr(toEzyExpr(parenExpr.getExpression())));
 
     register(
         InExpression.class,
@@ -207,7 +212,8 @@ public class ExprParser {
     return se.getSign() == sign.charAt(0);
   }
 
-  private BinaryExpr binaryExpr(Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Type plus) {
+  private BinaryExpr binaryExpr(
+      Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Type plus) {
     EzyExpr left = toEzyExpr(leftSqlExpr);
     EzyExpr right = toEzyExpr(rightSqlExpr);
     BinaryExpr.Type type = plus;

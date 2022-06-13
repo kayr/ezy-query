@@ -4,10 +4,13 @@
 package io.github.kayr.ezyquery
 
 import io.github.kayr.ezyquery.parser.ExprParser
+import io.github.kayr.ezyquery.parser.EzyParseException
 import spock.lang.Specification
 
 class LibraryTest extends Specification {
-    def "someLibraryMethod returns true"() {
+
+
+    def 'test parsing expression'() {
 
         when:
         def expr = '''
@@ -15,7 +18,7 @@ class LibraryTest extends Specification {
 and (-9.8 or 8 + 7 - 2 * 3 / 4 % 5) 
 and (8 > 9) and (100 >= 100)
 and (8 < 9) and (100 <= 100)
-and (11 <> 90)
+and (11 <> 90) or (11 != 91)
 or (name like '%john%') and (name not like '%doe%')
 or (name in (john, doe, 'xxx')) and (name not in (doe, 'xxx'))
 or (9 + 3) not in (9, 3)
@@ -23,14 +26,49 @@ or (9 + 3) not in (9, 3)
         def result = ExprParser.parseExpr(expr).toString()
 
         then:
-        result.trim() == '(((((((((' +
-                'string constant EQ 9) ' +
-                'AND ((-9.8) OR ((8 PLUS 7) MINUS (((2 MUL 3) DIV 4) MOD 5)))) ' +
-                'AND (8 GT 9)) AND (100 GTE 100)) ' +
-                'AND (8 LT 9)) AND (100 LTE 100)) ' +
-                'AND (11 NEQ 90)) ' +
-                'OR ((name LIKE %john%) AND (name NOT_LIKE %doe%))) ' +
-                'OR (((name in [john, doe, xxx])) AND ((name not in [doe, xxx])))) ' +
-                'OR (((9 PLUS 3) not in [9, 3]))'.trim()
+        result.trim() == "'string constant' = 9 " +
+                "AND (-9.8 OR 8 + 7 - 2 * 3 / 4 % 5) " +
+                "AND (8 > 9) AND (100 >= 100) AND (8 < 9) " +
+                "AND (100 <= 100) AND (11 <> 90) OR (11 <> 91) " +
+                "OR (name LIKE '%john%') AND (name NOT LIKE '%doe%') " +
+                "OR (name in [john, doe, 'xxx']) AND (name not in [doe, 'xxx']) " +
+                "OR (9 + 3) not in [9, 3]\n".trim()
+    }
+
+    def 'test other operators'() {
+
+        when:
+        def expr = '''
+9 between 1 and 10 or 9 not between 1 and 10
+and 9 is null or 9 is not null
+ '''
+        def result = ExprParser.parseExpr(expr).toString()
+
+        then:
+        result.trim() == "9 between 1 and 10 OR 9 not between 1 AND 10 AND 9 is null OR 9 is not null"
+    }
+
+    def 'test up support operators operators'() {
+
+        when:
+        def expr = '''
+id = 9 and name = 'john' or name += 'doe' '''
+        def result = ExprParser.parseExpr(expr).toString()
+
+        then:
+        EzyParseException e = thrown()
+        e.message.startsWith("Failed to parse statement: could only parse partial expression")
+    }
+
+    def 'test up support operators operators2'() {
+
+        when:
+        def expr = '''
+id = 9 and name = 'john' or substring(name) '''
+        def result = ExprParser.parseExpr(expr).toString()
+
+        then:
+        EzyParseException e = thrown()
+        e.message.startsWith("UnSupported Expression: [Function]:")
     }
 }

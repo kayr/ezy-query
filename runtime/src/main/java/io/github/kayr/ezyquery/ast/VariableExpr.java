@@ -12,4 +12,7 @@ public class VariableExpr implements EzyExpr {
         return String.format("%s", variable);
     }
 
+    public String getVariable() {
+        return variable;
+    }
 }

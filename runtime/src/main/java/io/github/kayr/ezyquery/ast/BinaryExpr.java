@@ -10,7 +10,11 @@ public class BinaryExpr implements EzyExpr {
   private Type operator;
 
   public String toString() {
-    return String.format("(%s %s %s)", left, operator, right);
+
+    String rightStr = right.isMultiExpr() ? "(" + right + ")" : right.toString();
+    String leftStr = left.isMultiExpr() ? "(" + left + ")" : left.toString();
+
+    return String.format("%s %s %s", leftStr, operator, rightStr);
   }
 
   public enum Type {

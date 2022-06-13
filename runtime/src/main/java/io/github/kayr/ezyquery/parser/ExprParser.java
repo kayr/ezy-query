@@ -28,6 +28,10 @@ public class ExprParser {
     return toEzyExpr(cond);
   }
 
+  public static EzyExpr parseExpr(String expression) {
+    return new ExprParser(expression).parse();
+  }
+
   Map<Class<? extends Expression>, Function<? extends Expression, EzyExpr>> handlers =
       new HashMap<>();
 
@@ -44,7 +48,7 @@ public class ExprParser {
       //noinspection unchecked
       return (Function<Expression, EzyExpr>) handlers.get(clazz);
     }
-    throw new EzyParseException("UnSupported Expression: " + expression);
+    throw new EzyParseException("UnSupported Expression: [" + clazz + "]: " + expression);
   }
 
   public void initHandlers() {
@@ -123,13 +127,13 @@ public class ExprParser {
         MinorThanEquals.class,
         ltExpr ->
             binaryExpr(
-                ltExpr.getLeftExpression(), ltExpr.getRightExpression(), BinaryExpr.Type.LT));
+                ltExpr.getLeftExpression(), ltExpr.getRightExpression(), BinaryExpr.Type.LTE));
 
     register(
         MinorThan.class,
         lteExpr ->
             binaryExpr(
-                lteExpr.getLeftExpression(), lteExpr.getRightExpression(), BinaryExpr.Type.LTE));
+                lteExpr.getLeftExpression(), lteExpr.getRightExpression(), BinaryExpr.Type.LT));
 
     register(
         EqualsTo.class,
@@ -181,6 +185,8 @@ public class ExprParser {
           } else return new VariableExpr(sv.getFullyQualifiedName());
         });
 
+    register(Parenthesis.class, parenExpr -> toEzyExpr(parenExpr.getExpression()));
+
     register(
         InExpression.class,
         exp -> {
@@ -191,7 +197,7 @@ public class ExprParser {
             throw new EzyParseException("Invalid IN expression");
           }
 
-          InExpr inExpr = new InExpr(left, right, true);
+          InExpr inExpr = new InExpr(left, right);
           return exp.isNot() ? inExpr.notExpr() : inExpr;
         });
   }
@@ -201,9 +207,9 @@ public class ExprParser {
     return se.getSign() == sign.charAt(0);
   }
 
-  private BinaryExpr binaryExpr(Expression andExpr, Expression andExpr1, BinaryExpr.Type plus) {
-    EzyExpr left = toEzyExpr(andExpr);
-    EzyExpr right = toEzyExpr(andExpr1);
+  private BinaryExpr binaryExpr(Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Type plus) {
+    EzyExpr left = toEzyExpr(leftSqlExpr);
+    EzyExpr right = toEzyExpr(rightSqlExpr);
     BinaryExpr.Type type = plus;
     return new BinaryExpr(left, right, type);
   }

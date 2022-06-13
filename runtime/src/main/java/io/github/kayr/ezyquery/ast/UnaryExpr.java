@@ -25,19 +25,20 @@ public class UnaryExpr implements EzyExpr {
   }
 
   public String toString() {
+    String leftStr = left.isMultiExpr() ? "(" + left + ")" : left.toString();
     switch (type) {
       case NOT:
-        return String.format("not(%s)", left);
+        return String.format("not%s", leftStr);
       case MINUS:
-        return String.format("-(%s)", left);
+        return String.format("-%s", leftStr);
       case PLUS:
-        return String.format("+(%s)", left);
+        return String.format("+%s", leftStr);
       case IS_NULL:
-        return String.format("(%s is null)", left);
+        return String.format("%s is null", leftStr);
       case IS_NOT_NULL:
-        return String.format("(%s is not null)", left);
+        return String.format("%s is not null", leftStr);
       default:
-        return String.format("%s %s", left, type);
+        return String.format("%s %s", leftStr, type);
     }
   }
 }

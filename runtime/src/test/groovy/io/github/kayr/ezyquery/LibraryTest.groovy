@@ -3,28 +3,34 @@
  */
 package io.github.kayr.ezyquery
 
-import net.sf.jsqlparser.parser.CCJSqlParser
-import net.sf.jsqlparser.parser.CCJSqlParserUtil
-import net.sf.jsqlparser.parser.JSqlParser
+import io.github.kayr.ezyquery.parser.ExprParser
 import spock.lang.Specification
 
 class LibraryTest extends Specification {
     def "someLibraryMethod returns true"() {
-        setup:
-//        def t = CCJSqlParserUtil.parseExpression("true() && a > 8.5 and c = 'JJJJ' and (a = b or c = 9)")
-//        def t = CCJSqlParserUtil.parseExpression("6 in (9,a = b)")
-//        def t = CCJSqlParserUtil.parseExpression("8 <> 9")
-//        def t = CCJSqlParserUtil.parseExpression("6 in 9")
-        def t = CCJSqlParserUtil.parseExpression("6 is null")
-
-
-
-        println(t)
 
         when:
-        def result = lib.someLibraryMethod()
+        def expr = '''
+'string constant' = 9  
+and (-9.8 or 8 + 7 - 2 * 3 / 4 % 5) 
+and (8 > 9) and (100 >= 100)
+and (8 < 9) and (100 <= 100)
+and (11 <> 90)
+or (name like '%john%') and (name not like '%doe%')
+or (name in (john, doe, 'xxx')) and (name not in (doe, 'xxx'))
+or (9 + 3) not in (9, 3)
+ '''
+        def result = ExprParser.parseExpr(expr).toString()
 
         then:
-        result == true
+        result.trim() == '(((((((((' +
+                'string constant EQ 9) ' +
+                'AND ((-9.8) OR ((8 PLUS 7) MINUS (((2 MUL 3) DIV 4) MOD 5)))) ' +
+                'AND (8 GT 9)) AND (100 GTE 100)) ' +
+                'AND (8 LT 9)) AND (100 LTE 100)) ' +
+                'AND (11 NEQ 90)) ' +
+                'OR ((name LIKE %john%) AND (name NOT_LIKE %doe%))) ' +
+                'OR (((name in [john, doe, xxx])) AND ((name not in [doe, xxx])))) ' +
+                'OR (((9 PLUS 3) not in [9, 3]))'.trim()
     }
 }

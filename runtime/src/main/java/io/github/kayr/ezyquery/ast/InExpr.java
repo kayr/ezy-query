@@ -20,10 +20,11 @@ public class InExpr implements EzyExpr {
   }
 
   public String toString() {
+    String leftStr = left.isMultiExpr() ? "(" + left + ")" : left.toString();
     if (not) {
-      return String.format("(%s not in (%s))", left, candidates);
+      return String.format("(%s not in %s)", leftStr, candidates);
     }
-    return String.format("(%s in (%s))", left, candidates);
+    return String.format("(%s in %s)", leftStr, candidates);
   }
 
   public InExpr notExpr() {

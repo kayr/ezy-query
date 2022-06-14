@@ -6,7 +6,4 @@ public class EzyTranspileException extends RuntimeException {
     super(message);
   }
 
-  public EzyTranspileException(String message, Throwable cause) {
-    super(message, cause);
-  }
 }

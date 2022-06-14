@@ -10,6 +10,6 @@ public class EzySql {
 
   public static Transpiler.Result transpile(List<Field> fields, String sql) {
     EzyExpr ezyExpr = ExprParser.parseExpr(sql);
-    return new Transpiler(ezyExpr, fields).transpile(ezyExpr);
+    return new Transpiler(ezyExpr, fields).transpile();
   }
 }

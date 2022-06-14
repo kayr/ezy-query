@@ -19,7 +19,11 @@ public class Transpiler {
     initHandlers();
   }
 
-  public Result transpile(EzyExpr expr) {
+  public Result transpile() {
+    return transpile(expr);
+  }
+
+  private Result transpile(EzyExpr expr) {
 
     Function<EzyExpr, Result> handler = findHandler(expr);
 
@@ -37,7 +41,9 @@ public class Transpiler {
 
   public void initHandlers() {
 
-    register(ConstExpr.class, constExpr -> new Result("?", Arrays.asList(constExpr.getValue())));
+    register(
+        ConstExpr.class,
+        constExpr -> new Result("?", Collections.singletonList(constExpr.getValue())));
 
     register(
         BetweenExpr.class,

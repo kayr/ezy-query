@@ -25,6 +25,10 @@ public class UnaryExpr implements EzyExpr {
   }
 
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     switch (type) {
       case NOT:
         return String.format("not%s", left);

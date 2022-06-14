@@ -8,6 +8,10 @@ public class ParensExpr implements EzyExpr {
 
   @Override
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     return String.format("(%s)", expr);
   }
 }

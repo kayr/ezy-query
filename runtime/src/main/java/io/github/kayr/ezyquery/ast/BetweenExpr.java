@@ -12,6 +12,10 @@ public class BetweenExpr implements EzyExpr {
 
   @Override
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     if (not) {
       return String.format("%s not between %s AND %s", left, start, end);
     }

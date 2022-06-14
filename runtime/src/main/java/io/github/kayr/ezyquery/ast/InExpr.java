@@ -20,6 +20,10 @@ public class InExpr implements EzyExpr {
   }
 
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     if (not) {
       return String.format("%s not in %s", left, candidates);
     }

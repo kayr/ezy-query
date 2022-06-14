@@ -10,6 +10,10 @@ public class BinaryExpr implements EzyExpr {
   private Type operator;
 
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     return String.format("%s %s %s", left, operator, right);
   }
 

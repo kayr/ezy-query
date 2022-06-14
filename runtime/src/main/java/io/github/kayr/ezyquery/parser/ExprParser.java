@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 /** In the future, we can implement a custom lightweight sql parser */
 public class ExprParser {
 
-  String expression;
+  final String expression;
 
   public ExprParser(String expression) {
     this.expression = expression;
@@ -40,7 +40,7 @@ public class ExprParser {
     return new ExprParser(expression).parse();
   }
 
-  Map<Class<? extends Expression>, Function<? extends Expression, EzyExpr>> handlers =
+  final Map<Class<? extends Expression>, Function<? extends Expression, EzyExpr>> handlers =
       new HashMap<>();
 
   EzyExpr toEzyExpr(Expression expr) {
@@ -222,8 +222,7 @@ public class ExprParser {
       Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Type plus) {
     EzyExpr left = toEzyExpr(leftSqlExpr);
     EzyExpr right = toEzyExpr(rightSqlExpr);
-    BinaryExpr.Type type = plus;
-    return new BinaryExpr(left, right, type);
+    return new BinaryExpr(left, right, plus);
   }
 
   public List<EzyExpr> toExprList(ItemsList itemsList) {

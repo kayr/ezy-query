@@ -8,6 +8,10 @@ public class ConstExpr implements EzyExpr {
   private Type type;
 
   public String toString() {
+    return asString();
+  }
+
+  private String asString() {
     if (type == Type.STRING) {
       return String.format("'%s'", value);
     }

@@ -50,7 +50,7 @@ public class Cond implements ICond {
   }
 
   static EzyExpr expr(Object value) {
-    if (value instanceof Field) { // todo a hash can also be a field
+    if (value instanceof Field) {
       return new VariableExpr(((Field) value).getAlias());
     }
 

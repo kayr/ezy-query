@@ -9,6 +9,8 @@ import java.util.List;
 
 public class EzySql {
 
+  private EzySql() {}
+
   public static EszySqlTranspiler.Result transpile(List<Field> fields, String sql) {
     EzyExpr ezyExpr = ExprParser.parseExpr(sql);
     return transpile(fields, ezyExpr);

@@ -50,6 +50,7 @@ and 9 is null or 9 is not null
 
     def 'test up support operators operators'() {
 
+
         when:
         def expr = '''
 id = 9 and name = 'john' or name += 'doe' '''

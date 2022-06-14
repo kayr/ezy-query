@@ -4,6 +4,9 @@ import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
 
 public class Cnd {
+
+  private Cnd() {}
+
   public static Cond eq(Object left, Object right) {
     return Cond.create(left, right, BinaryExpr.Op.EQ);
   }

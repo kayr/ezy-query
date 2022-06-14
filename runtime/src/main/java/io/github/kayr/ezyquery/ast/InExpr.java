@@ -5,9 +5,9 @@ import java.util.List;
 @lombok.Getter
 public class InExpr implements EzyExpr {
 
-  private boolean not;
-  private EzyExpr left;
-  private List<EzyExpr> candidates;
+  private final boolean not;
+  private final EzyExpr left;
+  private final List<EzyExpr> candidates;
 
   public InExpr(EzyExpr left, List<EzyExpr> candidates) {
     this(left, candidates, false);

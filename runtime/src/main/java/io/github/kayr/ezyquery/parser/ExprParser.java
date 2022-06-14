@@ -10,7 +10,10 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 /** In the future, we can implement a custom lightweight sql parser */
@@ -53,7 +56,8 @@ public class ExprParser {
       //noinspection unchecked
       return (Function<Expression, EzyExpr>) handlers.get(clazz);
     }
-    throw new EzyParseException("UnSupported Expression: [" + clazz.getSimpleName() + "]: " + expression);
+    throw new EzyParseException(
+        "UnSupported Expression: [" + clazz.getSimpleName() + "]: " + expression);
   }
 
   public void initHandlers() {
@@ -184,10 +188,12 @@ public class ExprParser {
     register(
         Column.class,
         sv -> {
-          if (Objects.equals(sv.getFullyQualifiedName(), "true")
-              || Objects.equals(sv.getFullyQualifiedName(), "false")) {
-            return new ConstExpr(sv.getFullyQualifiedName(), ConstExpr.Type.BOOLEAN);
-          } else return new VariableExpr(sv.getFullyQualifiedName());
+          String columnName = sv.getFullyQualifiedName();
+          if (Objects.equals(columnName, "true") || Objects.equals(columnName, "false")) {
+            return new ConstExpr(Boolean.valueOf(columnName), ConstExpr.Type.BOOLEAN);
+          } else {
+            return new VariableExpr(columnName);
+          }
         });
 
     register(Parenthesis.class, parenExpr -> new ParensExpr(toEzyExpr(parenExpr.getExpression())));

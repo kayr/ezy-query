@@ -10,8 +10,8 @@ import java.util.function.Function;
 
 public class Transpiler {
 
-  private EzyExpr expr;
-  private List<Field> fields;
+  private final EzyExpr expr;
+  private final List<Field> fields;
 
   public Transpiler(EzyExpr expr, List<Field> fields) {
     this.expr = expr;
@@ -121,7 +121,7 @@ public class Transpiler {
         });
   }
 
-  private Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, Result>> handlers =
+  private final Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, Result>> handlers =
       new HashMap<>();
 
   <T extends EzyExpr> void register(Class<T> clazz, Function<T, Result> function) {

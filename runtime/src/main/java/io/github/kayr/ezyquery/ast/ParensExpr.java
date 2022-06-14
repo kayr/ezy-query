@@ -1,7 +1,5 @@
 package io.github.kayr.ezyquery.ast;
 
-import java.util.List;
-
 @lombok.Getter
 @lombok.AllArgsConstructor
 public class ParensExpr implements EzyExpr {

@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.transpile;
 
-import io.github.kayr.ezyquery.Field;
+import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;
 import io.github.kayr.ezyquery.parser.EzyTranspileException;
 import io.github.kayr.ezyquery.util.Elf;

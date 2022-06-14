@@ -1,4 +1,4 @@
-package io.github.kayr.ezyquery;
+package io.github.kayr.ezyquery.api;
 
 @lombok.Builder(toBuilder = true)
 @lombok.Getter

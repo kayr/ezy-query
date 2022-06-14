@@ -32,7 +32,9 @@ public class BinaryExpr implements EzyExpr {
     DIV("/"),
     MOD("%"),
     LIKE("LIKE"),
-    NOT_LIKE("NOT LIKE");
+    NOT_LIKE("NOT LIKE"),
+    IN("IN"),
+    NOT_IN("NOT IN");
 
     private final String symbol;
 

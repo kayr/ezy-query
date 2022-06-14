@@ -15,4 +15,11 @@ public class Elf {
     }
     return result;
   }
+
+  // asset true if all elements in the list are true
+  public static void assertTrue(Boolean condition, String message) {
+    if (!condition) {
+      throw new IllegalStateException(message);
+    }
+  }
 }

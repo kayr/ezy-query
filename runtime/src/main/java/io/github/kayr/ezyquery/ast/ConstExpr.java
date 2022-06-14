@@ -21,6 +21,7 @@ public class ConstExpr implements EzyExpr {
   public enum Type {
     STRING,
     NUMBER,
-    BOOLEAN
+    BOOLEAN,
+    ANY
   }
 }

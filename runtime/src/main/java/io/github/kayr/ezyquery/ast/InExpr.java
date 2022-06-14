@@ -4,7 +4,7 @@ import java.util.List;
 
 @lombok.Getter
 public class InExpr implements EzyExpr {
-
+  // consider turning this into a binary expression
   private final boolean not;
   private final EzyExpr left;
   private final List<EzyExpr> candidates;

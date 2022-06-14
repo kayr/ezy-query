@@ -31,7 +31,7 @@ public class UnaryExpr implements EzyExpr {
   private String asString() {
     switch (type) {
       case NOT:
-        return String.format("not%s", left);
+        return String.format("not(%s)", left);
       case MINUS:
         return String.format("-%s", left);
       case PLUS:

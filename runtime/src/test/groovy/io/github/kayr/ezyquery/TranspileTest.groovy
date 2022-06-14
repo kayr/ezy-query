@@ -23,7 +23,7 @@ or (office = 'London' and age > 20)
         def result = EzySql.transpile(fields, expr)
         println(result)
         then:
-        result.toString() == 'Result{sql=\'? = t.name AND t.age in (, ?, ?, ?, t.maxAge) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'
+        result.toString() == 'Result{sql=\'? = t.name AND t.age in (?, ?, ?, t.maxAge) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'
         assert result.params == [
                 'Julius Ceaser',
                 10,

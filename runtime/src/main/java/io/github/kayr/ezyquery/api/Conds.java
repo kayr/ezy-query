@@ -12,28 +12,29 @@ import java.util.Optional;
 public class Conds implements ICond {
 
   private List<ICond> conds = new ArrayList<>();
-  private BinaryExpr.Type type;
+  private BinaryExpr.Op operator;
 
   @Override
   public EzyExpr asExpr() {
     Optional<EzyExpr> reduce =
-        conds.stream().map(ICond::asExpr).reduce((left, right) -> new BinaryExpr(left, right, type));
+        conds.stream()
+            .map(ICond::asExpr)
+            .reduce((left, right) -> new BinaryExpr(left, right, operator));
     EzyExpr condition = reduce.orElseThrow(() -> new IllegalStateException("Conditions is empty"));
     return new ParensExpr(condition);
-
   }
 
   public static Conds and(ICond... cond) {
-    return createConds(BinaryExpr.Type.AND, cond);
+    return createConds(BinaryExpr.Op.AND, cond);
   }
 
   public static Conds or(ICond... cond) {
-    return createConds(BinaryExpr.Type.OR, cond);
+    return createConds(BinaryExpr.Op.OR, cond);
   }
 
-  private static Conds createConds(BinaryExpr.Type or, ICond[] cond) {
+  private static Conds createConds(BinaryExpr.Op or, ICond[] cond) {
     Conds conds = new Conds();
-    conds.type = or;
+    conds.operator = or;
     Collections.addAll(conds.conds, cond);
     return conds;
   }

@@ -1,7 +1,8 @@
 package io.github.kayr.ezyquery.api;
 
-@lombok.Builder(toBuilder = true)
 @lombok.Getter
+@lombok.AllArgsConstructor
+@lombok.Builder(toBuilder = true)
 public class Field {
   private String sqlField;
   private String alias;

@@ -7,7 +7,7 @@ public class BinaryExpr implements EzyExpr {
 
   private EzyExpr left;
   private EzyExpr right;
-  private Type operator;
+  private Op operator;
 
   public String toString() {
     return asString();
@@ -17,7 +17,7 @@ public class BinaryExpr implements EzyExpr {
     return String.format("%s %s %s", left, operator, right);
   }
 
-  public enum Type {
+  public enum Op {
     AND("AND"),
     OR("OR"),
     EQ("="),
@@ -38,7 +38,7 @@ public class BinaryExpr implements EzyExpr {
 
     private final String symbol;
 
-    Type(String symbol) {
+    Op(String symbol) {
       this.symbol = symbol;
     }
 

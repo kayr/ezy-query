@@ -8,12 +8,12 @@ import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.function.Function;
 
-public class Transpiler {
+public class EszySqlTranspiler {
 
   private final EzyExpr expr;
   private final List<Field> fields;
 
-  public Transpiler(EzyExpr expr, List<Field> fields) {
+  public EszySqlTranspiler(EzyExpr expr, List<Field> fields) {
     this.expr = expr;
     this.fields = fields;
     initHandlers();
@@ -77,9 +77,11 @@ public class Transpiler {
             left = left.append(" in (");
           }
 
+          boolean first = true;
           for (EzyExpr candidate : inExpr.getCandidates()) {
             Result sqlPart = transpile(candidate);
-            left = left.append(", ").append(sqlPart);
+            left = left.append(!first, ", ").append(sqlPart);
+            first = false;
           }
 
           return left.append(")");
@@ -98,6 +100,8 @@ public class Transpiler {
               return sqlExpr.append(" is not null");
             case IS_NULL:
               return sqlExpr.append(" is null");
+            case NOT:
+              return new Result("not(").append(sqlExpr).append(")");
             default:
               throw new EzyTranspileException("Unknown unary operator " + unaryExpr.getType());
           }
@@ -143,6 +147,13 @@ public class Transpiler {
 
     public Result(String sql) {
       this.sql = sql;
+    }
+
+    Result append(boolean conditional, String sql) {
+      if (conditional) {
+        return append(sql);
+      }
+      return this;
     }
 
     Result append(String sql) {

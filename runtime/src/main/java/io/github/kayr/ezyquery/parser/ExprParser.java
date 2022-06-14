@@ -81,80 +81,75 @@ public class ExprParser {
 
     register(
         AndExpression.class,
-        expr ->
-            binaryExpr(expr.getLeftExpression(), expr.getRightExpression(), BinaryExpr.Type.AND));
+        expr -> binaryExpr(expr.getLeftExpression(), expr.getRightExpression(), BinaryExpr.Op.AND));
 
     register(
         OrExpression.class,
         orExpr ->
-            binaryExpr(
-                orExpr.getLeftExpression(), orExpr.getRightExpression(), BinaryExpr.Type.OR));
+            binaryExpr(orExpr.getLeftExpression(), orExpr.getRightExpression(), BinaryExpr.Op.OR));
 
     register(
         Addition.class,
         addExpr ->
             binaryExpr(
-                addExpr.getLeftExpression(), addExpr.getRightExpression(), BinaryExpr.Type.PLUS));
+                addExpr.getLeftExpression(), addExpr.getRightExpression(), BinaryExpr.Op.PLUS));
 
     register(
         Subtraction.class,
         subExpr ->
             binaryExpr(
-                subExpr.getLeftExpression(), subExpr.getRightExpression(), BinaryExpr.Type.MINUS));
+                subExpr.getLeftExpression(), subExpr.getRightExpression(), BinaryExpr.Op.MINUS));
 
     register(
         Division.class,
         divExpr ->
             binaryExpr(
-                divExpr.getLeftExpression(), divExpr.getRightExpression(), BinaryExpr.Type.DIV));
+                divExpr.getLeftExpression(), divExpr.getRightExpression(), BinaryExpr.Op.DIV));
 
     register(
         Multiplication.class,
         mulExpr ->
             binaryExpr(
-                mulExpr.getLeftExpression(), mulExpr.getRightExpression(), BinaryExpr.Type.MUL));
+                mulExpr.getLeftExpression(), mulExpr.getRightExpression(), BinaryExpr.Op.MUL));
 
     register(
         Modulo.class,
         modExpr ->
             binaryExpr(
-                modExpr.getLeftExpression(), modExpr.getRightExpression(), BinaryExpr.Type.MOD));
+                modExpr.getLeftExpression(), modExpr.getRightExpression(), BinaryExpr.Op.MOD));
 
     register(
         GreaterThan.class,
         gtExpr ->
-            binaryExpr(
-                gtExpr.getLeftExpression(), gtExpr.getRightExpression(), BinaryExpr.Type.GT));
+            binaryExpr(gtExpr.getLeftExpression(), gtExpr.getRightExpression(), BinaryExpr.Op.GT));
 
     register(
         GreaterThanEquals.class,
         gteExpr ->
             binaryExpr(
-                gteExpr.getLeftExpression(), gteExpr.getRightExpression(), BinaryExpr.Type.GTE));
+                gteExpr.getLeftExpression(), gteExpr.getRightExpression(), BinaryExpr.Op.GTE));
 
     register(
         MinorThanEquals.class,
         ltExpr ->
-            binaryExpr(
-                ltExpr.getLeftExpression(), ltExpr.getRightExpression(), BinaryExpr.Type.LTE));
+            binaryExpr(ltExpr.getLeftExpression(), ltExpr.getRightExpression(), BinaryExpr.Op.LTE));
 
     register(
         MinorThan.class,
         lteExpr ->
             binaryExpr(
-                lteExpr.getLeftExpression(), lteExpr.getRightExpression(), BinaryExpr.Type.LT));
+                lteExpr.getLeftExpression(), lteExpr.getRightExpression(), BinaryExpr.Op.LT));
 
     register(
         EqualsTo.class,
         eqExpr ->
-            binaryExpr(
-                eqExpr.getLeftExpression(), eqExpr.getRightExpression(), BinaryExpr.Type.EQ));
+            binaryExpr(eqExpr.getLeftExpression(), eqExpr.getRightExpression(), BinaryExpr.Op.EQ));
 
     register(
         NotEqualsTo.class,
         neqExpr ->
             binaryExpr(
-                neqExpr.getLeftExpression(), neqExpr.getRightExpression(), BinaryExpr.Type.NEQ));
+                neqExpr.getLeftExpression(), neqExpr.getRightExpression(), BinaryExpr.Op.NEQ));
 
     register(
         LikeExpression.class,
@@ -163,11 +158,11 @@ public class ExprParser {
                 ? binaryExpr(
                     likeExpr.getLeftExpression(),
                     likeExpr.getRightExpression(),
-                    BinaryExpr.Type.NOT_LIKE)
+                    BinaryExpr.Op.NOT_LIKE)
                 : binaryExpr(
                     likeExpr.getLeftExpression(),
                     likeExpr.getRightExpression(),
-                    BinaryExpr.Type.LIKE));
+                    BinaryExpr.Op.LIKE));
 
     register(
         IsNullExpression.class,
@@ -219,7 +214,7 @@ public class ExprParser {
   }
 
   private BinaryExpr binaryExpr(
-      Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Type plus) {
+      Expression leftSqlExpr, Expression rightSqlExpr, BinaryExpr.Op plus) {
     EzyExpr left = toEzyExpr(leftSqlExpr);
     EzyExpr right = toEzyExpr(rightSqlExpr);
     return new BinaryExpr(left, right, plus);

@@ -18,8 +18,8 @@ public class ResultSetMapper<T> {
     return new ResultSetMapper<>(targetClass);
   }
 
-  @Override
-  public T mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+  public T mapRow(ResultSet rs, int rowNum) {
     T obj = construct();
     // map object to result set
     ReflectionUtils.doWithFields(targetClass, field -> setFieldValue(rs, obj, field));

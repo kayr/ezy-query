@@ -1,9 +1,8 @@
 package io.github.kayr.ezyquery
 
-import io.github.kayr.ezyquery.api.Cnd
-import io.github.kayr.ezyquery.api.Conds
+import io.github.kayr.ezyquery.api.cnd.Cnd
+import io.github.kayr.ezyquery.api.cnd.Conds
 import io.github.kayr.ezyquery.api.Field
-import io.github.kayr.ezyquery.transpile.EszySqlTranspiler
 import spock.lang.Specification
 
 class QueryBuildingTest extends Specification {

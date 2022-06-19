@@ -1,4 +1,4 @@
-package io.github.kayr.ezyquery.api;
+package io.github.kayr.ezyquery.api.cnd;
 
 import io.github.kayr.ezyquery.ast.BetweenExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;

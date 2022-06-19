@@ -1,5 +1,6 @@
-package io.github.kayr.ezyquery.api;
+package io.github.kayr.ezyquery.api.cnd;
 
+import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;
 import io.github.kayr.ezyquery.util.Elf;
 

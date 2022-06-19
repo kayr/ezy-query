@@ -75,11 +75,11 @@ public class Cnd {
     return new UnaryCond(left, UnaryExpr.Type.IS_NOT_NULL);
   }
 
-  public static Conds andAll(ICond... conds) {
+  public static Conds andAll(Object... conds) {
     return Conds.and(conds);
   }
 
-  public static Conds orAll(ICond... conds) {
+  public static Conds orAll(Object... conds) {
     return Conds.or(conds);
   }
 

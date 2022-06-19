@@ -3,7 +3,7 @@ package io.github.kayr.ezyquery;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
-import io.github.kayr.ezyquery.transpile.EszySqlTranspiler;
+import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
 
 import java.util.List;
 

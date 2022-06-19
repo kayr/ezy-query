@@ -1,4 +1,4 @@
-package io.github.kayr.ezyquery.transpile;
+package io.github.kayr.ezyquery.parser;
 
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;

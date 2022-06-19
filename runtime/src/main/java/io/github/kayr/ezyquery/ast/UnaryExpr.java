@@ -8,11 +8,11 @@ public class UnaryExpr implements EzyExpr {
   private EzyExpr left;
 
   public enum Type {
-    NOT("not"),
+    NOT("NOT"),
     MINUS("-"),
     PLUS("+"),
-    IS_NULL("is null"),
-    IS_NOT_NULL("is not null");
+    IS_NULL("IS NULL"),
+    IS_NOT_NULL("IS NOT NULL");
     private final String sign;
 
     Type(String sign) {

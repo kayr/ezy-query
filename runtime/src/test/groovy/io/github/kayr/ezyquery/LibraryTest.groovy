@@ -30,8 +30,8 @@ or (9 + 3) not in (9, 3)
                 "AND (-9.8 OR 8 + 7 - 2 * 3 / 4 % 5) " +
                 "AND (8 > 9) AND (100 >= 100) AND (8 < 9) " +
                 "AND (100 <= 100) AND (11 <> 90) OR (11 <> 91) " +
-                "OR (name LIKE '%john%') AND (name NOT LIKE '%doe%') " +
-                "OR (name in [john, doe, 'xxx']) AND (name not in [doe, 'xxx']) " +
+                "OR (#name LIKE '%john%') AND (#name NOT LIKE '%doe%') " +
+                "OR (#name in [#john, #doe, 'xxx']) AND (#name not in [#doe, 'xxx']) " +
                 "OR (9 + 3) not in [9, 3]\n".trim()
     }
 
@@ -45,7 +45,7 @@ and 9 is null or 9 is not null
         def result = ExprParser.parseExpr(expr).toString()
 
         then:
-        result.trim() == "9 between 1 and 10 OR 9 not between 1 AND 10 AND 9 is null OR 9 is not null"
+        result.trim() == "9 BETWEEN 1 AND 10 OR 9 NOT BETWEEN 1 AND 10 AND 9 is null OR 9 is not null"
     }
 
     def 'test up support operators operators'() {

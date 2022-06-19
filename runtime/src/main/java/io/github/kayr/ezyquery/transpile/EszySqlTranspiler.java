@@ -19,38 +19,38 @@ public class EszySqlTranspiler {
     initHandlers();
   }
 
-  public Result transpile() {
+  public QueryAndParams transpile() {
     return transpile(expr);
   }
 
-  private Result transpile(EzyExpr expr) {
+  private QueryAndParams transpile(EzyExpr expr) {
 
-    Function<EzyExpr, Result> handler = findHandler(expr);
+    Function<EzyExpr, QueryAndParams> handler = findHandler(expr);
 
     return handler.apply(expr);
   }
 
-  private Function<EzyExpr, Result> findHandler(EzyExpr expr) {
-    Function<? extends EzyExpr, Result> handler = handlers.get(expr.getClass());
+  private Function<EzyExpr, QueryAndParams> findHandler(EzyExpr expr) {
+    Function<? extends EzyExpr, QueryAndParams> handler = handlers.get(expr.getClass());
     if (handler == null) {
       throw new IllegalArgumentException("No handler for " + expr.getClass());
     }
     //noinspection unchecked
-    return (Function<EzyExpr, Result>) handler;
+    return (Function<EzyExpr, QueryAndParams>) handler;
   }
 
   public void initHandlers() {
 
     register(
         ConstExpr.class,
-        constExpr -> new Result("?", Collections.singletonList(constExpr.getValue())));
+        constExpr -> QueryAndParams.of("?", Collections.singletonList(constExpr.getValue())));
 
     register(
         BetweenExpr.class,
         betweenExpr -> {
-          Result left = transpile(betweenExpr.getLeft());
-          Result start = transpile(betweenExpr.getStart());
-          Result end = transpile(betweenExpr.getEnd());
+          QueryAndParams left = transpile(betweenExpr.getLeft());
+          QueryAndParams start = transpile(betweenExpr.getStart());
+          QueryAndParams end = transpile(betweenExpr.getEnd());
 
           return left.append(" between ").append(start).append(" and ").append(end);
         });
@@ -58,8 +58,8 @@ public class EszySqlTranspiler {
     register(
         BinaryExpr.class,
         binaryExpr -> {
-          Result left = transpile(binaryExpr.getLeft());
-          Result right = transpile(binaryExpr.getRight());
+          QueryAndParams left = transpile(binaryExpr.getLeft());
+          QueryAndParams right = transpile(binaryExpr.getRight());
           return left.append(" ")
               .append(binaryExpr.getOperator().symbol())
               .append(" ")
@@ -69,17 +69,21 @@ public class EszySqlTranspiler {
     register(
         InExpr.class,
         inExpr -> {
-          Result left = transpile(inExpr.getLeft());
+          if (Elf.isEmpty(inExpr.getCandidates())) {
+            return QueryAndParams.of("1 = 0");
+          }
+
+          QueryAndParams left = transpile(inExpr.getLeft());
 
           if (inExpr.isNot()) {
-            left = left.append(" not in (");
+            left = left.append(" NOT IN (");
           } else {
-            left = left.append(" in (");
+            left = left.append(" IN (");
           }
 
           boolean first = true;
           for (EzyExpr candidate : inExpr.getCandidates()) {
-            Result sqlPart = transpile(candidate);
+            QueryAndParams sqlPart = transpile(candidate);
             left = left.append(!first, ", ").append(sqlPart);
             first = false;
           }
@@ -90,18 +94,18 @@ public class EszySqlTranspiler {
     register(
         UnaryExpr.class,
         unaryExpr -> {
-          Result sqlExpr = transpile(unaryExpr.getLeft());
+          QueryAndParams sqlExpr = transpile(unaryExpr.getLeft());
           switch (unaryExpr.getType()) {
             case MINUS:
-              return sqlExpr.append("-").append(sqlExpr);
+              return QueryAndParams.of("-").append(sqlExpr);
             case PLUS:
-              return sqlExpr.append("+").append(sqlExpr);
+              return QueryAndParams.of("+").append(sqlExpr);
             case IS_NOT_NULL:
-              return sqlExpr.append(" is not null");
+              return sqlExpr.append(" IS NOT NULL");
             case IS_NULL:
-              return sqlExpr.append(" is null");
+              return sqlExpr.append(" IS NULL");
             case NOT:
-              return new Result("not(").append(sqlExpr).append(")");
+              return QueryAndParams.of("NOT(").append(sqlExpr).append(")");
             default:
               throw new EzyTranspileException("Unknown unary operator " + unaryExpr.getType());
           }
@@ -120,48 +124,57 @@ public class EszySqlTranspiler {
 
           Field field = fieldResult.get();
 
-          return new Result(field.getSqlField(), Collections.emptyList());
+          return QueryAndParams.of(field.getSqlField(), Collections.emptyList());
         });
 
     register(
         ParensExpr.class,
         parensExpr -> {
-          Result sqlExpr = transpile(parensExpr.getExpr());
-          return new Result("(").append(sqlExpr).append(")");
+          QueryAndParams sqlExpr = transpile(parensExpr.getExpr());
+          return QueryAndParams.of("(").append(sqlExpr).append(")");
         });
   }
 
-  private final Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, Result>> handlers =
+  private final Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, QueryAndParams>> handlers =
       new HashMap<>();
 
-  <T extends EzyExpr> void register(Class<T> clazz, Function<T, Result> function) {
+  <T extends EzyExpr> void register(Class<T> clazz, Function<T, QueryAndParams> function) {
 
     handlers.put(clazz, function);
   }
 
   @lombok.Getter
   @lombok.AllArgsConstructor
-  public static class Result {
+  public static class QueryAndParams {
+
     private String sql;
     private List<Object> params = Collections.emptyList();
 
-    public Result(String sql) {
+    public QueryAndParams(String sql) {
       this.sql = sql;
     }
 
-    Result append(boolean conditional, String sql) {
+    public static QueryAndParams of(String sql) {
+      return new QueryAndParams(sql);
+    }
+
+    public static QueryAndParams of(String s, List<Object> singletonList) {
+      return new QueryAndParams(s, singletonList);
+    }
+
+    QueryAndParams append(boolean conditional, String sql) {
       if (conditional) {
         return append(sql);
       }
       return this;
     }
 
-    Result append(String sql) {
-      return new Result(this.sql + sql, params);
+    QueryAndParams append(String sql) {
+      return of(this.sql + sql, params);
     }
 
-    Result append(Result sql) {
-      return new Result(this.sql + sql.getSql(), Elf.combine(this.params, sql.params));
+    QueryAndParams append(QueryAndParams sql) {
+      return of(this.sql + sql.getSql(), Elf.combine(this.params, sql.params));
     }
 
     @Override

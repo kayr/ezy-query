@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Elf {
@@ -22,4 +23,8 @@ public class Elf {
       throw new IllegalStateException(message);
     }
   }
+
+    public static boolean isEmpty(Collection<?> candidates) {
+        return candidates == null || candidates.isEmpty();
+    }
 }

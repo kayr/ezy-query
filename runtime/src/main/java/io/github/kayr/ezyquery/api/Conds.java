@@ -32,7 +32,7 @@ public class Conds implements ICond {
     return createConds(BinaryExpr.Op.OR, cond);
   }
 
-  private static Conds createConds(BinaryExpr.Op or, ICond[] cond) {
+  static Conds createConds(BinaryExpr.Op or, ICond[] cond) {
     Conds conds = new Conds();
     conds.operator = or;
     Collections.addAll(conds.conds, cond);

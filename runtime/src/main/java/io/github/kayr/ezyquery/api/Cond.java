@@ -59,7 +59,7 @@ public class Cond implements ICond {
     }
 
     if (value instanceof ICond) {
-      return ((Cond) value).asExpr();
+      return ((ICond) value).asExpr();
     }
 
     return new ConstExpr(value, ConstExpr.Type.ANY);

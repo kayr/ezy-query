@@ -7,7 +7,7 @@ public class VariableExpr implements EzyExpr {
   private String variable;
 
   public String toString() {
-    return String.format("%s", variable);
+    return String.format("#%s", variable);
   }
 
   public String getVariable() {

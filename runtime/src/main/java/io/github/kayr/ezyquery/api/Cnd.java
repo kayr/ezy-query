@@ -56,11 +56,11 @@ public class Cnd {
   }
 
   public static UnaryCond negate(Object left) {
-    return new UnaryCond(left, UnaryExpr.Type.NOT);
+    return new UnaryCond(left, UnaryExpr.Type.MINUS);
   }
 
-  public static UnaryCond postive(Object left) {
-    return new UnaryCond(left, UnaryExpr.Type.NOT);
+  public static UnaryCond positive(Object left) {
+    return new UnaryCond(left, UnaryExpr.Type.PLUS);
   }
 
   public static UnaryCond not(Object left) {
@@ -73,5 +73,25 @@ public class Cnd {
 
   public static UnaryCond isNotNull(Object left) {
     return new UnaryCond(left, UnaryExpr.Type.IS_NOT_NULL);
+  }
+
+  public static Conds andAll(ICond... conds) {
+    return Conds.and(conds);
+  }
+
+  public static Conds orAll(ICond... conds) {
+    return Conds.or(conds);
+  }
+
+  public static BetweenCond between(Object left, Object start, Object end) {
+    return BetweenCond.between(left, start, end);
+  }
+
+  public static BetweenCond notBetween(Object left, Object start, Object end) {
+    return BetweenCond.notBetween(left, start, end);
+  }
+
+  public static Cond trueCnd() {
+    return Cnd.eq(1, 1);
   }
 }

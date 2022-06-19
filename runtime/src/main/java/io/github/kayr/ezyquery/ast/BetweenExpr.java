@@ -17,8 +17,8 @@ public class BetweenExpr implements EzyExpr {
 
   private String asString() {
     if (not) {
-      return String.format("%s not between %s AND %s", left, start, end);
+      return String.format("%s NOT BETWEEN %s AND %s", left, start, end);
     }
-    return String.format("%s between %s and %s", left, start, end);
+    return String.format("%s BETWEEN %s AND %s", left, start, end);
   }
 }

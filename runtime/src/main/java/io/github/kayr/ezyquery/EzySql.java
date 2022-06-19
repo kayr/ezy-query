@@ -11,12 +11,11 @@ public class EzySql {
 
   private EzySql() {}
 
-  public static EszySqlTranspiler.Result transpile(List<Field> fields, String sql) {
-    EzyExpr ezyExpr = ExprParser.parseExpr(sql);
-    return transpile(fields, ezyExpr);
+  public static EszySqlTranspiler.QueryAndParams transpile(List<Field> fields, String sql) {
+    return transpile(fields, ExprParser.parseExpr(sql));
   }
 
-  public static EszySqlTranspiler.Result transpile(List<Field> fields, EzyExpr ezyExpr) {
+  public static EszySqlTranspiler.QueryAndParams transpile(List<Field> fields, EzyExpr ezyExpr) {
     return new EszySqlTranspiler(ezyExpr, fields).transpile();
   }
 }

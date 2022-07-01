@@ -11,6 +11,6 @@ public class UnaryCond implements ICond {
 
   @Override
   public EzyExpr asExpr() {
-    return new UnaryExpr(operator, Cond.expr(left));
+    return new UnaryExpr(operator, ICond.expr(left));
   }
 }

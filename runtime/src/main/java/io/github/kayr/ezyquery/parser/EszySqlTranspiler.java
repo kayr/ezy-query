@@ -2,7 +2,6 @@ package io.github.kayr.ezyquery.parser;
 
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;
-import io.github.kayr.ezyquery.parser.EzyTranspileException;
 import io.github.kayr.ezyquery.util.Elf;
 
 import java.util.*;
@@ -11,9 +10,9 @@ import java.util.function.Function;
 public class EszySqlTranspiler {
 
   private final EzyExpr expr;
-  private final List<Field> fields;
+  private final List<Field<?>> fields;
 
-  public EszySqlTranspiler(EzyExpr expr, List<Field> fields) {
+  public EszySqlTranspiler(EzyExpr expr, List<Field<?>> fields) {
     this.expr = expr;
     this.fields = fields;
     initHandlers();
@@ -115,8 +114,7 @@ public class EszySqlTranspiler {
         VariableExpr.class,
         variableExpr -> {
           String fieldName = variableExpr.getVariable();
-          Optional<Field> fieldResult =
-              fields.stream().filter(f -> f.getAlias().equals(fieldName)).findFirst();
+          Optional<Field<?>> fieldResult = findField(fieldName);
 
           if (!fieldResult.isPresent()) {
             throw new EzyTranspileException("Unknown field " + fieldName);
@@ -135,51 +133,16 @@ public class EszySqlTranspiler {
         });
   }
 
-  private final Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, QueryAndParams>> handlers =
-      new HashMap<>();
+  private Optional<Field<?>> findField(String alias) {
+    return fields.stream().filter(f -> f.getAlias().equals(alias)).findFirst();
+  }
+
+  private final Map<Class<? extends EzyExpr>, Function<? extends EzyExpr, QueryAndParams>>
+      handlers = new HashMap<>();
 
   <T extends EzyExpr> void register(Class<T> clazz, Function<T, QueryAndParams> function) {
 
     handlers.put(clazz, function);
   }
 
-  @lombok.Getter
-  @lombok.AllArgsConstructor
-  public static class QueryAndParams {
-
-    private String sql;
-    private List<Object> params = Collections.emptyList();
-
-    public QueryAndParams(String sql) {
-      this.sql = sql;
-    }
-
-    public static QueryAndParams of(String sql) {
-      return new QueryAndParams(sql);
-    }
-
-    public static QueryAndParams of(String s, List<Object> singletonList) {
-      return new QueryAndParams(s, singletonList);
-    }
-
-    QueryAndParams append(boolean conditional, String sql) {
-      if (conditional) {
-        return append(sql);
-      }
-      return this;
-    }
-
-    QueryAndParams append(String sql) {
-      return of(this.sql + sql, params);
-    }
-
-    QueryAndParams append(QueryAndParams sql) {
-      return of(this.sql + sql.getSql(), Elf.combine(this.params, sql.params));
-    }
-
-    @Override
-    public String toString() {
-      return "Result{" + "sql='" + sql + '\'' + ", params=" + params + '}';
-    }
-  }
 }

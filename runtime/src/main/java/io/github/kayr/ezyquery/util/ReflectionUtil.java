@@ -5,9 +5,9 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ReflectionUtils {
+public class ReflectionUtil {
 
-  private ReflectionUtils() {}
+  private ReflectionUtil() {}
 
   private static final Field[] EMPTY_FIELD_ARRAY = new Field[0];
 

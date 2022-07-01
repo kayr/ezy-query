@@ -27,6 +27,8 @@ dependencies {
 
     implementation 'com.github.jsqlparser:jsqlparser:4.4'
 
+    implementation 'com.squareup:javapoet:1.13.0'
+
     // Use the latest Groovy version for Spock testing
     testImplementation 'org.codehaus.groovy:groovy:3.0.9'
 

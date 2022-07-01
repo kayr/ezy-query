@@ -2,32 +2,51 @@ package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.util.Function;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Zql {
 
-  private DataSource dataSource;
-  private Connection connection;
+  private final ConnectionProvider connectionProvider;
 
-  public Zql(DataSource dataSource) {
-    this.dataSource = dataSource;
+  public Zql(ConnectionProvider connectionProvider) {
+    this.connectionProvider = connectionProvider;
   }
 
-  private Zql(Connection connection) {
-    this.connection = connection;
+  @lombok.SneakyThrows
+  public <T> List<T> rows(Class<T> clazz, String sql, List<Object> params) {
+    try (ResultSet resultSet = rows(sql, params)) {
+      return mapData(clazz, resultSet);
+    }
   }
 
   @lombok.SneakyThrows
   public <T> List<T> rows(Class<T> clazz, String sql, Object... params) {
-    ResultSet resultSet = rows(sql, params);
-    return mapData(clazz, resultSet);
+    try (ResultSet resultSet = rows(sql, params)) {
+      return mapData(clazz, resultSet);
+    }
   }
 
   public ResultSet rows(String sql, List<Object> params) {
     return rows(sql, params.toArray());
+  }
+
+  @lombok.SneakyThrows
+  public <T> T one(Class<T> clazz, String sql, List<Object> params) {
+    try (ResultSet resultSet = rows(sql, params)) {
+
+      T result = null;
+      if (resultSet.next()) {
+        result = resultSet.getObject(1, clazz);
+      }
+
+      if (resultSet.next()) {
+        throw new IllegalArgumentException("More than one row returned");
+      }
+
+      return result;
+    }
   }
 
   private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet) throws SQLException {
@@ -73,11 +92,11 @@ public class Zql {
 
   @lombok.SneakyThrows
   public <T> T withConnection(Function<Connection, T> fx) {
-    Connection con = createConnection();
+    Connection con = connectionProvider.getConnection();
     try {
       return fx.apply(con);
     } finally {
-      if (this.connection == null) closeQuietly(con);
+      connectionProvider.closeConnection(con);
     }
   }
 
@@ -87,19 +106,5 @@ public class Zql {
     } catch (Exception e) {
       // ignore
     }
-  }
-
-  @lombok.SneakyThrows
-  protected Statement prepareStatement(Connection connection, String sql) {
-
-    return connection.prepareStatement(sql);
-  }
-
-  @lombok.SneakyThrows
-  protected Connection createConnection() {
-    if (dataSource == null) {
-      return connection;
-    }
-    return dataSource.getConnection();
   }
 }

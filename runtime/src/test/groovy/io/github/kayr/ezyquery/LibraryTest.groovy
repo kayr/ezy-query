@@ -47,6 +47,18 @@ and 9 is null or 9 is not null
         then:
         result.trim() == "9 BETWEEN 1 AND 10 OR 9 NOT BETWEEN 1 AND 10 AND 9 is null OR 9 is not null"
     }
+    def xxxxxxxxxxxxxxxx() {
+
+        when:
+        def expr = '''
+9 between 1 and 10 or 9 not between 1 and 10
+and 9 is null or 9 is not null and from is null
+ '''
+        def result = ExprParser.parseExpr(expr).toString()
+
+        then:
+        result.trim() == "9 BETWEEN 1 AND 10 OR 9 NOT BETWEEN 1 AND 10 AND 9 is null OR 9 is not null"
+    }
 
     def 'test up support operators operators'() {
 

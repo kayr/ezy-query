@@ -6,6 +6,7 @@ import io.github.kayr.ezyquery.api.cnd.Conds;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
 
 import java.util.List;
 
@@ -13,11 +14,11 @@ public class EzySql {
 
   private EzySql() {}
 
-  public static EszySqlTranspiler.QueryAndParams transpile(List<Field> fields, String sql) {
+  public static QueryAndParams transpile(List<Field<?>> fields, String sql) {
     return transpile(fields, ExprParser.parseExpr(sql));
   }
 
-  public static EszySqlTranspiler.QueryAndParams transpile(List<Field> fields, EzyExpr ezyExpr) {
+  public static QueryAndParams transpile(List<Field<?>> fields, EzyExpr ezyExpr) {
     return new EszySqlTranspiler(ezyExpr, fields).transpile();
   }
 

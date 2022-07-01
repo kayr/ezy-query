@@ -17,9 +17,15 @@ public class FilterParams {
   private Integer limit = 50;
 
   private boolean useOr = false;
+  private boolean count = false;
 
   public FilterParams select(String... columns) {
     this.columns.addAll(Arrays.asList(columns));
+    return this;
+  }
+
+  public FilterParams selectCount() {
+    this.count = true;
     return this;
   }
 
@@ -33,12 +39,12 @@ public class FilterParams {
     return this;
   }
 
-  public FilterParams offset(Integer offset) {
+  public FilterParams offset(@lombok.NonNull Integer offset) {
     this.offset = offset;
     return this;
   }
 
-  public FilterParams limit(Integer limit) {
+  public FilterParams limit(@lombok.NonNull Integer limit) {
     this.limit = limit;
     return this;
   }
@@ -55,5 +61,9 @@ public class FilterParams {
 
   public boolean isUseOr() {
     return useOr;
+  }
+
+  public boolean isCount() {
+    return columns.isEmpty();
   }
 }

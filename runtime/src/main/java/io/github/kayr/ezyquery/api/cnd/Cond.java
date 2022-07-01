@@ -1,6 +1,5 @@
 package io.github.kayr.ezyquery.api.cnd;
 
-import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;
 import io.github.kayr.ezyquery.util.Elf;
 
@@ -36,34 +35,18 @@ public class Cond implements ICond {
   }
 
   private EzyExpr leftExpr() {
-    return expr(left);
+    return ICond.expr(left);
   }
 
   private EzyExpr rightExpr() {
-    return expr(right);
+    return ICond.expr(right);
   }
 
   @SuppressWarnings({"ConstantConditions", "unchecked"})
   private List<EzyExpr> rightList() {
     Elf.assertTrue(right instanceof List, "right must be a list on expression: " + this);
     List<Object> rightList = (List<Object>) right;
-    return rightList.stream().map(Cond::expr).collect(Collectors.toList());
-  }
-
-  static EzyExpr expr(Object value) {
-    if (value instanceof Field) {
-      return new VariableExpr(((Field) value).getAlias());
-    }
-
-    if (value instanceof String && ((String) value).startsWith("#")) {
-      return new VariableExpr(((String) value).substring(1));
-    }
-
-    if (value instanceof ICond) {
-      return ((ICond) value).asExpr();
-    }
-
-    return new ConstExpr(value, ConstExpr.Type.ANY);
+    return rightList.stream().map(ICond::expr).collect(Collectors.toList());
   }
 
   @Override

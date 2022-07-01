@@ -18,7 +18,7 @@ public class Conds implements ICond {
   public EzyExpr asExpr() {
     Optional<EzyExpr> reduce =
         conds.stream()
-            .map(Cond::expr)
+            .map(ICond::expr)
             .reduce((left, right) -> new BinaryExpr(left, right, operator));
     EzyExpr condition = reduce.orElseThrow(() -> new IllegalStateException("Conditions is empty"));
     return new ParensExpr(condition);

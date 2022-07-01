@@ -1,10 +1,9 @@
 package io.github.kayr.ezyquery.sql;
 
-import io.github.kayr.ezyquery.util.ReflectionUtils;
+import io.github.kayr.ezyquery.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class ResultSetMapper<T> {
 
@@ -22,15 +21,15 @@ public class ResultSetMapper<T> {
   public T mapRow(ResultSet rs, int rowNum) {
     T obj = construct();
     // map object to result set
-    ReflectionUtils.doWithFields(targetClass, field -> setFieldValue(rs, obj, field));
+    ReflectionUtil.doWithFields(targetClass, field -> setFieldValue(rs, obj, field));
 
     return obj;
   }
 
   private void setFieldValue(ResultSet rs, T obj, Field field) {
-    ReflectionUtils.makeAccessible(field);
+    ReflectionUtil.makeAccessible(field);
     try {
-      ReflectionUtils.setField(field, obj, rs.getObject(field.getName()));
+      ReflectionUtil.setField(field, obj, rs.getObject(field.getName()));
     } catch (Exception e) {
       throw new UnsupportedOperationException("Unable to map " + targetClass.getName(), e);
     }

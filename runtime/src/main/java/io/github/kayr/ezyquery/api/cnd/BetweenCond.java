@@ -21,6 +21,6 @@ public class BetweenCond implements ICond {
 
   @Override
   public EzyExpr asExpr() {
-    return new BetweenExpr(Cond.expr(left), Cond.expr(start), Cond.expr(end), not);
+    return new BetweenExpr(ICond.expr(left), ICond.expr(start), ICond.expr(end), not);
   }
 }

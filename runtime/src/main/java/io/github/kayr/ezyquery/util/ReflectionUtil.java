@@ -58,4 +58,14 @@ public class ReflectionUtil {
     }
     return result;
   }
+
+  public static <T> Field getField(Class<T> targetClass, String fieldName) {
+    Field[] declaredFields = getDeclaredFields(targetClass); // ensure introspection is done
+    for (Field field : declaredFields) {
+      if (field.getName().equals(fieldName)) {
+        return field;
+      }
+    }
+    return null;
+  }
 }

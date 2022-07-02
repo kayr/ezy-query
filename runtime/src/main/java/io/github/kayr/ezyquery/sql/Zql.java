@@ -50,14 +50,25 @@ public class Zql {
   }
 
   private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet) throws SQLException {
+    List<String> columns = getColumns(resultSet);
     ResultSetMapper<T> mapper = ResultSetMapper.forClass(clazz);
     List<T> data = new ArrayList<>();
     int index = 0;
     while (resultSet.next()) {
-      T t = mapper.mapRow(resultSet, index++);
+      T t = mapper.mapRow(resultSet,columns, index++);
       data.add(t);
     }
     return data;
+  }
+
+  @lombok.SneakyThrows
+  public List<String> getColumns(ResultSet resultSet) {
+    List<String> columns = new ArrayList<>();
+    ResultSetMetaData metaData = resultSet.getMetaData();
+    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+      columns.add(metaData.getColumnName(i));
+    }
+    return columns;
   }
 
   public ResultSet rows(String sql, Object... params) {

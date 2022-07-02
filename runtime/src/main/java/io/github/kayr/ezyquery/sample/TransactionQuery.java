@@ -49,9 +49,9 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
   }
 
   @Override
-  public QueryAndParams query(FilterParams params) {
+  public QueryAndParams query(FilterParams criteria) {
 
-    SqlBuilder builder = SqlBuilder.with(fields, params);
+    SqlBuilder builder = SqlBuilder.with(fields, criteria);
 
     String s = builder.selectStmt();
 
@@ -67,13 +67,13 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
             .append(" WHERE ")
             .append(w.getSql());
 
-    if (!params.isCount()) {
+    if (!criteria.isCount()) {
       queryBuilder =
           queryBuilder
               .append(" LIMIT ")
-              .append(params.getLimit())
+              .append(criteria.getLimit())
               .append(" OFFSET ")
-              .append(params.getOffset());
+              .append(criteria.getOffset());
     }
 
     return new QueryAndParams(queryBuilder.toString(), w.getParams());

@@ -4,6 +4,7 @@ import io.github.kayr.ezyquery.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
+import java.util.List;
 
 public class ResultSetMapper<T> {
 
@@ -17,10 +18,15 @@ public class ResultSetMapper<T> {
     return new ResultSetMapper<>(targetClass);
   }
 
-
-  public T mapRow(ResultSet rs, int rowNum) {
+  public T mapRow(ResultSet rs, List<String> columns, int rowNum) {
     T obj = construct();
     // map object to result set
+    for (String column : columns) {
+      Field field = ReflectionUtil.getField(targetClass, column);
+      if (field != null) {
+        setFieldValue(rs, obj, field);
+      }
+    }
     ReflectionUtil.doWithFields(targetClass, field -> setFieldValue(rs, obj, field));
 
     return obj;

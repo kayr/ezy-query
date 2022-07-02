@@ -10,10 +10,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.*;
 
 import javax.lang.model.element.Modifier;
 import java.util.*;
@@ -54,70 +51,17 @@ public class QueryGen {
 
   private JavaFile buildCode(List<Field<?>> fieldList, PlainSelect plainSelect) {
 
-    // Constant fields
-    List<FieldSpec> constants =
-        fieldList.stream()
-            .map(
-                f ->
-                    FieldSpec.builder(
-                            ParameterizedTypeName.get(Field.class, f.getDataType()),
-                            constantName(f.getAlias()),
-                            Modifier.PUBLIC,
-                            Modifier.STATIC)
-                        .initializer(
-                            "$T.of($S, $S, $T.class)",
-                            Field.class,
-                            f.getSqlField(),
-                            f.getAlias(),
-                            f.getDataType())
-                        .build())
-            .collect(Collectors.toList());
+    List<FieldSpec> fConstants = fieldConstants(fieldList);
 
-    // schema bolock
-    CodeBlock.Builder schemaString =
-        CodeBlock.builder().add("$S\n", plainSelect.getFromItem().toString());
+    FieldSpec fSchema = fieldSchema(plainSelect);
 
-    plainSelect.getJoins().forEach(j -> schemaString.add("          + $S\n", j.toString()));
+    FieldSpec fFields = fieldAllFields();
 
-    // schema
-    FieldSpec schema =
-        FieldSpec.builder(String.class, "schema", Modifier.PRIVATE, Modifier.FINAL)
-            .initializer(schemaString.build())
-            .build();
+    MethodSpec mConstructor = methodConstructor();
 
-    // all fields list
-    FieldSpec allFieldsList =
-        FieldSpec.builder(
-                ParameterizedTypeName.get(List.class, Field.class),
-                "fields",
-                Modifier.PRIVATE,
-                Modifier.FINAL)
-            .initializer("new $T<$T<?>>()", ArrayList.class, Field.class)
-            .build();
+    MethodSpec mInit = methodInit(fConstants, fFields);
 
-    // constructor
-    MethodSpec constructor =
-        MethodSpec.constructorBuilder()
-            .addModifiers(Modifier.PUBLIC)
-            .addStatement("init()")
-            .build();
-
-    // init()
-    MethodSpec.Builder initBuilder =
-        MethodSpec.methodBuilder("init").addModifiers(Modifier.PRIVATE);
-    for (FieldSpec field : constants) {
-      initBuilder.addStatement("$N.add($N)", allFieldsList, field);
-    }
-    MethodSpec init = initBuilder.build();
-
-    // inner Result static class
-    TypeSpec.Builder resultClassBuilder =
-        TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-    for (Field<?> f : fieldList) {
-      resultClassBuilder.addField(
-          FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PUBLIC).build());
-    }
-    TypeSpec resultClass = resultClassBuilder.build();
+    TypeSpec resultClass = resultClass(fieldList);
 
     // main query method
     MethodSpec queryMethod =
@@ -147,11 +91,11 @@ public class QueryGen {
             .addSuperinterface(
                 ParameterizedTypeName.get(
                     ClassName.get(EzyQuery.class), ClassName.get(packageName, resultClass.name)))
-            .addFields(constants)
-            .addField(schema)
-            .addField(allFieldsList)
-            .addMethod(constructor)
-            .addMethod(init)
+            .addFields(fConstants)
+            .addField(fSchema)
+            .addField(fFields)
+            .addMethod(mConstructor)
+            .addMethod(mInit)
             .addMethod(queryMethod)
             .addMethod(
                 MethodSpec.methodBuilder("getFields")
@@ -165,6 +109,79 @@ public class QueryGen {
 
     packageName = "io.github.kayr.ezyquery.gen";
     return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  private TypeSpec resultClass(List<Field<?>> fieldList) {
+    TypeSpec.Builder resultClassBuilder =
+        TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+    for (Field<?> f : fieldList) {
+      resultClassBuilder.addField(
+          FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PUBLIC).build());
+    }
+    TypeSpec resultClass = resultClassBuilder.build();
+    return resultClass;
+  }
+
+  /** Init() method */
+  private MethodSpec methodInit(List<FieldSpec> fConstants, FieldSpec fFields) {
+    MethodSpec.Builder initBuilder =
+        MethodSpec.methodBuilder("init").addModifiers(Modifier.PRIVATE);
+    for (FieldSpec field : fConstants) {
+      initBuilder.addStatement("$N.add($N)", fFields, field);
+    }
+    return initBuilder.build();
+  }
+
+  /** Constructor() method */
+  private MethodSpec methodConstructor() {
+    return MethodSpec.constructorBuilder()
+        .addModifiers(Modifier.PUBLIC)
+        .addStatement("init()")
+        .build();
+  }
+
+  /** allFields field */
+  private FieldSpec fieldAllFields() {
+    return FieldSpec.builder(
+            ParameterizedTypeName.get(List.class, Field.class),
+            "fields",
+            Modifier.PRIVATE,
+            Modifier.FINAL)
+        .initializer("new $T<$T<?>>()", ArrayList.class, Field.class)
+        .build();
+  }
+
+  /** schema field */
+  private FieldSpec fieldSchema(PlainSelect plainSelect) {
+    CodeBlock.Builder schemaString1 =
+        CodeBlock.builder().add("$S\n", plainSelect.getFromItem().toString());
+    for (Join j : plainSelect.getJoins()) {
+      schemaString1.add("          + $S\n", j.toString());
+    }
+
+    return FieldSpec.builder(String.class, "schema", Modifier.PRIVATE, Modifier.FINAL)
+        .initializer(schemaString1.build())
+        .build();
+  }
+
+  private List<FieldSpec> fieldConstants(List<Field<?>> fieldList) {
+    // Constant fields
+    return fieldList.stream()
+        .map(
+            f ->
+                FieldSpec.builder(
+                        ParameterizedTypeName.get(Field.class, f.getDataType()),
+                        constantName(f.getAlias()),
+                        Modifier.PUBLIC,
+                        Modifier.STATIC)
+                    .initializer(
+                        "$T.of($S, $S, $T.class)",
+                        Field.class,
+                        f.getSqlField(),
+                        f.getAlias(),
+                        f.getDataType())
+                    .build())
+        .collect(Collectors.toList());
   }
 
   String constantName(String name) {
@@ -188,42 +205,36 @@ public class QueryGen {
                 selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")
             .getName();
     alias = unquote(alias);
+
     String[] parts = alias.contains("_") ? alias.split("_") : new String[] {alias, "object"};
+
     String aliasName = parts[0];
-    Class<?> type = resolveType(parts[1]);
+    String typeName = parts[1];
+
+    Class<?> type = resolveType(typeName);
     String sqlField = selectItem.getExpression().toString();
     return Field.of(sqlField, aliasName, type);
   }
 
   Class<?> resolveType(String type) {
-    switch (type) {
-      case "int":
-        return Integer.class;
-      case "long":
-        return Long.class;
-      case "float":
-        return Float.class;
-      case "double":
-        return Double.class;
-      case "boolean":
-        return Boolean.class;
-      case "string":
-        return String.class;
-      case "date":
-        return java.util.Date.class;
-      case "time":
-        return java.sql.Timestamp.class;
-      case "decimal":
-        return java.math.BigDecimal.class;
-      case "bigint":
-        return java.math.BigInteger.class;
-      case "byte":
-        return Byte.class;
-      case "object":
-        return Object.class;
-      default:
-        throw new IllegalArgumentException("Unsupported type: " + type);
-    }
+    Map<String, Class<?>> typeMap = new HashMap<>();
+
+    typeMap.put("int", Integer.class);
+    typeMap.put("long", Long.class);
+    typeMap.put("float", Float.class);
+    typeMap.put("double", Double.class);
+    typeMap.put("boolean", Boolean.class);
+    typeMap.put("string", String.class);
+    typeMap.put("date", java.util.Date.class);
+    typeMap.put("time", java.sql.Timestamp.class);
+    typeMap.put("decimal", java.math.BigDecimal.class);
+    typeMap.put("bigint", java.math.BigInteger.class);
+    typeMap.put("byte", Byte.class);
+    typeMap.put("object", Object.class);
+
+    Class<?> aClass = typeMap.get(type);
+    if (aClass == null) throw new IllegalArgumentException("Unsupported type: " + type);
+    return aClass;
   }
 
   String unquote(String s) {

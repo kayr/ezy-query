@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 public class QueryGen {
 
   private final String sql;
-  private final List<Field<?>> fields = new ArrayList<>();
-  private String className;
-  private String packageName = "io.github.kayr.ezyquery.sample";
+  private final String className;
+  private final String packageName ;
 
-  public QueryGen(String sql, String className) {
+  public QueryGen(String sql, String className,String packageName) {
     this.sql = sql;
     this.className = className;
+    this.packageName = packageName;
   }
 
   public JavaFile javaCode() throws JSQLParserException {
@@ -43,8 +43,6 @@ public class QueryGen {
 
     PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
     List<Field<?>> fieldList = extractFields(plainSelect);
-    FromItem fromItem = plainSelect.getFromItem();
-    Expression defaultWhere = plainSelect.getWhere();
 
     return buildCode(fieldList, plainSelect);
   }
@@ -107,7 +105,6 @@ public class QueryGen {
             .addType(resultClass)
             .build();
 
-    packageName = "io.github.kayr.ezyquery.gen";
     return JavaFile.builder(packageName, finalClazz).build();
   }
 

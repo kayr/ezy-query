@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.api.cnd;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.ast.ParensExpr;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

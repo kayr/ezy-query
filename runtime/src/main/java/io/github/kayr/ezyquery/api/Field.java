@@ -15,6 +15,4 @@ public class Field<T> {
   public static Field<Object> of(String sqlField, String alias) {
     return of(sqlField, alias, Object.class);
   }
-
-
 }

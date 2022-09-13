@@ -24,6 +24,4 @@ public interface ICond {
   }
 
   EzyExpr asExpr();
-
-
 }

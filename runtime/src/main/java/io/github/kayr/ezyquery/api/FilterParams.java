@@ -1,7 +1,6 @@
 package io.github.kayr.ezyquery.api;
 
 import io.github.kayr.ezyquery.api.cnd.ICond;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

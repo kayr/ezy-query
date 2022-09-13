@@ -1,7 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.util.Function;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class Zql {
     List<T> data = new ArrayList<>();
     int index = 0;
     while (resultSet.next()) {
-      T t = mapper.mapRow(resultSet,columns, index++);
+      T t = mapper.mapRow(resultSet, columns, index++);
       data.add(t);
     }
     return data;

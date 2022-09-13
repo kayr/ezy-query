@@ -1,7 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.util.ReflectionUtil;
-
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.List;

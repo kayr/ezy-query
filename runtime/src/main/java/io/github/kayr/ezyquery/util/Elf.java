@@ -24,7 +24,7 @@ public class Elf {
     }
   }
 
-    public static boolean isEmpty(Collection<?> candidates) {
-        return candidates == null || candidates.isEmpty();
-    }
+  public static boolean isEmpty(Collection<?> candidates) {
+    return candidates == null || candidates.isEmpty();
+  }
 }

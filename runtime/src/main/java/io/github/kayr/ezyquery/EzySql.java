@@ -4,10 +4,9 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.Conds;
 import io.github.kayr.ezyquery.ast.EzyExpr;
-import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
+import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
-
 import java.util.List;
 
 public class EzySql {

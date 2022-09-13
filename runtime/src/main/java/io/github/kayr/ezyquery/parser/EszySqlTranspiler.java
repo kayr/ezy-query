@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.parser;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.*;
 import io.github.kayr.ezyquery.util.Elf;
-
 import java.util.*;
 import java.util.function.Function;
 
@@ -144,5 +143,4 @@ public class EszySqlTranspiler {
 
     handlers.put(clazz, function);
   }
-
 }

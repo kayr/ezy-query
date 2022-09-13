@@ -8,7 +8,6 @@ import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

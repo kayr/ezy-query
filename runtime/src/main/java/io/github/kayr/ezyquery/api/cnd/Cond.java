@@ -2,7 +2,6 @@ package io.github.kayr.ezyquery.api.cnd;
 
 import io.github.kayr.ezyquery.ast.*;
 import io.github.kayr.ezyquery.util.Elf;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,3 +1,4 @@
+/* (C)2022 */
 package io.github.kayr.ezyquery.gen;
 
 import com.squareup.javapoet.*;
@@ -6,23 +7,27 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
-
-import javax.lang.model.element.Modifier;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Generated;
+import javax.lang.model.element.Modifier;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 
 public class QueryGen {
 
   private final String sql;
   private final String className;
-  private final String packageName ;
+  private final String packageName;
 
-  public QueryGen(String sql, String className,String packageName) {
+  public QueryGen(String sql, String className, String packageName) {
     this.sql = sql;
     this.className = className;
     this.packageName = packageName;
@@ -60,6 +65,7 @@ public class QueryGen {
     MethodSpec mInit = methodInit(fConstants, fFields);
 
     TypeSpec resultClass = resultClass(fieldList);
+    ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
 
     // main query method
     MethodSpec queryMethod =
@@ -68,13 +74,13 @@ public class QueryGen {
             .addParameter(FilterParams.class, "criteria")
             .returns(QueryAndParams.class)
             .addStatement(
-                "$T builder = $T.with(fields, criteria)", SqlBuilder.class, StringBuilder.class)
+                "$T builder = $T.with(fields, criteria)", SqlBuilder.class, SqlBuilder.class)
             .addStatement("$T s = builder.selectStmt()", String.class)
             .addStatement("$T w = builder.whereStmt()", QueryAndParams.class)
             .addStatement("$T sb = new StringBuilder()", StringBuilder.class)
             .addStatement(
                 "sb.append(\"SELECT \").append(s)\n"
-                    + "  .append(\" FROM \").append(schema))\n"
+                    + "  .append(\" FROM \").append(schema)\n"
                     + "  .append(\" WHERE \").append(w)")
             .beginControlFlow("if (!criteria.isCount())")
             .addStatement("sb.append(\" LIMIT \").append(criteria.getLimit())")
@@ -83,25 +89,45 @@ public class QueryGen {
             .addStatement("return new $T(sb.toString(), w.getParams())", QueryAndParams.class)
             .build();
 
+    // result class override method
+    MethodSpec resultClassMethod =
+        MethodSpec.methodBuilder("resultClass")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Override.class)
+            .returns(ParameterizedTypeName.get(ClassName.get(Class.class), resultClassName))
+            .addStatement("    return $T.class", resultClassName)
+            .build();
+
+    // fields override method
+    MethodSpec fieldsMethod =
+        MethodSpec.methodBuilder("fields")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Override.class)
+            .returns(typeListOfFields())
+            .addStatement("return $T.emptyList()", Collections.class)
+            .build();
+
+    // the class
     TypeSpec finalClazz =
         TypeSpec.classBuilder(className)
             .addModifiers(Modifier.PUBLIC)
+            .addJavadoc(sql)
             .addSuperinterface(
-                ParameterizedTypeName.get(
-                    ClassName.get(EzyQuery.class), ClassName.get(packageName, resultClass.name)))
+                ParameterizedTypeName.get(ClassName.get(EzyQuery.class), resultClassName))
             .addFields(fConstants)
             .addField(fSchema)
             .addField(fFields)
             .addMethod(mConstructor)
             .addMethod(mInit)
             .addMethod(queryMethod)
-            .addMethod(
-                MethodSpec.methodBuilder("getFields")
-                    .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(Override.class)
-                    .returns(ParameterizedTypeName.get(List.class, Field.class))
-                    .addStatement("return $T.emptyList()", Collections.class)
+            .addAnnotation(
+                AnnotationSpec.builder(Generated.class)
+                    .addMember("value", "$S", QueryGen.class.getName())
+                    .addMember(
+                        "date", "$S", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
                     .build())
+            .addMethod(fieldsMethod)
+            .addMethod(resultClassMethod)
             .addType(resultClass)
             .build();
 
@@ -139,13 +165,22 @@ public class QueryGen {
 
   /** allFields field */
   private FieldSpec fieldAllFields() {
-    return FieldSpec.builder(
-            ParameterizedTypeName.get(List.class, Field.class),
-            "fields",
-            Modifier.PRIVATE,
-            Modifier.FINAL)
+
+    ParameterizedTypeName fListOfFields = typeListOfFields();
+
+    return FieldSpec.builder(fListOfFields, "fields", Modifier.PRIVATE, Modifier.FINAL)
         .initializer("new $T<$T<?>>()", ArrayList.class, Field.class)
         .build();
+  }
+
+  private static ParameterizedTypeName typeListOfFields() {
+    ParameterizedTypeName wildField = typeFieldWildCard();
+    return ParameterizedTypeName.get(ClassName.get(List.class), wildField);
+  }
+
+  private static ParameterizedTypeName typeFieldWildCard() {
+    WildcardTypeName wildcardTypeName = WildcardTypeName.subtypeOf(Object.class);
+    return ParameterizedTypeName.get(ClassName.get(Field.class), wildcardTypeName);
   }
 
   /** schema field */

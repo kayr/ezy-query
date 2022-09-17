@@ -1,3 +1,4 @@
+/* (C)2022 */
 package io.github.kayr.ezyquery.sample;
 
 import io.github.kayr.ezyquery.EzyQuery;
@@ -7,11 +8,10 @@ import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
-
-import javax.annotation.Generated;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Generated;
 
 @Generated(value = "EzyQuery", date = "2020-01-01T00:00:00.000+0000")
 public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
@@ -30,8 +30,7 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
           + "LEFT OUTER JOIN m_office mo_cl ON cl.office_id = mo_cl.id\n"
           + "LEFT OUTER JOIN m_office mo_grp ON grp.office_id = mo_grp.id\n";
 
-  private final List<Field<?>> fields = Arrays.asList(NAME, SEX, AGE);
-  ;
+  private final List<Field<?>> fields = Arrays.asList(NAME, SEX, AGE);;
   private ConnectionProvider connectionProvider;
 
   public static TransactionQuery from(ConnectionProvider provider) {
@@ -82,6 +81,11 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
   @Override
   public Class<Result> resultClass() {
     return Result.class;
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return null;
   }
 
   public static class Result {

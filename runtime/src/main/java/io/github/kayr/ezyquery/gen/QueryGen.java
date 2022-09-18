@@ -147,8 +147,7 @@ public class QueryGen {
       resultClassBuilder.addField(
           FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PUBLIC).build());
     }
-    TypeSpec resultClass = resultClassBuilder.build();
-    return resultClass;
+    return resultClassBuilder.build();
   }
 
   /** Init() method */

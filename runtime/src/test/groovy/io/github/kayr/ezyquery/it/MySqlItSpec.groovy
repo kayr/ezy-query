@@ -57,7 +57,9 @@ FROM offices o
                                 CustomerReps.FIELD_EMPLOYEE_OFFICE
 
 
-                        ))
+                        )
+                        )
+                .limit(10).offset(20)
         )
         println list
 

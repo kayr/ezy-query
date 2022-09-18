@@ -7,7 +7,7 @@ import io.github.kayr.ezyquery.ast.VariableExpr;
 
 public interface ICond {
 
-  public static EzyExpr expr(Object value) {
+  static EzyExpr expr(Object value) {
     if (value instanceof Field) {
       return new VariableExpr(((Field) value).getAlias());
     }

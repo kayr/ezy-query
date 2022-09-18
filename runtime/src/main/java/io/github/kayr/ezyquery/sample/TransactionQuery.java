@@ -4,7 +4,6 @@ package io.github.kayr.ezyquery.sample;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
-import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
@@ -19,6 +18,7 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
   public static final Field<Object> NAME = Field.of("c.name", "name");
   public static final Field<String> SEX = Field.of("c.sex", "sex", String.class);
   public static final Field<BigDecimal> AGE = Field.of("c.age", "age", BigDecimal.class);
+  public static final TransactionQuery Q = new TransactionQuery();
 
   private String schema =
       "m_share_account msa\n"
@@ -49,33 +49,7 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
 
   @Override
   public QueryAndParams query(FilterParams criteria) {
-
-    SqlBuilder builder = SqlBuilder.with(fields, criteria);
-
-    String s = builder.selectStmt();
-
-    QueryAndParams w = builder.whereStmt();
-
-    StringBuilder sb = new StringBuilder();
-
-    StringBuilder queryBuilder =
-        sb.append("SELECT \n")
-            .append(s)
-            .append(" FROM \n")
-            .append(schema)
-            .append(" WHERE ")
-            .append(w.getSql());
-
-    if (!criteria.isCount()) {
-      queryBuilder =
-          queryBuilder
-              .append(" LIMIT ")
-              .append(criteria.getLimit())
-              .append(" OFFSET ")
-              .append(criteria.getOffset());
-    }
-
-    return new QueryAndParams(queryBuilder.toString(), w.getParams());
+    return EzyQuery.buildQueryAndParams(criteria, fields, schema);
   }
 
   @Override

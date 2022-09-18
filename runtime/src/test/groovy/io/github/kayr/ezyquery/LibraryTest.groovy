@@ -5,6 +5,7 @@ package io.github.kayr.ezyquery
 
 import io.github.kayr.ezyquery.parser.ExprParser
 import io.github.kayr.ezyquery.parser.EzyParseException
+import org.junit.Ignore
 import spock.lang.Specification
 
 class LibraryTest extends Specification {
@@ -47,6 +48,8 @@ and 9 is null or 9 is not null
         then:
         result.trim() == "9 BETWEEN 1 AND 10 OR 9 NOT BETWEEN 1 AND 10 AND 9 is null OR 9 is not null"
     }
+
+    @spock.lang.Ignore
     def xxxxxxxxxxxxxxxx() {
 
         when:

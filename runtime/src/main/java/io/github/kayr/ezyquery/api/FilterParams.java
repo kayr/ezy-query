@@ -18,6 +18,10 @@ public class FilterParams {
   private boolean useOr = false;
   private boolean count = false;
 
+  public static FilterParams neww() {
+    return new FilterParams();
+  }
+
   public FilterParams select(String... columns) {
     this.columns.addAll(Arrays.asList(columns));
     return this;

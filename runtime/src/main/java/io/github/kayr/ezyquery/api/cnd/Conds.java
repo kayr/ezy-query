@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class Conds implements ICond {
 
-  private List<Object> conds = new ArrayList<>();
+  private final List<Object> conds = new ArrayList<>();
   private BinaryExpr.Op operator;
 
   @Override

@@ -58,6 +58,12 @@ public class QueryGen {
 
     FieldSpec fSchema = fieldSchema(plainSelect);
 
+    ClassName thisClassName = ClassName.get(packageName, className);
+    FieldSpec fSingleton =
+        FieldSpec.builder(thisClassName, "Q", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+            .initializer("new $T()", thisClassName)
+            .build();
+
     FieldSpec fFields = fieldAllFields();
 
     MethodSpec mConstructor = methodConstructor();
@@ -117,6 +123,7 @@ public class QueryGen {
             .addFields(fConstants)
             .addField(fSchema)
             .addField(fFields)
+            .addField(fSingleton)
             .addMethod(mConstructor)
             .addMethod(mInit)
             .addMethod(queryMethod)

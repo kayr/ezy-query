@@ -51,8 +51,7 @@ public class EzySql {
 
     ez.list(
         TransactionQuery.Q,
-        FilterParams.neww()
-            .selectCount()
+        FilterParams.selectCount()
             .where(
                 Cnd.or(
                     Cnd.andAll(

@@ -15,6 +15,11 @@ public class Field<T> {
     this.dataType = (Class<T>) Object.class;
   }
 
+  @Override
+  public String toString() {
+    return alias;
+  }
+
   public static <T> Field<T> of(String sqlField, String alias, Class<T> dataType) {
     return new Field<>(sqlField, alias, dataType);
   }

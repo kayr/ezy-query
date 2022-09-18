@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
+import io.github.kayr.ezyquery.ast.ParensExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
@@ -53,7 +54,11 @@ public class SqlBuilder {
       String columnName = columns.get(i);
       Field<?> theField = getFields(columnName);
 
-      selectPart.append(theField.getSqlField()).append(" as ").append(theField.getAlias());
+      selectPart
+          .append("  ")
+          .append(theField.getSqlField())
+          .append(" as ")
+          .append(theField.getAlias());
 
       if (i < size - 1) {
         selectPart.append(", ");
@@ -83,7 +88,8 @@ public class SqlBuilder {
             .reduce((l, r) -> new BinaryExpr(l, r, operator))
             .orElse(Cnd.trueCnd().asExpr());
 
-    EzyExpr combined = new BinaryExpr(stringExpr, apiExpr, BinaryExpr.Op.AND);
+    EzyExpr combined =
+        new BinaryExpr(new ParensExpr(stringExpr), new ParensExpr(apiExpr), BinaryExpr.Op.AND);
 
     // avoid statements like 1 = 1 and 7 = x
     if (Elf.isEmpty(filterParams.getConditions())) {

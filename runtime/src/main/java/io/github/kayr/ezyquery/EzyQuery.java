@@ -22,16 +22,16 @@ public interface EzyQuery<T> {
     StringBuilder queryBuilder =
         sb.append("SELECT \n")
             .append(s)
-            .append(" FROM \n")
+            .append("FROM ")
             .append(baseSchema)
-            .append(" WHERE ")
+            .append("WHERE ")
             .append(w.getSql());
 
     if (!criteria.isCount()) {
       queryBuilder =
           queryBuilder
               .append("\n")
-              .append(" LIMIT ")
+              .append("LIMIT ")
               .append(criteria.getLimit())
               .append(" OFFSET ")
               .append(criteria.getOffset());

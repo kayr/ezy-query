@@ -18,17 +18,25 @@ public class FilterParams {
   private boolean useOr = false;
   private boolean count = false;
 
-  public static FilterParams neww() {
-    return new FilterParams();
+  /** Convenience method just to better communicate the intention */
+  public static FilterParams selectAll() {
+    return select();
   }
 
-  public FilterParams select(String... columns) {
+  public static FilterParams select(String... columns) {
+    FilterParams p = new FilterParams();
+    p.addSelect(columns);
+    return p;
+  }
+
+  public static FilterParams selectCount() {
+    FilterParams p = new FilterParams();
+    p.count = true;
+    return p;
+  }
+
+  public FilterParams addSelect(String... columns) {
     this.columns.addAll(Arrays.asList(columns));
-    return this;
-  }
-
-  public FilterParams selectCount() {
-    this.count = true;
     return this;
   }
 

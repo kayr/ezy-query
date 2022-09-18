@@ -44,9 +44,21 @@ FROM offices o
 
         when:
         def list = ezql.list(CustomerReps.Q,
-                FilterParams.neww()
+                FilterParams.selectAll()
                         .where(
-                                Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME)))
+                                Cnd.or(
+                                        Cnd.andAll(
+                                                Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME),
+                                                Cnd.eq(CustomerReps.FIELD_EMPLOYEE_COUNTY, "XXX")),
+                                        Cnd.gt(CustomerReps.FIELD_EMPLOYEE_OFFICE, 20)))
+                        .where(String.format("(%s is not null and %s = 'XXX') or %s > 20",
+                                CustomerReps.FIELD_CUSTOMER_NAME,
+                                CustomerReps.FIELD_EMPLOYEE_COUNTY,
+                                CustomerReps.FIELD_EMPLOYEE_OFFICE
+
+
+                        ))
+        )
         println list
 
         then:

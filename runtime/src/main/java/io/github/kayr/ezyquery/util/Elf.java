@@ -27,4 +27,12 @@ public class Elf {
   public static boolean isEmpty(Collection<?> candidates) {
     return candidates == null || candidates.isEmpty();
   }
+
+  public static void closeQuietly(AutoCloseable con) {
+    try {
+      con.close();
+    } catch (Exception e) {
+      // ignore
+    }
+  }
 }

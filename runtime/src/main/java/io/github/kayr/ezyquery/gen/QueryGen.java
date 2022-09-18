@@ -5,8 +5,9 @@ import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
-import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,10 +28,21 @@ public class QueryGen {
   private final String className;
   private final String packageName;
 
-  public QueryGen(String sql, String className, String packageName) {
+  public QueryGen(String packageName, String className, String sql) {
     this.sql = sql;
     this.className = className;
     this.packageName = packageName;
+  }
+
+  public JavaFile writeTo(String path) {
+    return writeTo(Paths.get(path));
+  }
+
+  @lombok.SneakyThrows
+  public JavaFile writeTo(Path path) {
+    JavaFile javaFile = javaCode();
+    javaFile.writeTo(path);
+    return javaFile;
   }
 
   public JavaFile javaCode() throws JSQLParserException {
@@ -78,21 +90,8 @@ public class QueryGen {
         MethodSpec.methodBuilder("query")
             .addModifiers(Modifier.PUBLIC)
             .addParameter(FilterParams.class, "criteria")
+            .addStatement("return $T.buildQueryAndParams(criteria, fields, schema)", EzyQuery.class)
             .returns(QueryAndParams.class)
-            .addStatement(
-                "$T builder = $T.with(fields, criteria)", SqlBuilder.class, SqlBuilder.class)
-            .addStatement("$T s = builder.selectStmt()", String.class)
-            .addStatement("$T w = builder.whereStmt()", QueryAndParams.class)
-            .addStatement("$T sb = new StringBuilder()", StringBuilder.class)
-            .addStatement(
-                "sb.append(\"SELECT \").append(s)\n"
-                    + "  .append(\" FROM \").append(schema)\n"
-                    + "  .append(\" WHERE \").append(w)")
-            .beginControlFlow("if (!criteria.isCount())")
-            .addStatement("sb.append(\" LIMIT \").append(criteria.getLimit())")
-            .addStatement("sb.append(\" OFFSET \").append(criteria.getOffset())")
-            .endControlFlow()
-            .addStatement("return new $T(sb.toString(), w.getParams())", QueryAndParams.class)
             .build();
 
     // result class override method
@@ -193,9 +192,9 @@ public class QueryGen {
   /** schema field */
   private FieldSpec fieldSchema(PlainSelect plainSelect) {
     CodeBlock.Builder schemaString1 =
-        CodeBlock.builder().add("$S\n", plainSelect.getFromItem().toString());
+        CodeBlock.builder().add("$S\n", plainSelect.getFromItem().toString() + "\n");
     for (Join j : plainSelect.getJoins()) {
-      schemaString1.add("          + $S\n", j.toString());
+      schemaString1.add("          + $S\n", j.toString() + "\n");
     }
 
     return FieldSpec.builder(String.class, "schema", Modifier.PRIVATE, Modifier.FINAL)

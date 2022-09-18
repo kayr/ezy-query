@@ -67,6 +67,6 @@ public class FilterParams {
   }
 
   public boolean isCount() {
-    return columns.isEmpty();
+    return count;
   }
 }

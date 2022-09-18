@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @lombok.AllArgsConstructor
 public class SqlBuilder {
@@ -36,10 +37,13 @@ public class SqlBuilder {
   public String selectStmt() {
 
     if (filterParams.isCount()) {
-      return " COUNT(*) ";
+      return " COUNT(*) \n";
     }
 
-    List<String> columns = filterParams.getColumns();
+    List<String> columns =
+        Elf.isEmpty(filterParams.getColumns())
+            ? fields.stream().map(Field::getAlias).collect(Collectors.toList())
+            : filterParams.getColumns();
 
     StringBuilder selectPart = new StringBuilder();
 
@@ -63,17 +67,30 @@ public class SqlBuilder {
 
   public QueryAndParams whereStmt() {
 
+    if (Elf.isEmpty(filterParams.getConditions())
+        && Elf.isEmpty(filterParams.getConditionExpressions())) {
+      return EzySql.transpile(fields, Cnd.trueCnd().asExpr());
+    }
+
     EzyExpr stringExpr = combineExpressions(filterParams.getConditionExpressions());
 
     BinaryExpr.Op operator = combineOperator();
 
+    // process condition objects
     EzyExpr apiExpr =
         filterParams.getConditions().stream()
             .map(ICond::expr)
             .reduce((l, r) -> new BinaryExpr(l, r, operator))
             .orElse(Cnd.trueCnd().asExpr());
 
-    EzyExpr combined = Cnd.and(stringExpr, apiExpr).asExpr();
+    EzyExpr combined = new BinaryExpr(stringExpr, apiExpr, BinaryExpr.Op.AND);
+
+    // avoid statements like 1 = 1 and 7 = x
+    if (Elf.isEmpty(filterParams.getConditions())) {
+      combined = stringExpr;
+    } else if (Elf.isEmpty(filterParams.getConditionExpressions())) {
+      combined = apiExpr;
+    }
 
     return EzySql.transpile(fields, combined);
   }

@@ -1,8 +1,9 @@
 package io.github.kayr.ezyquery.sql;
 
-import io.github.kayr.ezyquery.util.Function;
+import io.github.kayr.ezyquery.util.Elf;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Zql {
@@ -15,25 +16,27 @@ public class Zql {
 
   @lombok.SneakyThrows
   public <T> List<T> rows(Class<T> clazz, String sql, List<Object> params) {
-    try (ResultSet resultSet = rows(sql, params)) {
-      return mapData(clazz, resultSet);
+    try (DbReSources resultSet = rows(sql, params)) {
+      return mapData(clazz, resultSet.resultSet);
     }
   }
 
   @lombok.SneakyThrows
   public <T> List<T> rows(Class<T> clazz, String sql, Object... params) {
-    try (ResultSet resultSet = rows(sql, params)) {
-      return mapData(clazz, resultSet);
+    try (DbReSources resultSet = rows(sql, params)) {
+      return mapData(clazz, resultSet.resultSet);
     }
   }
 
-  public ResultSet rows(String sql, List<Object> params) {
+  public DbReSources rows(String sql, List<Object> params) {
     return rows(sql, params.toArray());
   }
 
   @lombok.SneakyThrows
   public <T> T one(Class<T> clazz, String sql, List<Object> params) {
-    try (ResultSet resultSet = rows(sql, params)) {
+    try (DbReSources r = rows(sql, params)) {
+
+      ResultSet resultSet = r.resultSet;
 
       T result = null;
       if (resultSet.next()) {
@@ -70,13 +73,18 @@ public class Zql {
     return columns;
   }
 
-  public ResultSet rows(String sql, Object... params) {
-    return withStatement(
-        statement -> {
-          setValues(statement, params);
-          return statement.executeQuery();
-        },
-        sql);
+  @lombok.SneakyThrows
+  public DbReSources rows(String sql, Object... params) {
+
+    System.out.println("Executing Query");
+    System.out.println(sql);
+    System.out.println("Params: " + Arrays.toString(params));
+
+    Connection connection = connectionProvider.getConnection();
+    PreparedStatement statement = connection.prepareStatement(sql);
+    setValues(statement, params);
+    ResultSet resultSet = statement.executeQuery();
+    return new DbReSources(connection, statement, resultSet);
   }
 
   public static void setValues(PreparedStatement preparedStatement, Object... values)
@@ -86,35 +94,18 @@ public class Zql {
     }
   }
 
-  public <T> T withStatement(Function<PreparedStatement, T> function, String sql) {
+  @lombok.AllArgsConstructor
+  @lombok.NoArgsConstructor
+  private class DbReSources implements AutoCloseable {
+    private Connection connection;
+    private Statement statement;
+    private ResultSet resultSet;
 
-    return withConnection(
-        con -> {
-          PreparedStatement statement = con.prepareStatement(sql);
-
-          try {
-            return function.apply(statement);
-          } finally {
-            closeQuietly(statement);
-          }
-        });
-  }
-
-  @lombok.SneakyThrows
-  public <T> T withConnection(Function<Connection, T> fx) {
-    Connection con = connectionProvider.getConnection();
-    try {
-      return fx.apply(con);
-    } finally {
-      connectionProvider.closeConnection(con);
-    }
-  }
-
-  private void closeQuietly(AutoCloseable con) {
-    try {
-      con.close();
-    } catch (Exception e) {
-      // ignore
+    @Override
+    public void close() throws Exception {
+      Elf.closeQuietly(resultSet);
+      Elf.closeQuietly(statement);
+      Elf.closeQuietly(connection);
     }
   }
 }

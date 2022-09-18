@@ -33,7 +33,9 @@ class QueryGenTest extends Specification {
 
 
         when:
-        def code = new QueryGen(sql, "MyQuery","mypackage.queries").javaCode()
+        def code = new QueryGen("io.github.kayr.ezyquery.sample", "MyQuery", sql).javaCode()
+        ("/home/kayr/var/code/prsnl/ezy-query/runtime/src/main/java/io/github/kayr/ezyquery/sample/MyQuery.java" as File)
+        .text = code
         println(code)
         then:
         1 == 1
@@ -67,7 +69,7 @@ class QueryGenTest extends Specification {
 
 
         when:
-        def code = new QueryGen(sql, "MyQuery","mypackage.sql").javaCode()
+        def code = new QueryGen("mypackage.sql", "MyQuery", sql).javaCode()
         println(code)
         then:
         1 == 1

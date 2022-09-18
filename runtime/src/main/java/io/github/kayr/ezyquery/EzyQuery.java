@@ -30,6 +30,7 @@ public interface EzyQuery<T> {
     if (!criteria.isCount()) {
       queryBuilder =
           queryBuilder
+              .append("\n")
               .append(" LIMIT ")
               .append(criteria.getLimit())
               .append(" OFFSET ")

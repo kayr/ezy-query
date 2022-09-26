@@ -44,6 +44,16 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
+    testImplementation "org.testcontainers:testcontainers:1.17.3"
+    testImplementation "org.testcontainers:mysql:1.17.3"
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    testImplementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.30'
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    testImplementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3'
+
+
+
+
 
 }
 

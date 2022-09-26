@@ -140,6 +140,23 @@ public class QueryGen {
     return JavaFile.builder(packageName, finalClazz).build();
   }
 
+  private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {
+    CodeBlock.Builder toStringMethodBody = CodeBlock.builder().add("return \"$L{\"\n", className);
+
+    boolean isFirst = true;
+    for (Field<?> f : fieldList) {
+      if (isFirst) {
+        toStringMethodBody.add("+ $S + $L\n", f.getAlias() + " = ", f.getAlias());
+      } else {
+        toStringMethodBody.add("+ $S + $L\n", ", " + f.getAlias() + " = ", f.getAlias());
+      }
+      isFirst = false;
+    }
+
+    toStringMethodBody.addStatement(" + $S", "}");
+    return toStringMethodBody;
+  }
+
   private TypeSpec resultClass(List<Field<?>> fieldList) {
     TypeSpec.Builder resultClassBuilder =
         TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
@@ -147,6 +164,19 @@ public class QueryGen {
       resultClassBuilder.addField(
           FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PUBLIC).build());
     }
+
+    // to string methods
+    CodeBlock.Builder toStringMethodBody = toStringMethodBody(fieldList);
+    MethodSpec toStringMethod =
+        MethodSpec.methodBuilder("toString")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Override.class)
+            .returns(String.class)
+            .addCode(toStringMethodBody.build())
+            .build();
+
+    resultClassBuilder.addMethod(toStringMethod);
+
     return resultClassBuilder.build();
   }
 

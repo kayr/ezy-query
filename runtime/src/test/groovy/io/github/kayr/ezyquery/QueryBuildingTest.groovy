@@ -1,9 +1,10 @@
 package io.github.kayr.ezyquery
 
+import io.github.kayr.ezyquery.api.Field
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.api.cnd.Conds
-import io.github.kayr.ezyquery.api.Field
 import spock.lang.Specification
+
 
 class QueryBuildingTest extends Specification {
     def fields = [

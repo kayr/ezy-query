@@ -6,13 +6,13 @@ import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.annotation.Generated;
 import javax.lang.model.element.Modifier;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -113,6 +113,9 @@ public class QueryGen {
             .build();
 
     // the class
+
+    ClassName generatedAnnotation = resolveGeneratedAnnotation();
+
     TypeSpec finalClazz =
         TypeSpec.classBuilder(className)
             .addModifiers(Modifier.PUBLIC)
@@ -127,7 +130,7 @@ public class QueryGen {
             .addMethod(mInit)
             .addMethod(queryMethod)
             .addAnnotation(
-                AnnotationSpec.builder(Generated.class)
+                AnnotationSpec.builder(generatedAnnotation)
                     .addMember("value", "$S", QueryGen.class.getName())
                     .addMember(
                         "date", "$S", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
@@ -138,6 +141,17 @@ public class QueryGen {
             .build();
 
     return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  private static ClassName resolveGeneratedAnnotation() {
+    // if Generated annotation is available, add it
+    ClassName generatedAnnotation;
+    if (Elf.classExists("javax.annotation.Generated")) {
+      generatedAnnotation = ClassName.get("javax.annotation", "Generated");
+    } else {
+      generatedAnnotation = ClassName.get("javax.annotation.processing", "Generated");
+    }
+    return generatedAnnotation;
   }
 
   private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {

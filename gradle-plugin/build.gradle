@@ -1,0 +1,64 @@
+//abstract class GreetingToFileTask extends DefaultTask {
+//
+//    @OutputFile
+//    abstract RegularFileProperty getDestination()
+//
+//    @TaskAction
+//    def greet() {
+//        def file = getDestination().get().asFile
+//        file.parentFile.mkdirs()
+//        file.write 'Hello!'
+//    }
+//}
+//
+//def greetingFile = objects.fileProperty()
+//
+//tasks.register('greet', GreetingToFileTask) {
+//    destination = greetingFile
+//}
+//
+//tasks.register('sayGreeting') {
+//    dependsOn greet
+//    doLast {
+//        def file = greetingFile.get().asFile
+//        println "${file.text} (file: ${file.name})"
+//    }
+//}
+//
+//greetingFile.set(layout.buildDirectory.file('hello.txt'))
+
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'io.github.kayr.gradle.ezyquery'
+            implementationClass = 'io.github.kayr.gradle.ezyquery.EzyQueryPlugin'
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation gradleApi()
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId 'io.github.kayr'
+            artifactId 'gradle-ezyquery-plugin'
+            version project.version
+        }
+    }
+}

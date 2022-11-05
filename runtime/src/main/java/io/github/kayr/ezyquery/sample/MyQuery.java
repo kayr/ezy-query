@@ -23,7 +23,7 @@ import javax.annotation.Generated;
  * tr.wallet_id = mtw.id INNER JOIN m_wallet_transaction_detail td ON td.wallet_tx_request_id =
  * tr.id where 1 <> 8
  */
-@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-09-29T16:16:02.141")
+@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-11-05T17:10:56.804")
 public class MyQuery implements EzyQuery<MyQuery.Result> {
   public static Field<BigInteger> FIELD_ID = Field.of("td.id", "id", BigInteger.class);
 

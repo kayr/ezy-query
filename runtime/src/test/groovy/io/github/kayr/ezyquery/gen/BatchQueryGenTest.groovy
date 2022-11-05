@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.gen
 import spock.lang.Specification
 
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 
 class BatchQueryGenTest extends Specification {
@@ -20,14 +19,25 @@ class BatchQueryGenTest extends Specification {
         def outputDir = Files.createDirectories(inputDir.resolveSibling("sql-files-out"))
         println("outputDir: " + outputDir)
 
-        //generate and write
-        def write = new BatchQueryGen(inputDir, outputDir).generateAndWrite()
 
-
-
+        def generatedFiles = BatchQueryGen.generate(inputDir, outputDir)
+        def departmentsPath = outputDir.resolve("office/SelectDepartments.java")
+        def employeesPath = outputDir.resolve("office/SelectEmployees.java")
+        def customersPath = outputDir.resolve("SelectCustomers.java")
 
         then:
-        1 == 1
+
+        generatedFiles.size() == 3
+        generatedFiles.containsAll([departmentsPath, employeesPath, customersPath])
+
+
+        Files.exists(departmentsPath)
+        Files.exists(employeesPath)
+        Files.exists(customersPath)
+
+        departmentsPath.toFile().text.contains("package office;")
+        employeesPath.toFile().text.contains("package office;")
+        !customersPath.toFile().text.contains("package")
 
     }
 }

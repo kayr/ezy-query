@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.java.Log;
 
+@Log
 public class BatchQueryGen {
 
   private final Path inputPath;
@@ -19,17 +21,19 @@ public class BatchQueryGen {
     Elf.assertTrue(Files.isDirectory(outputPath), "Output path must be a directory");
   }
 
-  public List<Path> generateAndWrite() {
-    return readAllCode()
-        .map(this::generate)
-        .map(this::writeToJavaFile)
-        .collect(Collectors.toList());
+  public static List<Path> generate(Path inputPath, Path outputPath) {
+    BatchQueryGen gen = new BatchQueryGen(inputPath, outputPath);
+    return gen.generateAndWrite();
   }
 
-  private Path writeToJavaFile(QueryGen gen) {
+  public List<Path> generateAndWrite() {
+    return readAllCode().map(this::generate).map(this::writeJavaFile).collect(Collectors.toList());
+  }
 
-    gen.writeTo(outputPath);
-    return outputPath;
+  private Path writeJavaFile(QueryGen gen) {
+    Path path = gen.writeTo(outputPath);
+    log.info("Writing file: " + path);
+    return path;
   }
 
   private Stream<SourceCode> readAllCode() {

@@ -14,7 +14,7 @@ import javax.annotation.Generated;
  * employeeOffice, o.country AS employeeCounty FROM offices o LEFT JOIN employees e ON o.officeCode
  * = e.officeCode LEFT JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
  */
-@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-09-29T16:16:02.315")
+@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-11-05T17:10:56.978")
 public class CustomerReps implements EzyQuery<CustomerReps.Result> {
   public static Field<Object> FIELD_CUSTOMER_NAME =
       Field.of("c.customerName", "customerName", Object.class);

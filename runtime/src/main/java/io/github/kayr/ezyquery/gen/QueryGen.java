@@ -34,15 +34,14 @@ public class QueryGen {
     this.packageName = packageName;
   }
 
-  public JavaFile writeTo(String path) {
+  public Path writeTo(String path) {
     return writeTo(Paths.get(path));
   }
 
   @lombok.SneakyThrows
-  public JavaFile writeTo(Path path) {
+  public Path writeTo(Path path) {
     JavaFile javaFile = javaCode();
-    javaFile.writeTo(path);
-    return javaFile;
+    return javaFile.writeToPath(path);
   }
 
   public JavaFile javaCode() throws JSQLParserException {

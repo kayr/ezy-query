@@ -1,0 +1,42 @@
+plugins {
+    id 'groovy'
+    id 'java-library'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+
+dependencies {
+
+    implementation 'com.github.jsqlparser:jsqlparser:4.4'
+
+    // Testing
+    testImplementation 'org.codehaus.groovy:groovy:3.0.9'
+    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.testcontainers:testcontainers:1.17.3"
+    testImplementation "org.testcontainers:mysql:1.17.3"
+    testImplementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.30'
+    testImplementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3'
+
+
+    //lombok
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}

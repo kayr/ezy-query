@@ -1,0 +1,16 @@
+plugins {
+    id 'ezy-query.java-conventions'
+}
+
+
+ext {
+    artifactId = 'ezy-query-codegen'
+}
+
+
+dependencies {
+    api project(':ezy-query-core')
+    implementation 'com.squareup:javapoet:1.13.0'
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+}
+

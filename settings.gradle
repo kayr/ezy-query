@@ -8,6 +8,6 @@
  */
 
 rootProject.name = 'ezy-query'
-include('code-gen')
-include('runtime')
-include('gradle-plugin')
+include('ezy-query-core')
+include('ezy-query-codegen')
+include('ezy-query-gradle-plugin')

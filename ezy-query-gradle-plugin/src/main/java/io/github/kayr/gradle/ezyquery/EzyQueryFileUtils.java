@@ -15,6 +15,16 @@ public class EzyQueryFileUtils {
     throw (T) t;
   }
 
+  public static void createDirs(Path path) {
+    if (!Files.exists(path)) {
+      try {
+        Files.createDirectories(path);
+      } catch (IOException e) {
+        throwUnchecked(e);
+      }
+    }
+  }
+
   static void deleteFolder(final Path mainOutputDir) {
     if (Files.isDirectory(mainOutputDir)) {
       try (Stream<Path> list = Files.list(mainOutputDir)) {

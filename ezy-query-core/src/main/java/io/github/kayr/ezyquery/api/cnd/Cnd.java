@@ -79,7 +79,15 @@ public class Cnd {
     return Conds.and(conds);
   }
 
+  public static Conds all(Object... conds) {
+    return Conds.and(conds);
+  }
+
   public static Conds orAll(Object... conds) {
+    return Conds.or(conds);
+  }
+
+  public static Conds any(Object... conds) {
     return Conds.or(conds);
   }
 

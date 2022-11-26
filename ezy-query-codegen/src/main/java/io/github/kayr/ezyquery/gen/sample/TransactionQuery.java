@@ -7,11 +7,10 @@ import io.github.kayr.ezyquery.api.FilterParams;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
-
-import javax.annotation.Generated;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Generated;
 
 @Generated(value = "EzyQuery", date = "2020-01-01T00:00:00.000+0000")
 public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {

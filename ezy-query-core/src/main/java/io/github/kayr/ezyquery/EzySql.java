@@ -8,10 +8,13 @@ import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
-
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class works with the EzySQL query objects as opposed to raw Sql Strings. All the db handling
+ * is delegated to Zql with handles all the database problems.
+ */
 public class EzySql {
 
   private ConnectionProvider provider;
@@ -42,6 +45,4 @@ public class EzySql {
   public <T> List<T> list(EzyQuery<T> query) {
     return Collections.emptyList();
   }
-
-
 }

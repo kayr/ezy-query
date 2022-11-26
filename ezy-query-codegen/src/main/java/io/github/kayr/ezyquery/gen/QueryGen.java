@@ -7,6 +7,13 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -14,14 +21,6 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-
-import javax.lang.model.element.Modifier;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class QueryGen {
 
@@ -72,7 +71,7 @@ public class QueryGen {
 
     ClassName thisClassName = ClassName.get(packageName, className);
     FieldSpec fSingleton =
-        FieldSpec.builder(thisClassName, "Q", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        FieldSpec.builder(thisClassName, "QUERY", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
             .initializer("new $T()", thisClassName)
             .build();
 
@@ -266,7 +265,7 @@ public class QueryGen {
   }
 
   String constantName(String name) {
-    return "FIELD_" + toSnakeCase(name);
+    return toSnakeCase(name);
   }
 
   String toSnakeCase(String name) {

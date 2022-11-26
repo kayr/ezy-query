@@ -20,12 +20,25 @@ public class FilterParams {
 
   /** Convenience method just to better communicate the intention */
   public static FilterParams selectAll() {
-    return select();
+    return create();
   }
 
   public static FilterParams select(String... columns) {
-    FilterParams p = new FilterParams();
+    FilterParams p = create();
     p.addSelect(columns);
+    return p;
+  }
+
+  private static FilterParams create() {
+    FilterParams p = create();
+    return p;
+  }
+
+  public static FilterParams select(Field<?>... columns) {
+    FilterParams p = create();
+    for (Field<?> f : columns) {
+      p.addSelect(f.getAlias());
+    }
     return p;
   }
 
@@ -57,6 +70,12 @@ public class FilterParams {
 
   public FilterParams limit(@lombok.NonNull Integer limit) {
     this.limit = limit;
+    return this;
+  }
+
+  public FilterParams limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
+    limit(limit);
+    offset(offset);
     return this;
   }
 

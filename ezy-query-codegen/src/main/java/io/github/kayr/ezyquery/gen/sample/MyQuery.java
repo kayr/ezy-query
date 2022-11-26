@@ -4,8 +4,6 @@ import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.FilterParams;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
-
-import javax.annotation.Generated;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -13,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Generated;
 
 /**
  * SELECT td.id AS 'id_bigint', td.long_ AS 'longval_long', td.int_ AS 'intval_int', tr.float_ AS

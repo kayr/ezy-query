@@ -76,5 +76,22 @@ class QueryGenTest extends Specification {
         1 == 1
     }
 
+    def xxxxx() {
+        def sql = '''SELECT
+    c.customerName   AS customerName,
+    e.employeeNumber AS employeeRep,
+    o.addressLine1   AS employeeOffice,
+    o.country        AS employeeCounty
+FROM offices o
+    LEFT JOIN employees e ON o.officeCode = e.officeCode
+    LEFT JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber'''
+
+        when:
+        new QueryGen("io.github.kayr.ezyquery.it", "CustomerReps", sql)
+                .writeTo("/home/kayr/var/code/prsnl/ezy-query/runtime/src/test/groovy")
+
+        then:
+        1 == 1
+    }
 
 }

@@ -4,7 +4,7 @@ package io.github.kayr.ezyquery.gen;
 import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
@@ -88,7 +88,7 @@ public class QueryGen {
     MethodSpec queryMethod =
         MethodSpec.methodBuilder("query")
             .addModifiers(Modifier.PUBLIC)
-            .addParameter(FilterParams.class, "criteria")
+            .addParameter(EzyCriteria.class, "criteria")
             .addStatement("return $T.buildQueryAndParams(criteria, fields, schema)", EzyQuery.class)
             .returns(QueryAndParams.class)
             .build();

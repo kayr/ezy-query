@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @lombok.Getter
-public class FilterParams {
+public class EzyCriteria {
 
   private final List<String> columns = new ArrayList<>();
   private final List<ICond> conditions = new ArrayList<>();
@@ -19,72 +19,71 @@ public class FilterParams {
   private boolean count = false;
 
   /** Convenience method just to better communicate the intention */
-  public static FilterParams selectAll() {
+  public static EzyCriteria selectAll() {
     return create();
   }
 
-  public static FilterParams select(String... columns) {
-    FilterParams p = create();
+  public static EzyCriteria select(String... columns) {
+    EzyCriteria p = create();
     p.addSelect(columns);
     return p;
   }
 
-  private static FilterParams create() {
-    FilterParams p = create();
-    return p;
+  private static EzyCriteria create() {
+    return new EzyCriteria();
   }
 
-  public static FilterParams select(Field<?>... columns) {
-    FilterParams p = create();
+  public static EzyCriteria select(Field<?>... columns) {
+    EzyCriteria p = create();
     for (Field<?> f : columns) {
       p.addSelect(f.getAlias());
     }
     return p;
   }
 
-  public static FilterParams selectCount() {
-    FilterParams p = new FilterParams();
+  public static EzyCriteria selectCount() {
+    EzyCriteria p = new EzyCriteria();
     p.count = true;
     return p;
   }
 
-  public FilterParams addSelect(String... columns) {
+  public EzyCriteria addSelect(String... columns) {
     this.columns.addAll(Arrays.asList(columns));
     return this;
   }
 
-  public FilterParams where(ICond... conds) {
+  public EzyCriteria where(ICond... conds) {
     this.conditions.addAll(Arrays.asList(conds));
     return this;
   }
 
-  public FilterParams where(String expr) {
+  public EzyCriteria where(String expr) {
     this.conditionExpressions.add(expr);
     return this;
   }
 
-  public FilterParams offset(@lombok.NonNull Integer offset) {
+  public EzyCriteria offset(@lombok.NonNull Integer offset) {
     this.offset = offset;
     return this;
   }
 
-  public FilterParams limit(@lombok.NonNull Integer limit) {
+  public EzyCriteria limit(@lombok.NonNull Integer limit) {
     this.limit = limit;
     return this;
   }
 
-  public FilterParams limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
+  public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
     limit(limit);
     offset(offset);
     return this;
   }
 
-  public FilterParams useOr() {
+  public EzyCriteria useOr() {
     this.useOr = true;
     return this;
   }
 
-  public FilterParams useAnd() {
+  public EzyCriteria useAnd() {
     this.useOr = false;
     return this;
   }

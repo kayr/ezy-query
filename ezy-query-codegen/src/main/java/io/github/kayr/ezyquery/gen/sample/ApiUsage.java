@@ -1,7 +1,7 @@
 package io.github.kayr.ezyquery.gen.sample;
 
 import io.github.kayr.ezyquery.EzySql;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.Conds;
 import java.util.List;
@@ -14,7 +14,7 @@ public class ApiUsage {
     List<MyQuery.Result> results =
         sql.list(
             MyQuery.Q,
-            new FilterParams()
+            new EzyCriteria()
                 .where(
                     Cnd.eq(MyQuery.FIELD_BIGDECIMALVAL, 303),
                     Cnd.eq(MyQuery.FIELD_LONGVAL, 303),
@@ -27,7 +27,7 @@ public class ApiUsage {
 
     ez.list(
         TransactionQuery.Q,
-        FilterParams.selectCount()
+        EzyCriteria.selectCount()
             .where(
                 Cnd.or(
                     Cnd.andAll(

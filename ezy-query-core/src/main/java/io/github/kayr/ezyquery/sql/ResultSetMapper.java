@@ -34,6 +34,7 @@ public class ResultSetMapper<T> {
   private void setFieldValue(ResultSet rs, T obj, Field field) {
     ReflectionUtil.makeAccessible(field);
     try {
+      if(field.isSynthetic()) return;
       ReflectionUtil.setField(field, obj, rs.getObject(field.getName()));
     } catch (Exception e) {
       throw new UnsupportedOperationException("Unable to map " + targetClass.getName(), e);

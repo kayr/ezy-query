@@ -76,15 +76,20 @@ public class Zql {
   @lombok.SneakyThrows
   public DbReSources rows(String sql, Object... params) {
 
-    System.out.println("Executing Query");
-    System.out.println(sql);
-    System.out.println("Params: " + Arrays.toString(params));
-
     Connection connection = connectionProvider.getConnection();
     PreparedStatement statement = connection.prepareStatement(sql);
     setValues(statement, params);
     ResultSet resultSet = statement.executeQuery();
     return new DbReSources(connection, statement, resultSet);
+  }
+
+  @lombok.SneakyThrows
+  public Integer executeUpdate(String sql, Object... params) {
+    try(Connection connection = connectionProvider.getConnection()){
+      PreparedStatement statement = connection.prepareStatement(sql);
+      setValues(statement, params);
+      return statement.executeUpdate();
+    }
   }
 
   public static void setValues(PreparedStatement preparedStatement, Object... values)

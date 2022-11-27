@@ -165,6 +165,24 @@ class QueryBuildingTest extends Specification {
         transpiled.params == ['name', 'ronald']
     }
 
+    def 'test rendering of multiple conds'(){
+        when:
+        def expr = Cnd.all(
+                Cnd.trueCnd(),
+                Cnd.eq("name", 'ronald'),
+                Cnd.gt('#age', 20),
+                Cnd.any(
+                        Cnd.or("lastName", 'mah'),
+                        Cnd.lte("lastName1", 'mah2'),
+                        Cnd.like('#name', '%kdj%')),
+                Cnd.gt('#age', 30),
+        ).asExpr()
+
+        then:
+        expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND (lastName OR mah OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
+
+    }
+
 
 }
 

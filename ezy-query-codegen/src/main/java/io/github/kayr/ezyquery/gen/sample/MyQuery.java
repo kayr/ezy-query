@@ -2,7 +2,7 @@ package io.github.kayr.ezyquery.gen.sample;
 
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -84,7 +84,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
     fields.add(FIELD_OBJECTVAL);
   }
 
-  public QueryAndParams query(FilterParams criteria) {
+  public QueryAndParams query(EzyCriteria criteria) {
     return EzyQuery.buildQueryAndParams(criteria, fields, schema);
   }
 

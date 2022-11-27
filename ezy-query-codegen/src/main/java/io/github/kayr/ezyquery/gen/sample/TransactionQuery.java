@@ -3,7 +3,7 @@ package io.github.kayr.ezyquery.gen.sample;
 
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
@@ -48,7 +48,7 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
   }
 
   @Override
-  public QueryAndParams query(FilterParams criteria) {
+  public QueryAndParams query(EzyCriteria criteria) {
     return EzyQuery.buildQueryAndParams(criteria, fields, schema);
   }
 
@@ -68,25 +68,25 @@ public class TransactionQuery implements EzyQuery<TransactionQuery.Result> {
     public BigDecimal age;
   }
 
-  public List<Result> list(FilterParams params) {
+  public List<Result> list(EzyCriteria params) {
     Zql sql = new Zql(connectionProvider);
     QueryAndParams query = query(params);
     return sql.rows(Result.class, query.getSql(), query.getParams());
   }
 
-  public Long count(FilterParams params) {
+  public Long count(EzyCriteria params) {
     Zql sql = new Zql(connectionProvider);
-    FilterParams filterParams = params.selectCount();
+    EzyCriteria filterParams = params.selectCount();
     QueryAndParams query = query(params);
     return sql.one(Long.class, query.getSql(), query.getParams());
   }
 
-  public static List<Result> list(ConnectionProvider provider, FilterParams params) {
+  public static List<Result> list(ConnectionProvider provider, EzyCriteria params) {
     TransactionQuery query = from(provider);
     return query.list(params);
   }
 
-  public static Long count(ConnectionProvider provider, FilterParams params) {
+  public static Long count(ConnectionProvider provider, EzyCriteria params) {
     TransactionQuery query = from(provider);
     return query.count(params);
   }

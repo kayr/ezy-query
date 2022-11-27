@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 public class SqlBuilder {
 
   private final List<Field<?>> fields;
-  private final FilterParams filterParams;
+  private final EzyCriteria filterParams;
 
   private Map<String, Field<?>> fieldMap = new HashMap<>();
 
-  public SqlBuilder(List<Field<?>> fields, FilterParams filterParams) {
+  public SqlBuilder(List<Field<?>> fields, EzyCriteria filterParams) {
     this.fields = fields;
     this.filterParams = filterParams;
     for (Field<?> f : fields) {
@@ -31,7 +31,7 @@ public class SqlBuilder {
     }
   }
 
-  public static SqlBuilder with(List<Field<?>> fields, FilterParams filterParams) {
+  public static SqlBuilder with(List<Field<?>> fields, EzyCriteria filterParams) {
     return new SqlBuilder(fields, filterParams);
   }
 

@@ -1,7 +1,7 @@
 package io.github.kayr.ezyquery;
 
 import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
 import io.github.kayr.ezyquery.parser.ExprParser;
@@ -37,12 +37,16 @@ public class EzySql {
     return new EszySqlTranspiler(ezyExpr, fields).transpile();
   }
 
-  public <T> List<T> list(EzyQuery<T> query, FilterParams params) {
+  public <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
     return zql.rows(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
   }
 
   public <T> List<T> list(EzyQuery<T> query) {
     return Collections.emptyList();
+  }
+
+  public Zql getZql() {
+    return zql;
   }
 }

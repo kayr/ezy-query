@@ -1,14 +1,31 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     dependencies {
-        classpath "io.github.kayr:gradle-ezyquery-plugin:0.0.1"
+        classpath "io.github.kayr:ezy-query-gradle-plugin:0.0.1"
     }
 }
 
+
+
+plugins{
+    //java plugin
+    id 'java'
+}
 apply plugin: 'io.github.kayr.gradle.ezyquery'
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.github.kayr:ezy-query-core:0.0.1'
+    implementation 'org.jooq:jooq:3.11.9'
+}
+
 ezyQuery{
-    sqlScriptPath = "Silly.sql.path"
+//    sqlScriptPath = "Silly.sql.path"
 }

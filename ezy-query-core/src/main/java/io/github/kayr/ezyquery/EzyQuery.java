@@ -2,7 +2,7 @@
 package io.github.kayr.ezyquery;
 
 import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.FilterParams;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 public interface EzyQuery<T> {
 
   static QueryAndParams buildQueryAndParams(
-      FilterParams criteria, List<Field<?>> allFields, String baseSchema) {
+    EzyCriteria criteria, List<Field<?>> allFields, String baseSchema) {
     SqlBuilder builder = SqlBuilder.with(allFields, criteria);
 
     String s = builder.selectStmt();
@@ -40,7 +40,7 @@ public interface EzyQuery<T> {
     return new QueryAndParams(queryBuilder.toString(), w.getParams());
   }
 
-  QueryAndParams query(FilterParams params);
+  QueryAndParams query(EzyCriteria params);
 
   Class<T> resultClass();
 

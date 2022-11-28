@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.sql;
 import io.github.kayr.ezyquery.util.Elf;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Zql {
@@ -84,7 +83,7 @@ public class Zql {
 
   @lombok.SneakyThrows
   public Integer executeUpdate(String sql, Object... params) {
-    try(Connection connection = connectionProvider.getConnection()){
+    try (Connection connection = connectionProvider.getConnection()) {
       PreparedStatement statement = connection.prepareStatement(sql);
       setValues(statement, params);
       return statement.executeUpdate();

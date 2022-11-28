@@ -3,8 +3,8 @@ package io.github.kayr.ezyquery.gen;
 
 import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQuery;
-import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
@@ -131,8 +131,7 @@ public class QueryGen {
             .addAnnotation(
                 AnnotationSpec.builder(generatedAnnotation)
                     .addMember("value", "$S", QueryGen.class.getName())
-                    .addMember(
-                        "date", "$S", timeStamp())
+                    .addMember("date", "$S", timeStamp())
                     .build())
             .addMethod(fieldsMethod)
             .addMethod(resultClassMethod)

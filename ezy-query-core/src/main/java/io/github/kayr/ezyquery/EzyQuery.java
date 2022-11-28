@@ -1,8 +1,8 @@
 /* (C)2022 */
 package io.github.kayr.ezyquery;
 
-import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 public interface EzyQuery<T> {
 
   static QueryAndParams buildQueryAndParams(
-    EzyCriteria criteria, List<Field<?>> allFields, String baseSchema) {
+      EzyCriteria criteria, List<Field<?>> allFields, String baseSchema) {
     SqlBuilder builder = SqlBuilder.with(allFields, criteria);
 
     String s = builder.selectStmt();

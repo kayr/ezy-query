@@ -7,7 +7,6 @@ import org.gradle.util.GradleVersion;
 
 public class EzyQueryGradleHelper {
 
-
   static SourceSetContainer getSourceSets(Project project) {
     if (isAtLeastGradleVersion("7.1")) {
       JavaPluginExtension byType = project.getExtensions().getByType(JavaPluginExtension.class);

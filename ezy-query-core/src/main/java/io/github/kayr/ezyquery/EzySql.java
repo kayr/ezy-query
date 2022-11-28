@@ -1,7 +1,7 @@
 package io.github.kayr.ezyquery;
 
-import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
 import io.github.kayr.ezyquery.parser.ExprParser;

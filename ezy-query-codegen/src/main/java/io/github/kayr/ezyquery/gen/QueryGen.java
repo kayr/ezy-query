@@ -132,7 +132,7 @@ public class QueryGen {
                 AnnotationSpec.builder(generatedAnnotation)
                     .addMember("value", "$S", QueryGen.class.getName())
                     .addMember(
-                        "date", "$S", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                        "date", "$S", timeStamp())
                     .build())
             .addMethod(fieldsMethod)
             .addMethod(resultClassMethod)
@@ -140,6 +140,10 @@ public class QueryGen {
             .build();
 
     return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  protected String timeStamp() {
+    return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
   }
 
   private static ClassName resolveGeneratedAnnotation() {

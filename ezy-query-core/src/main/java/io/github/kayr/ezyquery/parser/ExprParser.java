@@ -17,7 +17,7 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 
-/** In the future, we can implement a custom lightweight sql parser */
+/** In the future, we could implement a custom lightweight sql parser */
 public class ExprParser {
 
   final String expression;

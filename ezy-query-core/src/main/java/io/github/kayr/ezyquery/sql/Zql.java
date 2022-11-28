@@ -55,9 +55,8 @@ public class Zql {
     List<String> columns = getColumns(resultSet);
     ResultSetMapper<T> mapper = ResultSetMapper.forClass(clazz);
     List<T> data = new ArrayList<>();
-    int index = 0;
     while (resultSet.next()) {
-      T t = mapper.mapRow(resultSet, columns, index++);
+      T t = mapper.mapRow(resultSet, columns);
       data.add(t);
     }
     return data;

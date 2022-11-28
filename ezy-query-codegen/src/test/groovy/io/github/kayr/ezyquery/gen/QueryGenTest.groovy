@@ -1,48 +1,30 @@
 package io.github.kayr.ezyquery.gen
 
-import org.junit.Ignore
+
 import spock.lang.Specification
 
 class QueryGenTest extends Specification {
     def "JavaCode"() {
 
-        def sql = '''        
-                    SELECT
-                        td.id AS 'id_bigint',
-                        td.long_ AS 'longval_long',
-                        td.int_ AS 'intval_int',
-                        tr.float_ AS 'floatval_float',
-                        maw.double_ AS 'doubleval_double',
-                        mtw.string_ AS 'stringval_string',
-                        mtw.boolean_ AS 'booleanval_boolean',
-                        tr.date_ AS 'dateval_date',
-                        tr.time AS 'timeval_time',
-                        tr.bigint_ AS 'bigintval_bigint',
-                        tr.bigdecimal_ AS 'bigdecimalval_decimal',
-                        tr.blob_ AS 'blobval_byte',
-                        tr.object_ AS 'objectval_object'
-                    FROM
-                        m_awamo_wallet maw
-                    INNER JOIN m_tenant_wallet mtw ON
-                        mtw.id = maw.wallet_id
-                    INNER JOIN w_wallet_transaction_request tr ON
-                        tr.wallet_id = mtw.id
-                    INNER JOIN m_wallet_transaction_detail td ON
-                        td.wallet_tx_request_id = tr.id
-                        where 1 <> 8'''
+        def data = load('ex1')
 
 
         when:
-//        def code = new QueryGen("io.github.kayr.ezyquery.sample", "MyQuery", sql).javaCode()
-//        ("/home/kayr/var/code/prsnl/ezy-query/runtime/src/main/java/io/github/kayr/ezyquery/sample/MyQuery.java" as File)
-//        .text = code
-//        println(code)
-        println("XXXXXXX")
+        def code = new NoTimeQueryGen("mypackage.sql", "MyQuery", data.v1).javaCode()
+        println(code.toString())
+
+
         then:
-        1 == 1
+        code.toString().trim() == data.v2.trim()
     }
 
-    @Ignore("not implemented nested classes")
+    Tuple2<String, String> load(String path) {
+        def sql = QueryGenTest.class.getResource("/generated/$path/in.sql.txt").text
+        def java = QueryGenTest.class.getResource("/generated/$path/out.java.txt").text
+        return new Tuple2(sql, java)
+    }
+
+    @spock.lang.Ignore("not implemented nested classes")
     def "JavaCode3"() {
 
         def sql = '''        SELECT
@@ -76,22 +58,5 @@ class QueryGenTest extends Specification {
         1 == 1
     }
 
-    def xxxxx() {
-        def sql = '''SELECT
-    c.customerName   AS customerName,
-    e.employeeNumber AS employeeRep,
-    o.addressLine1   AS employeeOffice,
-    o.country        AS employeeCounty
-FROM offices o
-    LEFT JOIN employees e ON o.officeCode = e.officeCode
-    LEFT JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber'''
-
-        when:
-        new QueryGen("io.github.kayr.ezyquery.it", "CustomerReps", sql)
-                .writeTo("/home/kayr/var/code/prsnl/ezy-query/runtime/src/test/groovy")
-
-        then:
-        1 == 1
-    }
 
 }

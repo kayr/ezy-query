@@ -17,7 +17,7 @@ public class ResultSetMapper<T> {
     return new ResultSetMapper<>(targetClass);
   }
 
-  public T mapRow(ResultSet rs, List<String> columns, int rowNum) {
+  public T mapRow(ResultSet rs, List<String> columns) {
     T obj = construct();
     // map object to result set
     for (String column : columns) {

@@ -41,6 +41,10 @@ public class Cond implements ICond {
     return ICond.expr(right);
   }
 
+  public BinaryExpr.Op getOperator() {
+    return operator;
+  }
+
   @SuppressWarnings({"ConstantConditions", "unchecked"})
   private List<EzyExpr> rightList() {
     Elf.assertTrue(right instanceof List, "right must be a list on expression: " + this);
@@ -52,4 +56,5 @@ public class Cond implements ICond {
   public String toString() {
     return "Cond{" + "left=" + left + ", right=" + right + ", op=" + operator + '}';
   }
+
 }

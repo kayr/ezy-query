@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -22,6 +23,13 @@ public class Elf {
     for (List<T> list : lists) {
       result.addAll(list);
     }
+    return result;
+  }
+
+  @SafeVarargs
+  public static <T> List<T> addAll(List<T> list,T... items ) {
+    List<T> result = new ArrayList<>(list);
+    result.addAll(Arrays.asList(items));
     return result;
   }
 

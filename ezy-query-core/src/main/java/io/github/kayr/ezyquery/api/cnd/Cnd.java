@@ -7,6 +7,9 @@ public class Cnd {
 
   private Cnd() {}
 
+  public static Val val(Object value) {
+    return new Val(value);
+  }
   public static Cond eq(Object left, Object right) {
     return Cond.create(left, right, BinaryExpr.Op.EQ);
   }

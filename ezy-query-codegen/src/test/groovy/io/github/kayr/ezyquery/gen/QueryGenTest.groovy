@@ -53,7 +53,6 @@ class QueryGenTest extends Specification {
 
         when:
         def code = new QueryGen("mypackage.sql", "MyQuery", sql).javaCode()
-        println(code)
         then:
         1 == 1
     }

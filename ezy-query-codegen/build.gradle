@@ -4,8 +4,11 @@ plugins {
 
 
 ext {
-    artifactId = 'ezy-query-codegen'
+    POM_ARTIFACT_ID='ezy-query-codegen'
 }
+
+
+
 
 
 dependencies {

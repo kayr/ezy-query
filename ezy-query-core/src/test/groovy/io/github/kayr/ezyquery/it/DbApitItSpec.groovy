@@ -5,7 +5,6 @@ import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import spock.lang.Specification
 
-//import org.testcontainers.db.AbstractContainerDatabaseTest;
 
 class DbApitItSpec extends Specification {
 

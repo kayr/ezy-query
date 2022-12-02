@@ -3,7 +3,7 @@ plugins {
 }
 
 ext {
-    artifactId = 'ezy-query-gradle-plugin'
+    POM_ARTIFACT_ID='ezy-query-gradle-plugin'
 }
 
 gradlePlugin {

@@ -7,7 +7,7 @@ import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Generated;
+import javax.annotation.processing.Generated;
 
 /**
  * SELECT c.customerName AS customerName, e.employeeNumber AS employeeRep, o.addressLine1 AS

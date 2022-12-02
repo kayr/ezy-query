@@ -3,7 +3,7 @@ package io.github.kayr.ezyquery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.ast.EzyExpr;
-import io.github.kayr.ezyquery.parser.EszySqlTranspiler;
+import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
@@ -34,7 +34,7 @@ public class EzySql {
   }
 
   public static QueryAndParams transpile(List<Field<?>> fields, EzyExpr ezyExpr) {
-    return new EszySqlTranspiler(ezyExpr, fields).transpile();
+    return new EzySqlTranspiler(ezyExpr, fields).transpile();
   }
 
   public <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {

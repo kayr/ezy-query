@@ -22,8 +22,10 @@ subprojects {
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'maven-publish'
     apply plugin: 'com.vanniktech.maven.publish'
+    apply plugin: 'signing'
 
 
+    group = 'io.github.kayr'
 
     repositories {
         mavenCentral()
@@ -54,7 +56,7 @@ subprojects {
                 mavenJava(MavenPublication) {
                     from components.java
                     groupId 'io.github.kayr'
-                    artifactId project.artifactId
+                    artifactId project.POM_ARTIFACT_ID
                     version project.VERSION_NAME
                 }
             }

@@ -6,12 +6,12 @@ import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.function.Function;
 
-public class EszySqlTranspiler {
+public class EzySqlTranspiler {
 
   private final EzyExpr expr;
   private final List<Field<?>> fields;
 
-  public EszySqlTranspiler(EzyExpr expr, List<Field<?>> fields) {
+  public EzySqlTranspiler(EzyExpr expr, List<Field<?>> fields) {
     this.expr = expr;
     this.fields = fields;
     initHandlers();

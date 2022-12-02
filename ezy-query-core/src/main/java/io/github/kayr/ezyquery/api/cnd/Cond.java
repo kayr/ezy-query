@@ -45,7 +45,6 @@ public class Cond implements ICond {
     return operator;
   }
 
-  @SuppressWarnings({"ConstantConditions", "unchecked"})
   private List<EzyExpr> rightList() {
     Elf.assertTrue(right instanceof List, "right must be a list on expression: " + this);
     List<Object> rightList = (List<Object>) right;

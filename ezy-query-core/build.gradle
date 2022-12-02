@@ -11,8 +11,9 @@ plugins {
 }
 
 
+
 ext {
-    artifactId = 'ezy-query-core'
+    POM_ARTIFACT_ID='ezy-query-core'
 }
 
 

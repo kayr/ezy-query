@@ -47,17 +47,7 @@ class Db {
     }
 
     def ezySql() {
-        EzySql.withProvider(new ConnectionProvider() {
-            @Override
-            Connection getConnection() {
-                return ds.connection
-            }
-
-            @Override
-            void closeConnection(Connection connection) {
-                connection.close()
-            }
-        })
+        EzySql.withProvider(ConnectionProvider.of(ds))
     }
 
     def intoDb(List<Map> data, String name) {

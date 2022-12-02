@@ -56,5 +56,4 @@ public class Cond implements ICond {
   public String toString() {
     return "Cond{" + "left=" + left + ", right=" + right + ", op=" + operator + '}';
   }
-
 }

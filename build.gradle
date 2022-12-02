@@ -1,13 +1,28 @@
 //apply plugin to all subprojects
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.20.0'
+    }
+}
+
 plugins {
     id "com.diffplug.spotless" version "6.10.0" apply false
     id "ezy-query.java-conventions"
 }
 
 
+
+
 subprojects {
+
+
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.vanniktech.maven.publish'
+
 
 
     repositories {

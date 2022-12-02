@@ -34,6 +34,7 @@ public class Conds implements ICond {
   static Conds createConds(BinaryExpr.Op or, List<Object> cond) {
     return createConds(or, cond.toArray());
   }
+
   static Conds createConds(BinaryExpr.Op or, Object[] cond) {
     Conds conds = new Conds();
     conds.operator = or;

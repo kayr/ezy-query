@@ -5,18 +5,18 @@ import io.github.kayr.ezyquery.ast.EzyExpr;
 
 public class Val implements ICond {
 
-    Object value;
+  Object value;
 
-    public Val(Object value) {
-        this.value = value;
-    }
+  public Val(Object value) {
+    this.value = value;
+  }
 
-    public static Val create(Object value) {
-        return new Val(value);
-    }
+  public static Val create(Object value) {
+    return new Val(value);
+  }
 
-    @Override
-    public EzyExpr asExpr() {
-        return new ConstExpr(value, ConstExpr.Type.ANY);
-    }
+  @Override
+  public EzyExpr asExpr() {
+    return new ConstExpr(value, ConstExpr.Type.ANY);
+  }
 }

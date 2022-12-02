@@ -27,7 +27,7 @@ public class Elf {
   }
 
   @SafeVarargs
-  public static <T> List<T> addAll(List<T> list,T... items ) {
+  public static <T> List<T> addAll(List<T> list, T... items) {
     List<T> result = new ArrayList<>(list);
     result.addAll(Arrays.asList(items));
     return result;

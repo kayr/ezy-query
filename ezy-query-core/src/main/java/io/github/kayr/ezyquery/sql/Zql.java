@@ -39,7 +39,7 @@ public class Zql {
 
       T result = null;
       if (resultSet.next()) {
-        result = resultSet.getObject(1, clazz);
+        result = (T) resultSet.getObject(1);
       }
 
       if (resultSet.next()) {

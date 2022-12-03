@@ -46,8 +46,8 @@ class Db {
         }
     }
 
-    def ezySql() {
-        EzySql.withProvider(ConnectionProvider.of(ds))
+    EzySql ezySql() {
+        EzySql.withDataSource(ds)
     }
 
     def intoDb(List<Map> data, String name) {

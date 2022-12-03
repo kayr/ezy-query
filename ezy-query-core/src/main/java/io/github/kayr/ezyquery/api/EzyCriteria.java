@@ -18,6 +18,8 @@ public class EzyCriteria {
   private boolean useOr = false;
   private boolean count = false;
 
+  // region Static methods
+
   /** Convenience method just to better communicate the intention */
   public static EzyCriteria selectAll() {
     return create();
@@ -46,53 +48,85 @@ public class EzyCriteria {
     p.count = true;
     return p;
   }
+  // endregion
 
+  // region Side effects
   public EzyCriteria addSelect(String... columns) {
-    this.columns.addAll(Arrays.asList(columns));
-    return this;
+    EzyCriteria copy = copy();
+    copy.columns.addAll(Arrays.asList(columns));
+    return copy;
   }
 
   public EzyCriteria where(ICond... conds) {
-    this.conditions.addAll(Arrays.asList(conds));
-    return this;
+    EzyCriteria copy = copy();
+    copy.conditions.addAll(Arrays.asList(conds));
+    return copy;
   }
 
   public EzyCriteria where(String expr) {
-    this.conditionExpressions.add(expr);
-    return this;
+    EzyCriteria copy = copy();
+    copy.conditionExpressions.add(expr);
+    return copy;
   }
 
   public EzyCriteria offset(@lombok.NonNull Integer offset) {
-    this.offset = offset;
-    return this;
+    EzyCriteria copy = copy();
+    copy.offset = offset;
+    return copy;
   }
 
   public EzyCriteria limit(@lombok.NonNull Integer limit) {
-    this.limit = limit;
-    return this;
+    EzyCriteria copy = copy();
+    copy.limit = limit;
+    return copy;
   }
 
   public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
-    limit(limit);
-    offset(offset);
-    return this;
+    EzyCriteria copy = copy();
+    copy.limit(limit);
+    copy.offset(offset);
+    return copy;
   }
 
   public EzyCriteria useOr() {
-    this.useOr = true;
-    return this;
+    EzyCriteria copy = copy();
+    copy.useOr = true;
+    return copy;
   }
 
   public EzyCriteria useAnd() {
-    this.useOr = false;
-    return this;
+    EzyCriteria copy = copy();
+    copy.useOr = false;
+    return copy;
   }
 
+  public EzyCriteria count() {
+    EzyCriteria copy = copy();
+    copy.count = true;
+    return copy;
+  }
+
+  // endregion
+
+  // region Read only
   public boolean isUseOr() {
     return useOr;
   }
 
   public boolean isCount() {
     return count;
+  }
+  // endregion
+
+  public EzyCriteria copy() {
+    EzyCriteria copy = new EzyCriteria();
+    copy.columns.addAll(this.columns);
+    copy.conditions.addAll(this.conditions);
+    copy.conditionExpressions.addAll(this.conditionExpressions);
+    copy.offset = this.offset;
+    copy.limit = this.limit;
+    copy.useOr = this.useOr;
+    copy.count = this.count;
+    return copy;
   }
 }

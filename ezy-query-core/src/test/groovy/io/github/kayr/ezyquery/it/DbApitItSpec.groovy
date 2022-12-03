@@ -5,7 +5,6 @@ import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import spock.lang.Specification
 
-
 class DbApitItSpec extends Specification {
 
     Db db
@@ -79,6 +78,27 @@ class DbApitItSpec extends Specification {
         list.size() == 2
 
     }
+
+    def "should be able to filter by office code objects using fluent api"() {
+        def criteria = db.ezySql()
+                .from(CustomerReps.Q)
+                .where(
+                        Cnd.all(
+                                Cnd.eq(CustomerReps.FIELD_EMPLOYEE_OFFICE_CODE, "2"),
+                                Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME)
+                        )
+                )
+                .limit(10).offset(0)
+        when:
+        def list = criteria.list()
+        def count = criteria.count()
+
+        then:
+        list.size() == 2
+        count == 2
+
+    }
+
 
     def "test i can do this"() {
 

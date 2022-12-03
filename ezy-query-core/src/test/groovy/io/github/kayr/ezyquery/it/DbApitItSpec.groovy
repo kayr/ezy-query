@@ -102,6 +102,23 @@ class DbApitItSpec extends Specification {
         result.list*.toString() == list*.toString()
 
     }
+    def "test listing data without filter criteria"() {
+        def criteria = db.ezySql()
+                .from(CustomerReps.Q)
+                .limit(5).offset(0)
+        when:
+        def list = criteria.list()
+        def count = criteria.count()
+        def result = criteria.listAndCount();
+
+        then:
+        list.size() == 5
+        count == 8
+        result.count == 8
+        result.list.size() == 5
+        result.list*.toString() == list*.toString()
+
+    }
 
 
     def "test i can do this"() {

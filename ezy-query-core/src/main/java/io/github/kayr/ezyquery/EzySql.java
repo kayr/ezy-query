@@ -130,12 +130,21 @@ public class EzySql {
       return ezySql.count(query, criteria.count());
     }
 
-    public CriteriaBuilder copy() {
-      return new CriteriaBuilder(query, ezySql, criteria.copy());
+    public EzySql.Result listAndCount() {
+      List<T> list = list();
+      Long count = count();
+      return new EzySql.Result(count, list);
     }
 
     public CriteriaBuilder<T> withCriteria(EzyCriteria criteria) {
       return new CriteriaBuilder<>(query, ezySql, criteria);
     }
+  }
+
+  @lombok.Getter
+  @lombok.AllArgsConstructor
+  public static class Result<T> {
+    private final Long count;
+    private final List<T> list;
   }
 }

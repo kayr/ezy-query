@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.it
 
-
+import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import spock.lang.Specification
@@ -92,10 +92,14 @@ class DbApitItSpec extends Specification {
         when:
         def list = criteria.list()
         def count = criteria.count()
+        def result = criteria.listAndCount();
 
         then:
         list.size() == 2
         count == 2
+        result.count == 2
+        result.list.size() == 2
+        result.list*.toString() == list*.toString()
 
     }
 

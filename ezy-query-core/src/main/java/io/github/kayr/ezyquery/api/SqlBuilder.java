@@ -89,7 +89,7 @@ public class SqlBuilder {
             .orElse(Cnd.trueCnd().asExpr());
 
     EzyExpr combined =
-        new BinaryExpr(new ParensExpr(stringExpr), new ParensExpr(apiExpr), BinaryExpr.Op.AND);
+        new BinaryExpr(new ParensExpr(stringExpr), new ParensExpr(apiExpr), operator);
 
     // avoid statements like 1 = 1 and 7 = x
     if (Elf.isEmpty(filterParams.getConditions())) {

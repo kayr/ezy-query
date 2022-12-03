@@ -27,8 +27,7 @@ public class EzyCriteria {
 
   public static EzyCriteria select(String... columns) {
     EzyCriteria p = create();
-    p.addSelect(columns);
-    return p;
+    return p.addSelect(columns);
   }
 
   private static EzyCriteria create() {
@@ -50,7 +49,7 @@ public class EzyCriteria {
   }
   // endregion
 
-  // region Side effects
+  // region Side effects but these actually create copies of the object for immutability
   public EzyCriteria addSelect(String... columns) {
     EzyCriteria copy = copy();
     copy.columns.addAll(Arrays.asList(columns));
@@ -82,10 +81,7 @@ public class EzyCriteria {
   }
 
   public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
-    EzyCriteria copy = copy();
-    copy.limit(limit);
-    copy.offset(offset);
-    return copy;
+    return copy().limit(limit).offset(offset);
   }
 
   public EzyCriteria useOr() {

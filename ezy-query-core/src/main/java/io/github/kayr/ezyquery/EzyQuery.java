@@ -23,7 +23,7 @@ public interface EzyQuery<T> {
         sb.append("SELECT \n")
             .append(s)
             .append("FROM ")
-            .append(baseSchema)
+            .append(baseSchema).append("\n")
             .append("WHERE ")
             .append(w.getSql());
 

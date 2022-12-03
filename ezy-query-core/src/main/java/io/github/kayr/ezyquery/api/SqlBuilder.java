@@ -116,6 +116,33 @@ public class SqlBuilder {
     return reduced.orElseThrow(() -> new IllegalStateException("Conditions is empty"));
   }
 
+  public String orderByStmt() {
+
+    if (Elf.isEmpty(filterParams.getSortList())) {
+      return "";
+    }
+
+    StringBuilder orderByPart = new StringBuilder();
+
+    orderByPart.append("ORDER BY ");
+
+    int size = filterParams.getSortList().size();
+    for (int i = 0; i < size; i++) {
+
+      Sort sort = filterParams.getSortList().get(i);
+
+      Field<?> theField = getFields(sort.getField());
+
+      orderByPart.append(theField.getSqlField()).append(" ").append(sort.getDir());
+
+      if (i < size - 1) {
+        orderByPart.append(", ");
+      }
+    }
+
+    return orderByPart.toString();
+  }
+
   private BinaryExpr.Op combineOperator() {
     return filterParams.isUseOr() ? BinaryExpr.Op.OR : BinaryExpr.Op.AND;
   }

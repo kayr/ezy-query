@@ -17,24 +17,31 @@ public interface EzyQuery<T> {
 
     QueryAndParams w = builder.whereStmt();
 
+    String orderBy = builder.orderByStmt();
+
     StringBuilder sb = new StringBuilder();
 
     StringBuilder queryBuilder =
         sb.append("SELECT \n")
             .append(s)
             .append("FROM ")
-            .append(baseSchema).append("\n")
+            .append(baseSchema)
+            .append("\n")
             .append("WHERE ")
             .append(w.getSql());
 
     if (!criteria.isCount()) {
-      queryBuilder =
-          queryBuilder
-              .append("\n")
-              .append("LIMIT ")
-              .append(criteria.getLimit())
-              .append(" OFFSET ")
-              .append(criteria.getOffset());
+
+      queryBuilder.append("\n");
+
+      if (!orderBy.isEmpty()) {
+        queryBuilder.append(orderBy).append("\n");
+      }
+      queryBuilder
+          .append("LIMIT ")
+          .append(criteria.getLimit())
+          .append(" OFFSET ")
+          .append(criteria.getOffset());
     }
 
     return new QueryAndParams(queryBuilder.toString(), w.getParams());

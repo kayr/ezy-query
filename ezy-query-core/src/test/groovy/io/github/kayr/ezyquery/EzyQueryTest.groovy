@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery
 
 import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.Field
+import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import spock.lang.Specification
 
@@ -59,7 +60,7 @@ class EzyQueryTest extends Specification {
         when:
         def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), fields, "my_table")
 
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria.useOr().useAnd(), fields, "my_table")
 
         then:
         query.sql == 'SELECT \n' +
@@ -220,6 +221,71 @@ class EzyQueryTest extends Specification {
                 '  t.age as age\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == [1, 1]
+
+    }
+
+    def "test builds select query with order by clause"() {
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .limit(15)
+                .orderBy(
+                        Sort.by('name', Sort.DIR.ASC),
+                        Sort.by('age', Sort.DIR.DESC))
+
+        when:
+        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+
+        then:
+        query.sql == 'SELECT \n' +
+                '  t.name as name, \n' +
+                '  t.age as age\n' +
+                'FROM my_table\n' +
+                'WHERE ? = ?\n' +
+                'ORDER BY t.name ASC, t.age DESC\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == [1, 1]
+
+    }
+
+    def "test builds select query with order by clause using strings"() {
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .limit(15)
+                .orderBy('name', 'age')
+
+        when:
+        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+
+        then:
+        query.sql == 'SELECT \n' +
+                '  t.name as name, \n' +
+                '  t.age as age\n' +
+                'FROM my_table\n' +
+                'WHERE ? = ?\n' +
+                'ORDER BY t.name ASC, t.age ASC\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == [1, 1]
+
+    }
+
+    def "test builds select query with order by clause using one string"() {
+
+        def criteria = EzyCriteria.select('name','age')
+                .limit(15)
+                .orderBy('name')
+
+        when:
+        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+
+        then:
+        query.sql == 'SELECT \n' +
+                '  t.name as name, \n' +
+                '  t.age as age\n' +
+                'FROM my_table\n' +
+                'WHERE ? = ?\n' +
+                'ORDER BY t.name ASC\n' +
                 'LIMIT 15 OFFSET 0'
         query.params == [1, 1]
 

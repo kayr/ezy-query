@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 public class SqlBuilder {
 
   private final List<Field<?>> fields;
-  private final EzyCriteria filterParams;
+  private final EzyCriteria ezyCriteria;
 
   private Map<String, Field<?>> fieldMap = new HashMap<>();
 
-  public SqlBuilder(List<Field<?>> fields, EzyCriteria filterParams) {
+  public SqlBuilder(List<Field<?>> fields, EzyCriteria ezyCriteria) {
     this.fields = fields;
-    this.filterParams = filterParams;
+    this.ezyCriteria = ezyCriteria;
     for (Field<?> f : fields) {
       fieldMap.put(f.getAlias(), f);
     }
@@ -37,14 +37,14 @@ public class SqlBuilder {
 
   public String selectStmt() {
 
-    if (filterParams.isCount()) {
+    if (ezyCriteria.isCount()) {
       return " COUNT(*) \n";
     }
 
     List<String> columns =
-        Elf.isEmpty(filterParams.getColumns())
+        Elf.isEmpty(ezyCriteria.getColumns())
             ? fields.stream().map(Field::getAlias).collect(Collectors.toList())
-            : filterParams.getColumns();
+            : ezyCriteria.getColumns();
 
     StringBuilder selectPart = new StringBuilder();
 
@@ -72,18 +72,18 @@ public class SqlBuilder {
 
   public QueryAndParams whereStmt() {
 
-    if (Elf.isEmpty(filterParams.getConditions())
-        && Elf.isEmpty(filterParams.getConditionExpressions())) {
+    if (Elf.isEmpty(ezyCriteria.getConditions())
+        && Elf.isEmpty(ezyCriteria.getConditionExpressions())) {
       return EzySql.transpile(fields, Cnd.trueCnd().asExpr());
     }
 
-    EzyExpr stringExpr = combineExpressions(filterParams.getConditionExpressions());
+    EzyExpr stringExpr = combineExpressions(ezyCriteria.getConditionExpressions());
 
     BinaryExpr.Op operator = combineOperator();
 
     // process condition objects
     EzyExpr apiExpr =
-        filterParams.getConditions().stream()
+        ezyCriteria.getConditions().stream()
             .map(ICond::expr)
             .reduce((l, r) -> new BinaryExpr(l, r, operator))
             .orElse(Cnd.trueCnd().asExpr());
@@ -92,9 +92,9 @@ public class SqlBuilder {
         new BinaryExpr(new ParensExpr(stringExpr), new ParensExpr(apiExpr), operator);
 
     // avoid statements like 1 = 1 and 7 = x
-    if (Elf.isEmpty(filterParams.getConditions())) {
+    if (Elf.isEmpty(ezyCriteria.getConditions())) {
       combined = stringExpr;
-    } else if (Elf.isEmpty(filterParams.getConditionExpressions())) {
+    } else if (Elf.isEmpty(ezyCriteria.getConditionExpressions())) {
       combined = apiExpr;
     }
 
@@ -118,7 +118,7 @@ public class SqlBuilder {
 
   public String orderByStmt() {
 
-    if (Elf.isEmpty(filterParams.getSortList())) {
+    if (Elf.isEmpty(ezyCriteria.getSorts())) {
       return "";
     }
 
@@ -126,10 +126,10 @@ public class SqlBuilder {
 
     orderByPart.append("ORDER BY ");
 
-    int size = filterParams.getSortList().size();
+    int size = ezyCriteria.getSorts().size();
     for (int i = 0; i < size; i++) {
 
-      Sort sort = filterParams.getSortList().get(i);
+      Sort sort = ezyCriteria.getSorts().get(i);
 
       Field<?> theField = getFields(sort.getField());
 
@@ -144,7 +144,7 @@ public class SqlBuilder {
   }
 
   private BinaryExpr.Op combineOperator() {
-    return filterParams.isUseOr() ? BinaryExpr.Op.OR : BinaryExpr.Op.AND;
+    return ezyCriteria.isUseOr() ? BinaryExpr.Op.OR : BinaryExpr.Op.AND;
   }
 
   private Field<?> getFields(String alias) {

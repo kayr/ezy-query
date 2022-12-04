@@ -3,6 +3,7 @@ package io.github.kayr.ezyquery.api;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,7 @@ public class EzyCriteria {
   private final List<ICond> conditions = new ArrayList<>();
   private final List<String> conditionExpressions = new ArrayList<>();
 
-  private final List<Sort> sortList = new ArrayList<>();
+  private final List<Sort> sorts = new ArrayList<>();
 
   private Integer offset = 0;
   private Integer limit = 50;
@@ -107,7 +108,7 @@ public class EzyCriteria {
 
   public EzyCriteria orderBy(Sort... sort) {
     EzyCriteria copy = copy();
-    copy.sortList.addAll(Arrays.asList(sort));
+    copy.sorts.addAll(Arrays.asList(sort));
     return copy;
   }
 
@@ -115,7 +116,7 @@ public class EzyCriteria {
     EzyCriteria copy = copy();
     List<Sort> collect =
         Arrays.stream(sort).map(s -> Sort.by(s, Sort.DIR.ASC)).collect(Collectors.toList());
-    copy.sortList.addAll(collect);
+    copy.sorts.addAll(collect);
     return copy;
   }
 
@@ -129,6 +130,23 @@ public class EzyCriteria {
   public boolean isCount() {
     return count;
   }
+
+  public List<String> getColumns() {
+    return Collections.unmodifiableList(columns);
+  }
+
+  public List<ICond> getConditions() {
+    return Collections.unmodifiableList(conditions);
+  }
+
+  public List<String> getConditionExpressions() {
+    return Collections.unmodifiableList(conditionExpressions);
+  }
+
+  public List<Sort> getSorts() {
+    return Collections.unmodifiableList(sorts);
+  }
+
   // endregion
 
   public EzyCriteria copy() {
@@ -136,7 +154,7 @@ public class EzyCriteria {
     copy.columns.addAll(this.columns);
     copy.conditions.addAll(this.conditions);
     copy.conditionExpressions.addAll(this.conditionExpressions);
-    copy.sortList.addAll(this.sortList);
+    copy.sorts.addAll(this.sorts);
     copy.offset = this.offset;
     copy.limit = this.limit;
     copy.useOr = this.useOr;

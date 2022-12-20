@@ -157,7 +157,7 @@ public class QueryGen {
   }
 
   private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {
-    CodeBlock.Builder toStringMethodBody = CodeBlock.builder().add("return \"$L{\"\n", className);
+    CodeBlock.Builder toStringMethodBody = CodeBlock.builder().add("return \"$L.Result{\"\n", className);
 
     boolean isFirst = true;
     for (Field<?> f : fieldList) {
@@ -178,7 +178,17 @@ public class QueryGen {
         TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
     for (Field<?> f : fieldList) {
       resultClassBuilder.addField(
-          FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PUBLIC).build());
+          FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
+    }
+
+    //add getters
+    for (Field<?> f : fieldList) {
+      resultClassBuilder.addMethod(
+          MethodSpec.methodBuilder(toGetterName(f.getAlias()))
+              .addModifiers(Modifier.PUBLIC)
+              .returns(f.getDataType())
+              .addStatement("return $L", f.getAlias())
+              .build());
     }
 
     // to string methods
@@ -194,6 +204,10 @@ public class QueryGen {
     resultClassBuilder.addMethod(toStringMethod);
 
     return resultClassBuilder.build();
+  }
+
+  private static String toGetterName(String fieldName) {
+    return "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
   }
 
   /** Init() method */

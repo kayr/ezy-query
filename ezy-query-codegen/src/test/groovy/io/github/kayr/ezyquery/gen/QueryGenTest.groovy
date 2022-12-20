@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.gen
 
-
+import org.junit.Assert
 import spock.lang.Specification
 
 class QueryGenTest extends Specification {
@@ -11,8 +11,6 @@ class QueryGenTest extends Specification {
 
         when:
         def code = new NoTimeQueryGen("mypackage.sql", "MyQuery", data.v1).javaCode()
-        println(code.toString())
-
 
         then:
         code.toString().trim() == data.v2.trim()

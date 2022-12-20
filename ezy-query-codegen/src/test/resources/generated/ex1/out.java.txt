@@ -124,35 +124,87 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   public static class Result {
-    public BigInteger id;
+    private BigInteger id;
 
-    public Long longval;
+    private Long longval;
 
-    public Integer intval;
+    private Integer intval;
 
-    public Float floatval;
+    private Float floatval;
 
-    public Double doubleval;
+    private Double doubleval;
 
-    public String stringval;
+    private String stringval;
 
-    public Boolean booleanval;
+    private Boolean booleanval;
 
-    public Date dateval;
+    private Date dateval;
 
-    public Timestamp timeval;
+    private Timestamp timeval;
 
-    public BigInteger bigintval;
+    private BigInteger bigintval;
 
-    public BigDecimal bigdecimalval;
+    private BigDecimal bigdecimalval;
 
-    public Byte blobval;
+    private Byte blobval;
 
-    public Object objectval;
+    private Object objectval;
+
+    public BigInteger getId() {
+      return id;
+    }
+
+    public Long getLongval() {
+      return longval;
+    }
+
+    public Integer getIntval() {
+      return intval;
+    }
+
+    public Float getFloatval() {
+      return floatval;
+    }
+
+    public Double getDoubleval() {
+      return doubleval;
+    }
+
+    public String getStringval() {
+      return stringval;
+    }
+
+    public Boolean getBooleanval() {
+      return booleanval;
+    }
+
+    public Date getDateval() {
+      return dateval;
+    }
+
+    public Timestamp getTimeval() {
+      return timeval;
+    }
+
+    public BigInteger getBigintval() {
+      return bigintval;
+    }
+
+    public BigDecimal getBigdecimalval() {
+      return bigdecimalval;
+    }
+
+    public Byte getBlobval() {
+      return blobval;
+    }
+
+    public Object getObjectval() {
+      return objectval;
+    }
 
     @Override
     public String toString() {
-      return "MyQuery{"
+      return "MyQuery.Result{"
       + "id = " + id
       + ", longval = " + longval
       + ", intval = " + intval

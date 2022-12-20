@@ -8,6 +8,8 @@ publish:
 publishLocal:
 	./gradlew clean build publishMavenPublicationToMavenLocal
 
+doBuild:
+	./gradlew clean build --no-daemon
 
 publishClose:
 	./gradlew closeAndReleaseRepository

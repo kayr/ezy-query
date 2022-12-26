@@ -36,6 +36,8 @@ public class EzyQueryBuildTask extends DefaultTask {
 
       if (!ezyQueryDir.isPresent()) continue;
 
+      if (!ezyQueryDir.get().exists()) continue;
+
       File directory = resolveOutputDirectory(sourceSet);
 
       EzyQueryFileUtils.createDirs(directory.toPath());

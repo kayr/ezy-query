@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.github.kayr:ezy-query-gradle-plugin:0.0.1"
+        classpath "io.github.kayr:ezy-query-gradle-plugin:0.0.1.1"
     }
 }
 

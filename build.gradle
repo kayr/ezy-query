@@ -14,8 +14,6 @@ plugins {
 }
 
 
-
-
 subprojects {
 
 
@@ -49,7 +47,6 @@ subprojects {
         }
     }
 
-
     project.afterEvaluate {
         publishing {
             publications {
@@ -60,7 +57,14 @@ subprojects {
                     version project.VERSION_NAME
                 }
             }
+            repositories {
+                maven {
+                    def userHome = System.properties['user.home']
+                    url = "file:/${userHome}/.m2/repository/"
+                }
+
+            }
+
         }
     }
-
 }

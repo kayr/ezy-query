@@ -10,7 +10,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.github.kayr:ezy-query-codegen:0.0.2"
+        classpath "io.github.kayr:ezy-query-gradle-plugin:0.0.2"
     }
 }
 

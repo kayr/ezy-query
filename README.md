@@ -17,7 +17,7 @@ buildscript {
 apply plugin: 'io.github.kayr.gradle.ezyquery'
 
 dependencies {
-    implementation 'io.github.kayr:ezy-query-core:0.0.1'
+    implementation 'io.github.kayr:ezy-query-core:0.0.2'
 }
 ```
 

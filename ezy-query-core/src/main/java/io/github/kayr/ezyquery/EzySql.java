@@ -23,14 +23,12 @@ import lombok.NonNull;
  */
 public class EzySql {
 
-  private ConnectionProvider provider;
   private Zql zql;
 
   private EzySql() {}
 
   public static EzySql withProvider(ConnectionProvider connectionProvider) {
     EzySql ezySql = new EzySql();
-    ezySql.provider = connectionProvider;
     ezySql.zql = new Zql(connectionProvider);
     return ezySql;
   }

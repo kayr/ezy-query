@@ -53,12 +53,17 @@ public class CustomerReps implements EzyQuery<CustomerReps.Result> {
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
-    return EzyQuery.buildQueryAndParams(criteria, fields, schema);
+    return EzyQuery.buildQueryAndParams(criteria, this);
   }
 
   @Override
   public List<Field<?>> fields() {
-    return Collections.emptyList();
+    return Collections.unmodifiableList(fields);
+  }
+
+  @Override
+  public String schema() {
+    return this.schema;
   }
 
   @Override

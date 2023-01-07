@@ -89,7 +89,7 @@ public class QueryGen {
         MethodSpec.methodBuilder("query")
             .addModifiers(Modifier.PUBLIC)
             .addParameter(EzyCriteria.class, "criteria")
-            .addStatement("return $T.buildQueryAndParams(criteria, fields, schema)", EzyQuery.class)
+            .addStatement("return $T.buildQueryAndParams(criteria, this)", EzyQuery.class)
             .returns(QueryAndParams.class)
             .build();
 
@@ -111,6 +111,19 @@ public class QueryGen {
             .addStatement("return $T.emptyList()", Collections.class)
             .build();
 
+    // where override method
+    MethodSpec whereMethod =
+        MethodSpec.methodBuilder("whereClause")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Override.class)
+            .returns(ParameterizedTypeName.get(Optional.class, String.class))
+            .addStatement(
+                plainSelect.getWhere() == null
+                    ? "return Optional.empty()"
+                    : "return Optional.of($S)",
+                plainSelect.getWhere())
+            .build();
+
     // the class
 
     ClassName generatedAnnotation = resolveGeneratedAnnotation();
@@ -128,6 +141,7 @@ public class QueryGen {
             .addMethod(mConstructor)
             .addMethod(mInit)
             .addMethod(queryMethod)
+            .addMethod(whereMethod)
             .addAnnotation(
                 AnnotationSpec.builder(generatedAnnotation)
                     .addMember("value", "$S", QueryGen.class.getName())

@@ -4,6 +4,7 @@ import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.Field
 import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.cnd.Cnd
+import io.github.kayr.ezyquery.parser.QueryAndParams
 import spock.lang.Specification
 
 class EzyQueryTest extends Specification {
@@ -15,6 +16,28 @@ class EzyQueryTest extends Specification {
             new Field('t.maxAge', 'maxAge')
     ]
 
+    def ezyQuery = new EzyQuery() {
+        @Override
+        QueryAndParams query(EzyCriteria params) {
+            return null
+        }
+
+        @Override
+        Class resultClass() {
+            return null
+        }
+
+        @Override
+        List<Field<?>> fields() {
+            return fields
+        }
+
+        @Override
+        String schema() {
+            return "my_table"
+        }
+    }
+
     def "test build with a filter"() {
 
 
@@ -23,10 +46,12 @@ class EzyQueryTest extends Specification {
                 .where("age >  20")
                 .limit(10, 2)
 
-        when:
-        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), fields, "my_table")
 
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+
+        when:
+        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), ezyQuery)
+
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -58,9 +83,9 @@ class EzyQueryTest extends Specification {
                 .limit(10, 2)
 
         when:
-        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), fields, "my_table")
+        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), ezyQuery)
 
-        def query = EzyQuery.buildQueryAndParams(criteria.useOr().useAnd(), fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria.useOr().useAnd(), ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -94,9 +119,9 @@ class EzyQueryTest extends Specification {
                 .limit(10, 2)
 
         when:
-        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), fields, "my_table")
+        def orQuery = EzyQuery.buildQueryAndParams(criteria.useOr(), ezyQuery)
 
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -126,7 +151,7 @@ class EzyQueryTest extends Specification {
                 .limit(10, 2)
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -148,7 +173,7 @@ class EzyQueryTest extends Specification {
                 .offset(2)
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -175,7 +200,7 @@ class EzyQueryTest extends Specification {
                 .limit(15)
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -196,7 +221,7 @@ class EzyQueryTest extends Specification {
                 .limit(15)
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -213,7 +238,7 @@ class EzyQueryTest extends Specification {
                 .limit(15)
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -235,7 +260,7 @@ class EzyQueryTest extends Specification {
                         Sort.by('age', Sort.DIR.DESC))
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -256,7 +281,7 @@ class EzyQueryTest extends Specification {
                 .orderBy('name', 'age')
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -277,7 +302,7 @@ class EzyQueryTest extends Specification {
                 .orderBy('name')
 
         when:
-        def query = EzyQuery.buildQueryAndParams(criteria, fields, "my_table")
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQuery)
 
         then:
         query.sql == 'SELECT \n' +
@@ -285,6 +310,57 @@ class EzyQueryTest extends Specification {
                 '  t.age as age\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
+                'ORDER BY t.name ASC\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == [1, 1]
+
+    }
+
+    def "test builds select query with default where clause"() {
+
+        def ezyQueryWithWhere = new EzyQuery() {
+            @Override
+            QueryAndParams query(EzyCriteria params) {
+                return null
+            }
+
+            @Override
+            Class resultClass() {
+                return null
+            }
+
+            @Override
+            List<Field<?>> fields() {
+                return fields
+            }
+
+            @Override
+            String schema() {
+                return "my_table"
+            }
+
+            @Override
+            Optional<String> whereClause() {
+                return Optional.of('t.name = 123')
+            }
+        }
+
+
+        def criteria = EzyCriteria.select('name','age')
+                .limit(15)
+                .orderBy('name')
+
+        when:
+        def query = EzyQuery.buildQueryAndParams(criteria, ezyQueryWithWhere)
+
+
+        def generatedSql = query.sql
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as name, \n' +
+                '  t.age as age\n' +
+                'FROM my_table\n' +
+                'WHERE (t.name = 123) AND (? = ?)\n' +
                 'ORDER BY t.name ASC\n' +
                 'LIMIT 15 OFFSET 0'
         query.params == [1, 1]

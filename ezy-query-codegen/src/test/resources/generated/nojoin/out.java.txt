@@ -11,6 +11,7 @@ import java.lang.String;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.processing.Generated;
 
 /**
@@ -46,7 +47,12 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
-    return EzyQuery.buildQueryAndParams(criteria, fields, schema);
+    return EzyQuery.buildQueryAndParams(criteria, this);
+  }
+
+  @Override
+  public Optional<String> whereClause() {
+    return Optional.empty();
   }
 
   @Override

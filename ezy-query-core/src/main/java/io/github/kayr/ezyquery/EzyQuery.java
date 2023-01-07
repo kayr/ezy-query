@@ -6,12 +6,12 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.util.List;
+import java.util.Optional;
 
 public interface EzyQuery<T> {
 
-  static QueryAndParams buildQueryAndParams(
-      EzyCriteria criteria, List<Field<?>> allFields, String baseSchema) {
-    SqlBuilder builder = SqlBuilder.with(allFields, criteria);
+  static QueryAndParams buildQueryAndParams(EzyCriteria criteria, EzyQuery<?> query) {
+    SqlBuilder builder = SqlBuilder.with(query.fields(), criteria);
 
     String s = builder.selectStmt();
 
@@ -25,10 +25,21 @@ public interface EzyQuery<T> {
         sb.append("SELECT \n")
             .append(s)
             .append("FROM ")
-            .append(baseSchema)
+            .append(query.schema())
             .append("\n")
-            .append("WHERE ")
-            .append(w.getSql());
+            .append("WHERE ");
+
+    Optional<String> whereClause = query.whereClause();
+    if (whereClause.isPresent()) {
+      queryBuilder
+          .append("(")
+          .append(whereClause.get())
+          .append(") AND (")
+          .append(w.getSql())
+          .append(")");
+    } else {
+      queryBuilder.append(w.getSql());
+    }
 
     if (!criteria.isCount()) {
 
@@ -52,4 +63,10 @@ public interface EzyQuery<T> {
   Class<T> resultClass();
 
   List<Field<?>> fields();
+
+  String schema();
+
+  default Optional<String> whereClause() {
+    return Optional.empty();
+  }
 }

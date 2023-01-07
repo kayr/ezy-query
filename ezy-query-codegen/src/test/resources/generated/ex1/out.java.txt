@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -115,13 +114,18 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   @Override
+  public String schema() {
+    return this.schema;
+  }
+
+  @Override
   public Optional<String> whereClause() {
     return Optional.of("1 <> 8");
   }
 
   @Override
   public List<Field<?>> fields() {
-    return Collections.emptyList();
+    return this.fields;
   }
 
   @Override

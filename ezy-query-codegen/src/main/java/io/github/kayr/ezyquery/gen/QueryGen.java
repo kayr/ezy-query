@@ -108,7 +108,16 @@ public class QueryGen {
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
             .returns(typeListOfFields())
-            .addStatement("return $T.emptyList()", Collections.class)
+            .addStatement("return this.fields")
+            .build();
+
+    // schema override method
+    MethodSpec schemaMethod =
+        MethodSpec.methodBuilder("schema")
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(Override.class)
+            .returns(String.class)
+            .addStatement("return this.schema")
             .build();
 
     // where override method
@@ -141,6 +150,7 @@ public class QueryGen {
             .addMethod(mConstructor)
             .addMethod(mInit)
             .addMethod(queryMethod)
+            .addMethod(schemaMethod)
             .addMethod(whereMethod)
             .addAnnotation(
                 AnnotationSpec.builder(generatedAnnotation)

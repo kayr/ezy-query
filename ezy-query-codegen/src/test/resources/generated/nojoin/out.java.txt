@@ -9,7 +9,6 @@ import java.lang.Double;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.processing.Generated;
@@ -51,13 +50,18 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   @Override
+  public String schema() {
+    return this.schema;
+  }
+
+  @Override
   public Optional<String> whereClause() {
     return Optional.empty();
   }
 
   @Override
   public List<Field<?>> fields() {
-    return Collections.emptyList();
+    return this.fields;
   }
 
   @Override

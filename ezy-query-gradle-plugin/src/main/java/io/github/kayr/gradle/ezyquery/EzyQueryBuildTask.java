@@ -3,7 +3,6 @@ package io.github.kayr.gradle.ezyquery;
 import io.github.kayr.ezyquery.gen.BatchQueryGen;
 import java.io.File;
 import java.util.Optional;
-import java.util.Set;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.logging.LogLevel;
@@ -32,7 +31,7 @@ public class EzyQueryBuildTask extends DefaultTask {
 
     for (SourceSet sourceSet : sourceSets) {
 
-      Optional<File> ezyQueryDir = findEzyQuerySourceDirectory(sourceSet);
+      Optional<File> ezyQueryDir = EzyQueryGradleHelper.findEzyQuerySourceDirectory(sourceSet);
 
       if (!ezyQueryDir.isPresent()) continue;
 
@@ -50,11 +49,6 @@ public class EzyQueryBuildTask extends DefaultTask {
 
       batchQueryGen.generateAndWrite();
     }
-  }
-
-  private static Optional<File> findEzyQuerySourceDirectory(SourceSet sourceSet) {
-    Set<File> srcDirs = sourceSet.getResources().getSrcDirs();
-    return srcDirs.stream().filter(f -> f.getName().equals("ezyquery")).findFirst();
   }
 
   private File resolveOutputDirectory(SourceSet sourceSet) {

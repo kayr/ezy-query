@@ -11,9 +11,8 @@ plugins {
 }
 
 
-
 ext {
-    POM_ARTIFACT_ID='ezy-query-core'
+    POM_ARTIFACT_ID = 'ezy-query-core'
 }
 
 
@@ -22,4 +21,11 @@ dependencies {
     testImplementation group: 'com.h2database', name: 'h2', version: '2.1.214'
     testImplementation 'io.github.kayr:fuzzy-csv:1.8.1-groovy3'
 
+}
+
+task writeVersion(type: Copy) {
+    from 'src/main/java/io/github/kayr/ezyquery/EzyQueryVersion.java.in'
+    into 'src/main/java/io/github/kayr/ezyquery/'
+    expand(version: project.version)
+    rename { String fileName -> fileName.replace('.in', '') }
 }

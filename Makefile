@@ -2,7 +2,7 @@
 start:
 	@echo "Enter the target name"
 
-publish:
+publish: writeVersion format
 	./gradlew clean build publish --no-daemon
 
 publishClose:
@@ -18,8 +18,11 @@ publishCleanLocal:
 	rm -rf ~/.m2/repository/io/github/kayr/ezy-query-core/
 	rm -rf ~/.m2/repository/io/github/kayr/ezy-query-gradle-plugin/
 
-doBuild:
+doBuild: format
 	./gradlew clean build --no-daemon
 
-format:
+format: writeVersion
 	./gradlew spotlessApply
+
+writeVersion:
+	./gradlew writeVersion

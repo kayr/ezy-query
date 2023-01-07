@@ -1,0 +1,83 @@
+package mypackage.sql;
+
+import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import java.lang.Class;
+import java.lang.Double;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.processing.Generated;
+
+/**
+ * SELECT
+ *     maw.double_ AS 'doubleval_double',
+ *     maw.double_ AS 'doubleval2_double'
+ * FROM
+ *     m_awamo_wallet maw
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class MyQuery implements EzyQuery<MyQuery.Result> {
+  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class);
+
+  public static Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class);
+
+  public static final MyQuery QUERY = new MyQuery();
+
+  private final String schema = "m_awamo_wallet maw\n"
+  ;
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  public MyQuery() {
+    init();
+  }
+
+  private void init() {
+    fields.add(DOUBLEVAL);
+    fields.add(DOUBLEVAL2);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return EzyQuery.buildQueryAndParams(criteria, fields, schema);
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+        return Result.class;
+  }
+
+  public static class Result {
+    private Double doubleval;
+
+    private Double doubleval2;
+
+    public Double getDoubleval() {
+      return doubleval;
+    }
+
+    public Double getDoubleval2() {
+      return doubleval2;
+    }
+
+    @Override
+    public String toString() {
+      return "MyQuery.Result{"
+      + "doubleval = " + doubleval
+      + ", doubleval2 = " + doubleval2
+       + "}";
+    }
+  }
+}

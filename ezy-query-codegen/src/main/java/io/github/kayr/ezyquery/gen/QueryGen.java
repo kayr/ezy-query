@@ -253,7 +253,8 @@ public class QueryGen {
   private FieldSpec fieldSchema(PlainSelect plainSelect) {
     CodeBlock.Builder schemaString1 =
         CodeBlock.builder().add("$S\n", plainSelect.getFromItem().toString() + "\n");
-    for (Join j : plainSelect.getJoins()) {
+    List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
+    for (Join j : joins) {
       schemaString1.add("          + $S\n", j.toString() + "\n");
     }
 

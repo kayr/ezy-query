@@ -16,6 +16,18 @@ class QueryGenTest extends Specification {
         code.toString().trim() == data.v2.trim()
     }
 
+    def "no joins test"() {
+
+        def data = load('nojoin')
+
+
+        when:
+        def code = new NoTimeQueryGen("mypackage.sql", "MyQuery", data.v1).javaCode()
+
+        then:
+        code.toString().trim() == data.v2.trim()
+    }
+
     Tuple2<String, String> load(String path) {
         def sql = QueryGenTest.class.getResource("/generated/$path/in.sql.txt").text
         def java = QueryGenTest.class.getResource("/generated/$path/out.java.txt").text

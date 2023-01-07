@@ -1,6 +1,4 @@
 # just convenience for the lazy
-start:
-	@echo "Enter the target name"
 
 publish: writeVersion format
 	./gradlew clean build publish --no-daemon

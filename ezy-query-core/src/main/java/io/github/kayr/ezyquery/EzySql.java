@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery;
 
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
@@ -11,9 +12,7 @@ import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import javax.sql.DataSource;
 import lombok.NonNull;
 
@@ -52,6 +51,16 @@ public class EzySql {
   public <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
     return zql.rows(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
+  }
+
+  public <T> Optional<T> mayBeOne(EzyQuery<T> query, EzyCriteria params) {
+    QueryAndParams queryAndParams = query.query(params);
+    T one = zql.firstRow(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
+    return Optional.ofNullable(one);
+  }
+
+  public <T> T one(EzyQuery<T> query, EzyCriteria params) {
+    return mayBeOne(query, params).orElseThrow(() -> new NoSuchElementException("No result found"));
   }
 
   public <T> List<T> list(EzyQuery<T> query) {
@@ -120,8 +129,24 @@ public class EzySql {
       return withCriteria(criteria.limit(limit, offset));
     }
 
+    public CriteriaBuilder<T> orderBy(String... orderBy) {
+      return withCriteria(criteria.orderBy(orderBy));
+    }
+
+    public CriteriaBuilder<T> orderBy(Sort... sort) {
+      return withCriteria(criteria.orderBy(sort));
+    }
+
     public List<T> list() {
       return ezySql.list(query, criteria);
+    }
+
+    public Optional<T> mayBeOne() {
+      return ezySql.mayBeOne(query, criteria);
+    }
+
+    public T one() {
+      return ezySql.one(query, criteria);
     }
 
     public Long count() {

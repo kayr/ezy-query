@@ -27,6 +27,18 @@ public class Zql {
     }
   }
 
+  @lombok.SneakyThrows
+  public <T> T firstRow(Class<T> clazz, String sql, List<Object> params) {
+    try (DbReSources resultSet = rows(sql, params)) {
+      List<T> results = mapData(clazz, resultSet.resultSet, 1);
+
+      if (resultSet.resultSet.next())
+        throw new IllegalArgumentException("More than one row returned");
+
+      return results.isEmpty() ? null : results.get(0);
+    }
+  }
+
   public DbReSources rows(String sql, List<Object> params) {
     return rows(sql, params.toArray());
   }
@@ -51,12 +63,19 @@ public class Zql {
   }
 
   private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet) throws SQLException {
+    return mapData(clazz, resultSet, Integer.MAX_VALUE);
+  }
+
+  private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet, int numRecords)
+      throws SQLException {
     List<String> columns = getColumns(resultSet);
     ResultSetMapper<T> mapper = ResultSetMapper.forClass(clazz);
     List<T> data = new ArrayList<>();
-    while (resultSet.next()) {
+    int count = 0;
+    while (count < numRecords && resultSet.next()) {
       T t = mapper.mapRow(resultSet, columns);
       data.add(t);
+      count++;
     }
     return data;
   }

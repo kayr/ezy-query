@@ -1,26 +1,18 @@
 # just convenience for the lazy
+.PHONY: $(shell grep -E '^[a-zA-Z_-]+:.*?$$' Makefile | cut -d: -f1)
 
-publish: writeVersion format
+publish: build
 	./gradlew clean build publish --no-daemon
-
-publishClose:
 	./gradlew closeAndReleaseRepository
 
+publishLocal: build
+	./gradlew publishAllPublicationsToMavenRepository  -x signMavenJavaPublication -x signMavenPublication
 
-publishLocal: format
-#	./gradlew clean build publishMavenPublicationToMavenLocal
-	./gradlew publishAllPublicationsToMavenRepository
-
-publishCleanLocal:
-	rm -rf ~/.m2/repository/io/github/kayr/ezy-query-codegen/
-	rm -rf ~/.m2/repository/io/github/kayr/ezy-query-core/
-	rm -rf ~/.m2/repository/io/github/kayr/ezy-query-gradle-plugin/
-
-doBuild: format
+build: generate format
 	./gradlew clean build --no-daemon
 
-format: writeVersion
+format:
 	./gradlew spotlessApply
 
-writeVersion:
+generate:
 	./gradlew writeVersion

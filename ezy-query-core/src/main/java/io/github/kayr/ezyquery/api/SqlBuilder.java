@@ -116,10 +116,12 @@ public class SqlBuilder {
     return reduced.orElseThrow(() -> new IllegalStateException("Conditions is empty"));
   }
 
-  public String orderByStmt() {
+  public String orderByStmt(String defaultOrderBy) {
 
     if (Elf.isEmpty(ezyCriteria.getSorts())) {
-      return "";
+      return Optional.ofNullable(defaultOrderBy)
+               .map(s -> " ORDER BY " + s)
+               .orElse("");
     }
 
     StringBuilder orderByPart = new StringBuilder();

@@ -1,19 +1,26 @@
 package io.github.kayr.ezyquery.gen
 
-import org.junit.Assert
+
 import spock.lang.Specification
 
+import static org.junit.Assert.assertEquals
+
 class QueryGenTest extends Specification {
-    def "JavaCode"() {
+
+    def "test ex1"() {
 
         def data = load('ex1')
 
-
         when:
-        def code = new NoTimeQueryGen("mypackage.sql", "MyQuery", data.v1).javaCode()
+        def generated = generateCode(data.v1)
+
 
         then:
-        code.toString().trim() == data.v2.trim()
+        assertEquals data.v2.trim(), generated
+    }
+
+    private String generateCode(String sql) {
+        new NoTimeQueryGen("mypackage.sql", "MyQuery", sql).javaCode().toString().trim()
     }
 
     def "no joins test"() {
@@ -22,10 +29,10 @@ class QueryGenTest extends Specification {
 
 
         when:
-        def code = new NoTimeQueryGen("mypackage.sql", "MyQuery", data.v1).javaCode()
+        def generated = generateCode(data.v1)
 
         then:
-        code.toString().trim() == data.v2.trim()
+        assertEquals  data.v2.trim(),generated
     }
 
     Tuple2<String, String> load(String path) {

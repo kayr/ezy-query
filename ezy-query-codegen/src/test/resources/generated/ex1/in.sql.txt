@@ -21,3 +21,4 @@ INNER JOIN w_wallet_transaction_request tr ON
 INNER JOIN m_wallet_transaction_detail td ON
     td.wallet_tx_request_id = tr.id
     where 1 <> 8
+ORDER BY td.id desc

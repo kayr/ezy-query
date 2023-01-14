@@ -60,6 +60,11 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   @Override
+  public Optional<String> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
   public List<Field<?>> fields() {
     return this.fields;
   }

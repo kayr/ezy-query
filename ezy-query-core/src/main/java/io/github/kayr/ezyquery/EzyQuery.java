@@ -17,7 +17,7 @@ public interface EzyQuery<T> {
 
     QueryAndParams w = builder.whereStmt();
 
-    String orderBy = builder.orderByStmt();
+    String orderBy = builder.orderByStmt(query.orderByClause().orElse(null));
 
     StringBuilder sb = new StringBuilder();
 
@@ -67,6 +67,10 @@ public interface EzyQuery<T> {
   String schema();
 
   default Optional<String> whereClause() {
+    return Optional.empty();
+  }
+
+  default Optional<String> orderByClause() {
     return Optional.empty();
   }
 }

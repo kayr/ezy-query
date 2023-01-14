@@ -47,6 +47,7 @@ import javax.annotation.processing.Generated;
  * INNER JOIN m_wallet_transaction_detail td ON
  *     td.wallet_tx_request_id = tr.id
  *     where 1 <> 8
+ * ORDER BY td.id desc
  */
 @Generated(
     value = "io.github.kayr.ezyquery.gen.QueryGen",
@@ -121,6 +122,11 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   @Override
   public Optional<String> whereClause() {
     return Optional.of("1 <> 8");
+  }
+
+  @Override
+  public Optional<String> orderByClause() {
+    return Optional.of("td.id DESC");
   }
 
   @Override

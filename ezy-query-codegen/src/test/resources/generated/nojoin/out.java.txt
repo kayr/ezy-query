@@ -31,7 +31,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
 
   public static final MyQuery QUERY = new MyQuery();
 
-  private final String schema = "m_awamo_wallet maw\n"
+  private final String schema = "m_awamo_wallet maw"
   ;
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();

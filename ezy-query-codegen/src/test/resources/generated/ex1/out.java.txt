@@ -85,7 +85,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   private final String schema = "m_awamo_wallet maw\n"
             + "INNER JOIN m_tenant_wallet mtw ON mtw.id = maw.wallet_id\n"
             + "INNER JOIN w_wallet_transaction_request tr ON tr.wallet_id = mtw.id\n"
-            + "INNER JOIN m_wallet_transaction_detail td ON td.wallet_tx_request_id = tr.id\n"
+            + "INNER JOIN m_wallet_transaction_detail td ON td.wallet_tx_request_id = tr.id"
   ;
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();

@@ -1,11 +1,13 @@
 package io.github.kayr.ezyquery.itests
 
+import io.github.kayr.ezyquery.EzyQuery
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
+import io.github.kayr.ezyquery.parser.QueryAndParams
+import prod.ProdQuery1
 import spock.lang.Specification
+import test.QueryWithDaultOrderBy
 import test.TestQuery1
-
-import java.lang.reflect.Field
 
 class TestCanFetchDataTest extends Specification {
 
@@ -52,22 +54,37 @@ class TestCanFetchDataTest extends Specification {
 
     def 'test that can fetch data with generated queries'() {
         given:
-        println("hello")
 
-        when:
-        def r = ez.from(TestQuery1.QUERY)
+
+        def criteria = ez.from(TestQuery1.QUERY)
                 .orderBy(Sort.by(TestQuery1.OFFICE_CODE, Sort.DIR.ASC))
                 .limit(3)
-                .listAndCount()
-        def list = r.list
-        def count = r.count
+
+        EzyQuery.buildQueryAndParams(criteria.criteria,TestQuery1.QUERY).tap {
+            println(it.sql)
+        }
+
+
+
+        when:
+        def r = criteria.listAndCount()
+        def count = criteria.count()
+        def list = criteria.list()
 
         then:
+        r.list.size() == 3
+        r.list.every { it.officeCode != null }
+        r.list.every { it.country != null }
+        r.list.every { it.addressLine != null }
+        r.count == 4
+
+        count == 4
         list.size() == 3
         list.every { it.officeCode != null }
         list.every { it.country != null }
         list.every { it.addressLine != null }
-        count == 4
+
+
     }
 
     def 'test that can fetch data with fields correctly set'() {
@@ -84,5 +101,41 @@ class TestCanFetchDataTest extends Specification {
         r.country == "UG"
         r.addressLine == "Kampala"
         count == 1
+    }
+
+    def 'test that prod query is compiled and usable'() {
+        given:
+        def criteria = ez.from(ProdQuery1.QUERY)
+                .where(ProdQuery1.ADDRESS_LINE.eq("Kampala"))
+
+        when:
+        def list = criteria.list()
+        def count = criteria.count()
+
+        then:
+        list.size() == 1
+        list.every { it.addressLine == "Kampala" }
+        count == 1
+    }
+
+    def 'test query with default order by'() {
+        given:
+        def criteria = ez.from(QueryWithDaultOrderBy.QUERY)
+        .select(QueryWithDaultOrderBy.OFFICE_CODE)
+
+
+        def params = EzyQuery.buildQueryAndParams(criteria.criteria,QueryWithDaultOrderBy.QUERY)
+
+        println params.sql
+
+
+        when:
+        def list = criteria.list()
+        def count = criteria.count()
+
+
+        then:
+        list*.officeCode == ['1', '2', '3', '4'].reverse()
+
     }
 }

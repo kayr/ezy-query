@@ -119,9 +119,7 @@ public class SqlBuilder {
   public String orderByStmt(String defaultOrderBy) {
 
     if (Elf.isEmpty(ezyCriteria.getSorts())) {
-      return Optional.ofNullable(defaultOrderBy)
-               .map(s -> " ORDER BY " + s)
-               .orElse("");
+      return Optional.ofNullable(defaultOrderBy).map(s -> " ORDER BY " + s).orElse("");
     }
 
     StringBuilder orderByPart = new StringBuilder();

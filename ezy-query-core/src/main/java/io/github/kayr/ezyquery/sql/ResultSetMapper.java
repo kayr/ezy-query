@@ -17,16 +17,15 @@ public class ResultSetMapper<T> {
     return new ResultSetMapper<>(targetClass);
   }
 
-  public T mapRow(ResultSet rs, List<String> columns) {
+  public T mapRow(ResultSet rs, List<Column> columns) {
     T obj = construct();
     // map object to result set
-    for (String column : columns) {
-      Field field = ReflectionUtil.getField(targetClass, column);
+    for (Column column : columns) {
+      Field field = ReflectionUtil.getField(targetClass, column.getLabel());
       if (field != null) {
         setFieldValue(rs, obj, field);
       }
     }
-    ReflectionUtil.doWithFields(targetClass, field -> setFieldValue(rs, obj, field));
 
     return obj;
   }
@@ -49,5 +48,12 @@ public class ResultSetMapper<T> {
       throw new UnsupportedOperationException("Unable to instantiate " + targetClass.getName(), e);
     }
     return t;
+  }
+
+  @lombok.AllArgsConstructor
+  @lombok.Getter
+  public static class Column {
+    private String name;
+    private String label;
   }
 }

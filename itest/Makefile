@@ -7,10 +7,10 @@ clean:
 publishLocal:
 	cd ../ && make publishLocal
 
-ezyBuild:
+generate:
 	../gradlew ezybuild
 
-test: clean ezyBuild
+test: clean generate
 	../gradlew test
 
 all: test

@@ -57,8 +57,9 @@ public class SqlBuilder {
       selectPart
           .append("  ")
           .append(theField.getSqlField())
-          .append(" as ")
-          .append(theField.getAlias());
+          .append(" as \"")
+          .append(theField.getAlias())
+          .append("\"");
 
       if (i < size - 1) {
         selectPart.append(", ");

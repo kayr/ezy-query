@@ -5,7 +5,7 @@ import io.github.kayr.ezyquery.api.Field
 import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
-import spock.lang.Specification
+import spock.lang.Specification 
 
 class EzyQueryTest extends Specification {
 
@@ -55,19 +55,19 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE t.name = ? AND t.age > ?\n' +
                 'LIMIT 10 OFFSET 2'
 
         orQuery.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE t.name = ? OR t.age > ?\n' +
                 'LIMIT 10 OFFSET 2'
@@ -89,19 +89,19 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE t.name = ? AND t.age > ?\n' +
                 'LIMIT 10 OFFSET 2'
 
         orQuery.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE t.name = ? OR t.age > ?\n' +
                 'LIMIT 10 OFFSET 2'
@@ -125,20 +125,20 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE (t.office = ? AND t.maxAge > ?) AND (t.name = ? AND t.age > ?)\n' +
                 'LIMIT 10 OFFSET 2'
         query.params == ['NY', 30, 'ronald', 20]
 
         orQuery.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE (t.office = ? OR t.maxAge > ?) OR (t.name = ? OR t.age > ?)\n' +
                 'LIMIT 10 OFFSET 2'
@@ -155,10 +155,10 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'LIMIT 10 OFFSET 2'
@@ -177,10 +177,10 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'LIMIT 50 OFFSET 2'
@@ -204,10 +204,10 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age, \n' +
-                '  t.office as office, \n' +
-                '  t.maxAge as maxAge\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'LIMIT 15 OFFSET 0'
@@ -242,8 +242,8 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'LIMIT 15 OFFSET 0'
@@ -264,8 +264,8 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'ORDER BY t.name ASC, t.age DESC\n' +
@@ -285,8 +285,8 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'ORDER BY t.name ASC, t.age ASC\n' +
@@ -306,8 +306,8 @@ class EzyQueryTest extends Specification {
 
         then:
         query.sql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
                 'FROM my_table\n' +
                 'WHERE ? = ?\n' +
                 'ORDER BY t.name ASC\n' +
@@ -357,8 +357,8 @@ class EzyQueryTest extends Specification {
         def generatedSql = query.sql
         then:
         generatedSql == 'SELECT \n' +
-                '  t.name as name, \n' +
-                '  t.age as age\n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
                 'FROM my_table\n' +
                 'WHERE (t.name = 123) AND (? = ?)\n' +
                 'ORDER BY t.name ASC\n' +

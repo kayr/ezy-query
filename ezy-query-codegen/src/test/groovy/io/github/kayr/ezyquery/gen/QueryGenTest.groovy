@@ -30,6 +30,7 @@ class QueryGenTest extends Specification {
 
         when:
         def generated = generateCode(data.v1)
+        assertEquals  data.v2.trim(),generated
 
         then:
         assertEquals  data.v2.trim(),generated

@@ -2,6 +2,9 @@ package io.github.kayr.ezyquery.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -9,9 +12,12 @@ public class ReflectionUtil {
 
   private ReflectionUtil() {}
 
-  private static final Field[] EMPTY_FIELD_ARRAY = new Field[0];
+  private static final Map<Class<?>, Map<String, Field>> declaredFieldsCache =
+      new ConcurrentHashMap<>(256);
 
-  private static final Map<Class<?>, Field[]> declaredFieldsCache = new ConcurrentHashMap<>(256);
+  public static void setField(String field, Object target, Object value) {
+    setField(getField(target.getClass(), field), target, value);
+  }
 
   @lombok.SneakyThrows
   public static void setField(Field field, Object target, Object value) {
@@ -32,7 +38,7 @@ public class ReflectionUtil {
   public static void doWithFields(Class<?> clazz, Callback<Field> callback) {
     Class<?> targetClass = clazz;
     do {
-      Field[] fields = getDeclaredFields(targetClass);
+      Collection<Field> fields = getDeclaredFields(targetClass);
       for (Field field : fields) {
         callback.call(field);
       }
@@ -40,32 +46,44 @@ public class ReflectionUtil {
     } while (targetClass != null && targetClass != Object.class);
   }
 
-  private static Field[] getDeclaredFields(Class<?> clazz) {
-    Field[] result = declaredFieldsCache.get(clazz);
-    if (result == null) {
-      try {
-        result = clazz.getDeclaredFields();
-        declaredFieldsCache.put(clazz, (result.length == 0 ? EMPTY_FIELD_ARRAY : result));
-      } catch (Throwable ex) { // NOSONAR
-        throw new IllegalStateException(
-            "Failed to introspect Class ["
-                + clazz.getName()
-                + "] from ClassLoader ["
-                + clazz.getClassLoader()
-                + "]",
-            ex);
-      }
+  private static Collection<Field> getDeclaredFields(Class<?> clazz) {
+    Map<String, Field> fieldCache1 = getFieldCache(clazz);
+    return fieldCache1.values();
+  }
+
+  private static Map<String, Field> getFieldCache(Class<?> clazz) {
+    Map<String, Field> result = declaredFieldsCache.get(clazz);
+
+    if (result != null) return result;
+
+    Field[] declaredFields = getDeclareFields(clazz);
+    Map<String, Field> fieldMap =
+        declaredFields.length > 0 ? new HashMap<>(declaredFields.length) : Collections.emptyMap();
+    declaredFieldsCache.put(clazz, fieldMap);
+
+    for (Field field : declaredFields) {
+      fieldMap.put(field.getName(), field);
     }
-    return result;
+
+    return fieldMap;
+  }
+
+  private static Field[] getDeclareFields(Class<?> clazz) {
+    try {
+      return clazz.getDeclaredFields();
+    } catch (Throwable ex) { // NOSONAR
+      throw new IllegalStateException(
+          "Failed to introspect Class ["
+              + clazz.getName()
+              + "] from ClassLoader ["
+              + clazz.getClassLoader()
+              + "]",
+          ex);
+    }
   }
 
   public static <T> Field getField(Class<T> targetClass, String fieldName) {
-    Field[] declaredFields = getDeclaredFields(targetClass); // ensure introspection is done
-    for (Field field : declaredFields) {
-      if (field.getName().equals(fieldName)) {
-        return field;
-      }
-    }
-    return null;
+    Map<String, Field> fieldCache = getFieldCache(targetClass); // ensure introspection is done
+    return fieldCache.get(fieldName);
   }
 }

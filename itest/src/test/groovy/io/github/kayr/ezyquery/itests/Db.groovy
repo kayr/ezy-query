@@ -21,10 +21,11 @@ class Db {
         if (ds == null) {
             //initialise h2 inmemory database
             def config = new HikariConfig()
-            config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
+            config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=0")
             config.setUsername("sa")
             config.setPassword("")
-            config.setMaximumPoolSize(1)
+            config.setMaximumPoolSize(2)
+            config.setMinimumIdle(1)
             config.setConnectionTestQuery("SELECT 1")
             config.setDriverClassName("org.h2.Driver")
             ds = new HikariDataSource(config)

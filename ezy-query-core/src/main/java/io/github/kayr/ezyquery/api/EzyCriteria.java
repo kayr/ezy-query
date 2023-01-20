@@ -1,123 +1,102 @@
 package io.github.kayr.ezyquery.api;
 
 import io.github.kayr.ezyquery.api.cnd.ICond;
+import io.github.kayr.ezyquery.util.Elf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.Builder;
 
 @lombok.Getter
+@lombok.Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 public class EzyCriteria {
 
-  private final List<String> columns = new ArrayList<>();
-  private final List<ICond> conditions = new ArrayList<>();
-  private final List<String> conditionExpressions = new ArrayList<>();
+  @Builder.Default private List<String> columns = new ArrayList<>();
+  @Builder.Default private List<ICond> conditions = new ArrayList<>();
+  @Builder.Default private List<String> conditionExpressions = new ArrayList<>();
 
-  private final List<Sort> sorts = new ArrayList<>();
+  @Builder.Default private List<Sort> sorts = new ArrayList<>();
 
-  private Integer offset = 0;
-  private Integer limit = 50;
+  @Builder.Default private Integer offset = 0;
+  @Builder.Default private Integer limit = 50;
 
-  private boolean useOr = false;
-  private boolean count = false;
+  @Builder.Default private boolean useOr = false;
+  @Builder.Default private boolean count = false;
 
   // region Static methods
 
   /** Convenience method just to better communicate the intention */
   public static EzyCriteria selectAll() {
-    return create();
+    return builder().build();
   }
 
   public static EzyCriteria select(String... columns) {
-    EzyCriteria p = create();
-    return p.addSelect(columns);
-  }
-
-  private static EzyCriteria create() {
-    return new EzyCriteria();
+    return builder().columns(Arrays.asList(columns)).build();
   }
 
   public static EzyCriteria select(Field<?>... columns) {
-    EzyCriteria p = create();
-    for (Field<?> f : columns) {
-      p.addSelect(f.getAlias());
+    List<String> list = new ArrayList<>();
+    for (Field<?> column : columns) {
+      String alias = column.getAlias();
+      list.add(alias);
     }
-    return p;
+    return builder().columns(list).build();
   }
 
   public static EzyCriteria selectCount() {
-    EzyCriteria p = new EzyCriteria();
-    p.count = true;
-    return p;
+    return builder().count(true).build();
   }
   // endregion
 
   // region Side effects but these actually create copies of the object for immutability
   public EzyCriteria addSelect(String... columns) {
-    EzyCriteria copy = copy();
-    copy.columns.addAll(Arrays.asList(columns));
-    return copy;
+    return toBuilder().columns(Elf.addAll(this.columns, columns)).build();
   }
 
   public EzyCriteria where(ICond... conds) {
-    EzyCriteria copy = copy();
-    copy.conditions.addAll(Arrays.asList(conds));
-    return copy;
+    return toBuilder().conditions(Elf.addAll(this.conditions, conds)).build();
   }
 
   public EzyCriteria where(String expr) {
-    EzyCriteria copy = copy();
-    copy.conditionExpressions.add(expr);
-    return copy;
+    return toBuilder().conditionExpressions(Elf.addAll(this.conditionExpressions, expr)).build();
   }
 
   public EzyCriteria offset(@lombok.NonNull Integer offset) {
-    EzyCriteria copy = copy();
-    copy.offset = offset;
-    return copy;
+    return toBuilder().offset(offset).build();
   }
 
   public EzyCriteria limit(@lombok.NonNull Integer limit) {
-    EzyCriteria copy = copy();
-    copy.limit = limit;
-    return copy;
+    return toBuilder().limit(limit).build();
   }
 
   public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
-    return copy().limit(limit).offset(offset);
+    return toBuilder().limit(limit).offset(offset).build();
   }
 
   public EzyCriteria useOr() {
-    EzyCriteria copy = copy();
-    copy.useOr = true;
-    return copy;
+    return toBuilder().useOr(true).build();
   }
 
   public EzyCriteria useAnd() {
-    EzyCriteria copy = copy();
-    copy.useOr = false;
-    return copy;
+    return toBuilder().useOr(false).build();
   }
 
   public EzyCriteria count() {
-    EzyCriteria copy = copy();
-    copy.count = true;
-    return copy;
+    return toBuilder().count(true).build();
   }
 
   public EzyCriteria orderBy(Sort... sort) {
-    EzyCriteria copy = copy();
-    copy.sorts.addAll(Arrays.asList(sort));
-    return copy;
+    return toBuilder().sorts(Elf.addAll(this.sorts, sort)).build();
   }
 
   public EzyCriteria orderBy(String... sort) {
-    EzyCriteria copy = copy();
-    List<Sort> collect =
-        Arrays.stream(sort).map(s -> Sort.by(s, Sort.DIR.ASC)).collect(Collectors.toList());
-    copy.sorts.addAll(collect);
-    return copy;
+    List<Sort> sorts = new ArrayList<>();
+    for (String s : sort) {
+      sorts.add(Sort.by(s, Sort.DIR.ASC));
+    }
+    return toBuilder().sorts(Elf.combine(this.sorts, sorts)).build();
   }
 
   // endregion
@@ -149,16 +128,4 @@ public class EzyCriteria {
 
   // endregion
 
-  public EzyCriteria copy() {
-    EzyCriteria copy = new EzyCriteria();
-    copy.columns.addAll(this.columns);
-    copy.conditions.addAll(this.conditions);
-    copy.conditionExpressions.addAll(this.conditionExpressions);
-    copy.sorts.addAll(this.sorts);
-    copy.offset = this.offset;
-    copy.limit = this.limit;
-    copy.useOr = this.useOr;
-    copy.count = this.count;
-    return copy;
-  }
 }

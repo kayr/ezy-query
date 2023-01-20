@@ -1,5 +1,6 @@
 package io.github.kayr.ezyquery.api;
 
+import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.EzySql;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
@@ -52,7 +53,7 @@ public class SqlBuilder {
     for (int i = 0; i < size; i++) {
 
       String columnName = columns.get(i);
-      Field<?> theField = getFields(columnName);
+      Field<?> theField = getField(columnName);
 
       selectPart
           .append("  ")
@@ -132,7 +133,7 @@ public class SqlBuilder {
 
       Sort sort = ezyCriteria.getSorts().get(i);
 
-      Field<?> theField = getFields(sort.getField());
+      Field<?> theField = getField(sort.getField());
 
       orderByPart.append(theField.getSqlField()).append(" ").append(sort.getDir());
 
@@ -148,11 +149,64 @@ public class SqlBuilder {
     return ezyCriteria.isUseOr() ? BinaryExpr.Op.OR : BinaryExpr.Op.AND;
   }
 
-  private Field<?> getFields(String alias) {
+  private Field<?> getField(String alias) {
     Field<?> field = fieldMap.get(alias);
     if (field == null) {
       throw new IllegalArgumentException("Field with alias [" + alias + "] not found");
     }
     return field;
+  }
+
+  QueryAndParams build(EzyQuery<?> query) {
+
+    EzyCriteria criteria = ezyCriteria;
+
+    String s = selectStmt();
+
+    QueryAndParams w = whereStmt();
+
+    String orderBy = orderByStmt(query.orderByClause().orElse(null));
+
+    StringBuilder sb = new StringBuilder();
+
+    StringBuilder queryBuilder =
+        sb.append("SELECT \n")
+            .append(s)
+            .append("FROM ")
+            .append(query.schema())
+            .append("\n")
+            .append("WHERE ");
+
+    Optional<String> whereClause = query.whereClause();
+    if (whereClause.isPresent()) {
+      queryBuilder
+          .append("(")
+          .append(whereClause.get())
+          .append(") AND (")
+          .append(w.getSql())
+          .append(")");
+    } else {
+      queryBuilder.append(w.getSql());
+    }
+
+    if (!criteria.isCount()) {
+
+      queryBuilder.append("\n");
+
+      if (!orderBy.isEmpty()) {
+        queryBuilder.append(orderBy).append("\n");
+      }
+      queryBuilder
+          .append("LIMIT ")
+          .append(criteria.getLimit())
+          .append(" OFFSET ")
+          .append(criteria.getOffset());
+    }
+
+    return new QueryAndParams(queryBuilder.toString(), w.getParams());
+  }
+
+  public static QueryAndParams buildSql(EzyQuery<?> query, EzyCriteria criteria) {
+    return SqlBuilder.with(query.fields(), criteria).build(query);
   }
 }

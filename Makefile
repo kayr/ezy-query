@@ -8,8 +8,14 @@ publish: build
 publishLocal: build
 	./gradlew publishAllPublicationsToMavenRepository  -x signMavenJavaPublication -x signMavenPublication
 
+clean:
+	./gradlew clean
+
 build: generate format
-	./gradlew clean build --no-daemon
+	./gradlew build
+
+test: generate format
+	./gradlew test
 
 format:
 	./gradlew spotlessApply

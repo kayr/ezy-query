@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.itests
 import io.github.kayr.ezyquery.EzyQuery
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
-import io.github.kayr.ezyquery.parser.QueryAndParams
 import prod.ProdQuery1
 import spock.lang.Specification
 import test.QueryWithDaultOrderBy
@@ -124,9 +123,8 @@ class TestCanFetchDataTest extends Specification {
         .select(QueryWithDaultOrderBy.OFFICE_CODE)
 
 
-        def params = EzyQuery.buildQueryAndParams(criteria.criteria,QueryWithDaultOrderBy.QUERY)
+       criteria.query.print()
 
-        println params.sql
 
 
         when:

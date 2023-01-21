@@ -10,10 +10,7 @@ import io.github.kayr.ezyquery.ast.ParensExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @lombok.AllArgsConstructor
@@ -159,8 +156,6 @@ public class SqlBuilder {
 
   QueryAndParams build(EzyQuery<?> query) {
 
-    EzyCriteria criteria = ezyCriteria;
-
     String s = selectStmt();
 
     QueryAndParams w = whereStmt();
@@ -189,7 +184,7 @@ public class SqlBuilder {
       queryBuilder.append(w.getSql());
     }
 
-    if (!criteria.isCount()) {
+    if (!ezyCriteria.isCount()) {
 
       queryBuilder.append("\n");
 
@@ -198,9 +193,9 @@ public class SqlBuilder {
       }
       queryBuilder
           .append("LIMIT ")
-          .append(criteria.getLimit())
+          .append(ezyCriteria.getLimit())
           .append(" OFFSET ")
-          .append(criteria.getOffset());
+          .append(ezyCriteria.getOffset());
     }
 
     return new QueryAndParams(queryBuilder.toString(), w.getParams());

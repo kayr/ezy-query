@@ -5,6 +5,8 @@ import io.github.kayr.ezyquery.ast.UnaryExpr;
 
 public class Cnd {
 
+  private static final Cond TRUE = Cnd.eq(1, 1);
+
   private Cnd() {}
 
   public static Val val(Object value) {
@@ -104,6 +106,6 @@ public class Cnd {
   }
 
   public static Cond trueCnd() {
-    return Cnd.eq(1, 1);
+    return TRUE;
   }
 }

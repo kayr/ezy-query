@@ -43,4 +43,20 @@ public class QueryAndParams {
   public String toString() {
     return "Result{" + "sql='" + sql + '\'' + ", params=" + params + '}';
   }
+
+  public QueryAndParams print() {
+    printSql();
+    printParams();
+    return this;
+  }
+
+  public QueryAndParams printSql() {
+    System.out.println("SQL:\n" + sql);
+    return this;
+  }
+
+  public QueryAndParams printParams() {
+    System.out.println("PARAMS:" + params);
+    return this;
+  }
 }

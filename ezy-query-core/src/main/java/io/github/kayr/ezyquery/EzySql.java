@@ -162,6 +162,10 @@ public class EzySql {
     public CriteriaBuilder<T> withCriteria(EzyCriteria criteria) {
       return new CriteriaBuilder<>(query, ezySql, criteria);
     }
+
+    public QueryAndParams getQuery() {
+      return query.query(criteria);
+    }
   }
 
   @lombok.Getter

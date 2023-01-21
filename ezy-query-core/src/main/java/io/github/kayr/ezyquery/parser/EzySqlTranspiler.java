@@ -57,8 +57,12 @@ public class EzySqlTranspiler {
           QueryAndParams left = transpile(betweenExpr.getLeft());
           QueryAndParams start = transpile(betweenExpr.getStart());
           QueryAndParams end = transpile(betweenExpr.getEnd());
+          boolean isNot = betweenExpr.isNot();
 
-          return left.append(" between ").append(start).append(" and ").append(end);
+          if (isNot) {
+            return left.append(" NOT BETWEEN ").append(start).append(" AND ").append(end);
+          }
+          return left.append(" BETWEEN ").append(start).append(" AND ").append(end);
         });
 
     register(

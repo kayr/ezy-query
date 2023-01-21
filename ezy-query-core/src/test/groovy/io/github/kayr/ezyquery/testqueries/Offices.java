@@ -5,16 +5,16 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.processing.Generated;
 
 /**
  * -- [officeCode: '1', country: 'UG', addressLine1: 'Kampala'], select officeCode as "code",
  * country as "country", addressLine1 as "addressLine" from offices
  */
-@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2023-01-21T05:44:24.716395")
+//@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2023-01-21T05:44:24.716395")
 public class Offices implements EzyQuery<Offices.Result> {
   public static Field<Object> CODE = Field.of("officeCode", "code", Object.class);
 

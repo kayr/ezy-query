@@ -3,6 +3,8 @@ package io.github.kayr.ezyquery.api.cnd;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
 
+import java.util.Collection;
+
 public class Cnd {
 
   private static final Cond TRUE = Cnd.eq(1, 1);
@@ -45,7 +47,7 @@ public class Cnd {
     return Cond.create(left, right, BinaryExpr.Op.NOT_LIKE);
   }
 
-  public static Cond in(Object left, Object right) {
+  public static Cond in(Object left, Collection<?> right) {
     return Cond.create(left, right, BinaryExpr.Op.IN);
   }
 
@@ -81,16 +83,8 @@ public class Cnd {
     return new UnaryCond(left, UnaryExpr.Type.IS_NOT_NULL);
   }
 
-  public static Conds andAll(Object... conds) {
+  public static Conds every(Object... conds) {
     return Conds.and(conds);
-  }
-
-  public static Conds all(Object... conds) {
-    return Conds.and(conds);
-  }
-
-  public static Conds orAll(Object... conds) {
-    return Conds.or(conds);
   }
 
   public static Conds any(Object... conds) {

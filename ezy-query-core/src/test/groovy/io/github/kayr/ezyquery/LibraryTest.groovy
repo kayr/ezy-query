@@ -21,8 +21,8 @@ and (8 > 9) and (100 >= 100)
 and (8 < 9) and (100 <= 100)
 and (11 <> 90) or (11 != 91)
 or (name like '%john%') and (name not like '%doe%')
-or (name in (john, doe, 'xxx')) and (name not in (doe, 'xxx'))
-or (9 + 3) not in (9, 3)
+or (name in (john, doe, 'xxx')) and (name NOT IN (doe, 'xxx'))
+or (9 + 3) NOT IN (9, 3)
  '''
         def result = ExprParser.parseExpr(expr).toString()
 
@@ -46,7 +46,7 @@ and 9 is null or 9 is not null
         def result = ExprParser.parseExpr(expr).toString()
 
         then:
-        result.trim() == "9 BETWEEN 1 AND 10 OR 9 NOT BETWEEN 1 AND 10 AND 9 is null OR 9 is not null"
+        result.trim() == "9 between 1 and 10 OR 9 not between 1 and 10 AND 9 is null OR 9 is not null"
     }
 
     @spock.lang.Ignore

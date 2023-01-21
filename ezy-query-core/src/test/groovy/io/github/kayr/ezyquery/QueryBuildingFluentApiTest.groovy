@@ -69,13 +69,6 @@ class QueryBuildingFluentApiTest extends Specification {
         transpiled.params == ['name', 'ronald', 20, 200, 'r1', 'ronald', 'r2', 'ronald', 'a1', 'ronald', 'r3', 'ronald', 'a3', 'ronald', 'a4', 'ronald']
     }
 
-    def 'test in operator must use a list'() {
-        when:
-        Cnd.in('x', 20).asExpr()
-        then:
-        IllegalStateException e = thrown()
-        e.message.startsWith('right must be a list on expression: Cond')
-    }
 
     def 'test build a query with in'() {
         given:
@@ -110,7 +103,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.andAll(
+        def expr = Cnd.every(
                 Cnd.or("name", 'ronald'),
                 Cnd.in('#age', []))
                 .asExpr()
@@ -129,7 +122,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.orAll(
+        def expr = Cnd.any(
                 Cnd.negate(10),
                 Cnd.positive("5/5"),
                 Cnd.isNull("NV"),
@@ -161,7 +154,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.orAll(
+        def expr = Cnd.any(
                 Cnd.trueCnd(),
                 Cnd.between(
                         Cnd.negate(10),
@@ -179,8 +172,8 @@ class QueryBuildingFluentApiTest extends Specification {
         def params = transpiled.params
 
         then:
-        strExpr == '(1 = 1 OR -10 BETWEEN +5/5 AND NV is null)'
-        sql == '(? = ? OR -? between +? and ? IS NULL)'
+        strExpr == '(1 = 1 OR -10 between +5/5 and NV is null)'
+        sql == '(? = ? OR -? BETWEEN +? AND ? IS NULL)'
         params == [1, 1, 10, '5/5', 'NV']
 
 
@@ -198,7 +191,7 @@ class QueryBuildingFluentApiTest extends Specification {
 
     def 'test rendering of multiple conds'() {
         when:
-        def expr = Cnd.all(
+        def expr = Cnd.every(
                 Cnd.trueCnd(),
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),

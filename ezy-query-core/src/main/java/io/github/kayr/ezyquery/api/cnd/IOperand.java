@@ -1,5 +1,7 @@
 package io.github.kayr.ezyquery.api.cnd;
 
+import java.util.Collection;
+
 public interface IOperand {
 
   // Utility condition methods
@@ -35,7 +37,7 @@ public interface IOperand {
     return Cnd.notLike(this, value);
   }
 
-  default Cond in(Object value) {
+  default Cond in(Collection<?> value) {
     return Cnd.in(this, value);
   }
 

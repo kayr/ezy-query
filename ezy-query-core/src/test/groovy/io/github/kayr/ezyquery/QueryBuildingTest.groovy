@@ -19,7 +19,7 @@ class QueryBuildingTest extends Specification {
 
 
         when:
-        def expr = Cnd.andAll(
+        def expr = Cnd.every(
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),
                 Conds.or(Cnd.gte("lastName", 'mah'),
@@ -39,13 +39,7 @@ class QueryBuildingTest extends Specification {
         transpiled.params == ['name', 'ronald', 20, 'lastName', 'mah', 'lastName1', 'mah2', 'lastName2', 'sex', 'm', '%kdj%']
     }
 
-    def 'test in operator must use a list'() {
-        when:
-        Cnd.in('x', 20).asExpr()
-        then:
-        IllegalStateException e = thrown()
-        e.message.startsWith('right must be a list on expression: Cond')
-    }
+
 
     def 'test build a query with in'() {
         given:
@@ -80,7 +74,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.andAll(
+        def expr = Cnd.every(
                 Cnd.or("name", 'ronald'),
                 Cnd.in('#age', []))
                 .asExpr()
@@ -99,7 +93,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.orAll(
+        def expr = Cnd.any(
                 Cnd.negate(10),
                 Cnd.positive("5/5"),
                 Cnd.isNull("NV"),
@@ -131,7 +125,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.orAll(
+        def expr = Cnd.any(
                 Cnd.trueCnd(),
                 Cnd.between(
                         Cnd.negate(10),
@@ -149,8 +143,8 @@ class QueryBuildingTest extends Specification {
         def params = transpiled.params
 
         then:
-        strExpr == '(1 = 1 OR -10 BETWEEN +5/5 AND NV is null)'
-        sql == '(? = ? OR -? between +? and ? IS NULL)'
+        strExpr == '(1 = 1 OR -10 between +5/5 and NV is null)'
+        sql == '(? = ? OR -? BETWEEN +? AND ? IS NULL)'
         params == [1, 1, 10, '5/5', 'NV']
 
 
@@ -166,9 +160,9 @@ class QueryBuildingTest extends Specification {
         transpiled.params == ['name', 'ronald']
     }
 
-    def 'test rendering of multiple conds'(){
+    def 'test rendering of multiple conds'() {
         when:
-        def expr = Cnd.all(
+        def expr = Cnd.every(
                 Cnd.trueCnd(),
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),
@@ -182,6 +176,22 @@ class QueryBuildingTest extends Specification {
         then:
         expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND (lastName OR mah OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
 
+    }
+
+    def 'test not between'() {
+        when:
+        def expr = Cnd.notBetween(
+                Cnd.negate(1),
+                Cnd.negate("5/5"),
+                Cnd.val(10)).asExpr()
+
+        def transpiled = EzySqlTranspiler.transpile(fields, expr)
+
+
+        then:
+        expr.toString() == '-1 not between -5/5 and 10'
+        transpiled.sql == '-? NOT BETWEEN -? AND ?'
+        transpiled.params == [1, '5/5', 10]
     }
 
 

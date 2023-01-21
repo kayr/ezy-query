@@ -4,7 +4,6 @@ import io.github.kayr.ezyquery.api.cnd.IOperand;
 
 @lombok.Getter
 @lombok.AllArgsConstructor
-@lombok.Builder(toBuilder = true)
 public class Field<T> implements IOperand {
   private String sqlField;
   private String alias;
@@ -24,10 +23,6 @@ public class Field<T> implements IOperand {
 
   public static <T> Field<T> of(String sqlField, String alias, Class<T> dataType) {
     return new Field<>(sqlField, alias, dataType);
-  }
-
-  public static Field<Object> of(String sqlField, String alias) {
-    return of(sqlField, alias, Object.class);
   }
 
   public Sort asc() {

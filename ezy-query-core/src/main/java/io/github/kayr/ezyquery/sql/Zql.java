@@ -104,10 +104,13 @@ public class Zql {
 
   @lombok.SneakyThrows
   public Integer executeUpdate(String sql, Object... params) {
-    try (Connection connection = connectionProvider.getConnection()) {
+    Connection connection = connectionProvider.getConnection();
+    try {
       PreparedStatement statement = connection.prepareStatement(sql);
       setValues(statement, params);
       return statement.executeUpdate();
+    } finally {
+      connectionProvider.closeConnection(connection);
     }
   }
 
@@ -129,7 +132,7 @@ public class Zql {
     public void close() throws Exception {
       Elf.closeQuietly(resultSet);
       Elf.closeQuietly(statement);
-      Elf.closeQuietly(connection);
+      connectionProvider.closeConnection(connection);
     }
   }
 }

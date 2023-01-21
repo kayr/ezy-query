@@ -3,6 +3,7 @@ package io.github.kayr.ezyquery
 import io.github.kayr.ezyquery.api.Field
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.api.cnd.Conds
+import io.github.kayr.ezyquery.parser.EzySqlTranspiler
 import spock.lang.Specification
 
 
@@ -29,7 +30,7 @@ class QueryBuildingTest extends Specification {
                 .asExpr()
 
 
-        def transpiled = EzySql.transpile(fields, expr)
+        def transpiled = EzySqlTranspiler.transpile(fields, expr)
 
 
         then:
@@ -61,7 +62,7 @@ class QueryBuildingTest extends Specification {
                 .asExpr()
 
 
-        def transpiled = EzySql.transpile(fields, expr)
+        def transpiled = EzySqlTranspiler.transpile(fields, expr)
 
 
         then:
@@ -86,7 +87,7 @@ class QueryBuildingTest extends Specification {
 
         then:
         expr.toString() == '(name OR ronald AND #age in [])'
-        EzySql.transpile(fields, expr).sql == '(? OR ? AND 1 = 0)'
+        EzySqlTranspiler.transpile(fields, expr).sql == '(? OR ? AND 1 = 0)'
     }
 
     def "test build a query with in with empty list and empty list"() {
@@ -110,7 +111,7 @@ class QueryBuildingTest extends Specification {
         def strExpr = expr.toString()
 
 
-        def result = EzySql.transpile(fields, expr)
+        def result = EzySqlTranspiler.transpile(fields, expr)
         def transpiled = result.sql
 
         then:
@@ -143,7 +144,7 @@ class QueryBuildingTest extends Specification {
         println(strExpr)
 
 
-        def transpiled = EzySql.transpile(fields, expr)
+        def transpiled = EzySqlTranspiler.transpile(fields, expr)
         def sql = transpiled.sql
         def params = transpiled.params
 
@@ -158,7 +159,7 @@ class QueryBuildingTest extends Specification {
     def 'test not'() {
         when:
         def expr = Cnd.not(Cnd.eq("name", 'ronald')).asExpr()
-        def transpiled = EzySql.transpile(fields, expr)
+        def transpiled = EzySqlTranspiler.transpile(fields, expr)
         then:
         expr.toString() == 'not(name = ronald)'
         transpiled.sql == 'NOT(? = ?)'

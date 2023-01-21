@@ -4,15 +4,15 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.ICond;
-import io.github.kayr.ezyquery.ast.EzyExpr;
-import io.github.kayr.ezyquery.parser.ExprParser;
-import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import java.sql.Connection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.NonNull;
 
@@ -24,12 +24,16 @@ public class EzySql {
 
   private Zql zql;
 
-  private EzySql() {}
+  private EzySql(Zql zql) {
+    this.zql = zql;
+  }
 
   public static EzySql withProvider(ConnectionProvider connectionProvider) {
-    EzySql ezySql = new EzySql();
-    ezySql.zql = new Zql(connectionProvider);
-    return ezySql;
+    return withZql(new Zql(connectionProvider));
+  }
+
+  public static EzySql withZql(Zql zql) {
+    return new EzySql(zql);
   }
 
   public static EzySql withDataSource(DataSource dataSource) {
@@ -40,31 +44,28 @@ public class EzySql {
     return withProvider(ConnectionProvider.of(connection));
   }
 
-  public static QueryAndParams transpile(List<Field<?>> fields, String sql) {
-    return transpile(fields, ExprParser.parseExpr(sql));
-  }
-
-  public static QueryAndParams transpile(List<Field<?>> fields, EzyExpr ezyExpr) {
-    return new EzySqlTranspiler(ezyExpr, fields).transpile();
-  }
-
-  public <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
+  private <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
     return zql.rows(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
   }
 
-  public <T> Optional<T> mayBeOne(EzyQuery<T> query, EzyCriteria params) {
+  private <T> Optional<T> mayBeOne(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
     T one = zql.firstRow(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 
-  public <T> T one(EzyQuery<T> query, EzyCriteria params) {
+  private <T> T one(EzyQuery<T> query, EzyCriteria params) {
     return mayBeOne(query, params).orElseThrow(() -> new NoSuchElementException("No result found"));
   }
 
-  public <T> List<T> list(EzyQuery<T> query) {
-    return Collections.emptyList();
+  private <T> Long count(EzyQuery<T> query, EzyCriteria criteria) {
+    Object one =
+        zql.one(Object.class, query.query(criteria).getSql(), query.query(criteria).getParams());
+    if (one == null) {
+      return 0L;
+    }
+    return CoercionUtil.toLong(one);
   }
 
   public Zql getZql() {
@@ -73,15 +74,6 @@ public class EzySql {
 
   public <T> CriteriaBuilder<T> from(EzyQuery<T> q) {
     return new CriteriaBuilder<>(q, this);
-  }
-
-  public <T> Long count(EzyQuery<T> query, EzyCriteria criteria) {
-    Object one =
-        zql.one(Object.class, query.query(criteria).getSql(), query.query(criteria).getParams());
-    if (one == null) {
-      return 0L;
-    }
-    return CoercionUtil.toLong(one);
   }
 
   public static class CriteriaBuilder<T> {
@@ -141,22 +133,22 @@ public class EzySql {
       return ezySql.list(query, criteria);
     }
 
+    public Long count() {
+      return ezySql.count(query, criteria.count());
+    }
+
+    public EzySql.Result<T> listAndCount() {
+      List<T> list = list();
+      Long count = count();
+      return new EzySql.Result<>(count, list);
+    }
+
     public Optional<T> mayBeOne() {
       return ezySql.mayBeOne(query, criteria);
     }
 
     public T one() {
       return ezySql.one(query, criteria);
-    }
-
-    public Long count() {
-      return ezySql.count(query, criteria.count());
-    }
-
-    public EzySql.Result listAndCount() {
-      List<T> list = list();
-      Long count = count();
-      return new EzySql.Result(count, list);
     }
 
     public CriteriaBuilder<T> withCriteria(EzyCriteria criteria) {

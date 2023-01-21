@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery
 
 import io.github.kayr.ezyquery.api.Field
+import io.github.kayr.ezyquery.parser.EzySqlTranspiler
 import spock.lang.Specification
 
 class TranspileTest extends Specification {
@@ -20,7 +21,7 @@ or (office = 'London' and age > 20)
                 new Field('t.maxAge', 'maxAge')
         ]
 
-        def result = EzySql.transpile(fields, expr)
+        def result = EzySqlTranspiler.transpile(fields, expr)
         println(result)
         then:
         result.toString() == 'Result{sql=\'? = t.name AND t.age IN (?, ?, ?, t.maxAge) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'

@@ -1,47 +1,25 @@
 package io.github.kayr.ezyquery.it
 
-import io.github.kayr.ezyquery.EzySql
+
 import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.cnd.Cnd
+import io.github.kayr.ezyquery.testqueries.CustomerReps
+import spock.lang.Shared
 import spock.lang.Specification
 
 class DbApitItSpec extends Specification {
 
+    @Shared
     Db db
 
-    def setup() {
+    def setupSpec() {
 
-        db = new Db()
+        db = new Db().insertData()
 
-        def offices = [
-                [officeCode: '1', country: 'UG', addressLine1: 'Kampala'],
-                [officeCode: '2', country: 'KE', addressLine1: 'Nairobi'],
-                [officeCode: '3', country: 'TZ', addressLine1: 'Dar es Salaam'],
-                [officeCode: '4', country: 'KE', addressLine1: 'Nairobi'],
-        ]
 
-        def employees = [
-                [employeeNumber: '1', officeCode: '1', firstName: 'Kay'],
-                [employeeNumber: '2', officeCode: '2', firstName: 'John'],
-                [employeeNumber: '3', officeCode: '2', firstName: 'Jane'],
-                [employeeNumber: '4', officeCode: '3', firstName: 'Doe']
-        ]
-
-        def customers = [
-                [customerNumber: '1', customerName: 'Kay', salesRepEmployeeNumber: '1'],
-                [customerNumber: '2', customerName: 'John', salesRepEmployeeNumber: '1'],
-                [customerNumber: '3', customerName: 'Jane', salesRepEmployeeNumber: '1'],
-                [customerNumber: '4', customerName: 'Doe', salesRepEmployeeNumber: '2'],
-                [customerNumber: '5', customerName: 'Daniel', salesRepEmployeeNumber: '2']
-
-        ]
-
-        db.intoDb(offices, "offices")
-        db.intoDb(employees, "employees")
-        db.intoDb(customers, "customers")
     }
 
-    def cleanup() {
+    def cleanupSpec() {
         db.close()
     }
 
@@ -102,6 +80,7 @@ class DbApitItSpec extends Specification {
         result.list*.toString() == list*.toString()
 
     }
+
     def "test listing data without filter criteria"() {
         def criteria = db.ezySql()
                 .from(CustomerReps.Q)
@@ -143,6 +122,8 @@ class DbApitItSpec extends Specification {
                         )
                         .limit(10).offset(20)
         )
+
+
         println list
 
         then:

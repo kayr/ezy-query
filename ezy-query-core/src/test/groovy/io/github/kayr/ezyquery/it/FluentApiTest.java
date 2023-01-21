@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery.it;
 
 import io.github.kayr.ezyquery.EzySql;
+import io.github.kayr.ezyquery.testqueries.CustomerReps;
 
 public class FluentApiTest {
 

@@ -11,10 +11,6 @@ import fuzzycsv.rdbms.stmt.SqlRenderer
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 import io.github.kayr.ezyquery.EzySql
-import io.github.kayr.ezyquery.sql.ConnectionProvider
-
-import java.sql.Connection
-
 
 class Db {
 
@@ -66,7 +62,7 @@ class Db {
 
     def close() {
         if (ds != null) {
-            ezySql().zql.executeUpdate( "DROP ALL OBJECTS")
+            ezySql().zql.executeUpdate("DROP ALL OBJECTS")
             ds.close()
         }
     }
@@ -94,5 +90,35 @@ class Db {
             println(table)
             return table
         }
+    }
+
+    def insertData() {
+        def offices = [
+                [officeCode: '1', country: 'UG', addressLine1: 'Kampala'],
+                [officeCode: '2', country: 'KE', addressLine1: 'Nairobi'],
+                [officeCode: '3', country: 'TZ', addressLine1: 'Dar es Salaam'],
+                [officeCode: '4', country: 'KE', addressLine1: 'Nairobi'],
+        ]
+
+        def employees = [
+                [employeeNumber: '1', officeCode: '1', firstName: 'Kay'],
+                [employeeNumber: '2', officeCode: '2', firstName: 'John'],
+                [employeeNumber: '3', officeCode: '2', firstName: 'Jane'],
+                [employeeNumber: '4', officeCode: '3', firstName: 'Doe']
+        ]
+
+        def customers = [
+                [customerNumber: '1', customerName: 'Kay', salesRepEmployeeNumber: '1'],
+                [customerNumber: '2', customerName: 'John', salesRepEmployeeNumber: '1'],
+                [customerNumber: '3', customerName: 'Jane', salesRepEmployeeNumber: '1'],
+                [customerNumber: '4', customerName: 'Doe', salesRepEmployeeNumber: '2'],
+                [customerNumber: '5', customerName: 'Daniel', salesRepEmployeeNumber: '2']
+
+        ]
+
+        intoDb(offices, "offices")
+        intoDb(employees, "employees")
+        intoDb(customers, "customers")
+        return this
     }
 }

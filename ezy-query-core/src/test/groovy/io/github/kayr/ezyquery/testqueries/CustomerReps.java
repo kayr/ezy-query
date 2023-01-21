@@ -1,8 +1,9 @@
-package io.github.kayr.ezyquery.it;
+package io.github.kayr.ezyquery.testqueries;
 
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +54,7 @@ public class CustomerReps implements EzyQuery<CustomerReps.Result> {
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
-    return EzyQuery.buildQueryAndParams(criteria, this);
+    return SqlBuilder.buildSql(this, criteria);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
+import io.github.kayr.ezyquery.util.Elf;
 import java.sql.Connection;
 
 public class DataSourceConnectionProvider implements ConnectionProvider {
@@ -16,7 +17,7 @@ public class DataSourceConnectionProvider implements ConnectionProvider {
   }
 
   @Override
-  public void closeConnection(Connection connection) throws Exception {
-    connection.close();
+  public void closeConnection(Connection connection) {
+    Elf.closeQuietly(connection);
   }
 }

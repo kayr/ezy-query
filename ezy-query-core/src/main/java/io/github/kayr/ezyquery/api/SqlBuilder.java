@@ -1,13 +1,13 @@
 package io.github.kayr.ezyquery.api;
 
 import io.github.kayr.ezyquery.EzyQuery;
-import io.github.kayr.ezyquery.EzySql;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.ast.ParensExpr;
 import io.github.kayr.ezyquery.parser.ExprParser;
+import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
@@ -73,7 +73,7 @@ public class SqlBuilder {
 
     if (Elf.isEmpty(ezyCriteria.getConditions())
         && Elf.isEmpty(ezyCriteria.getConditionExpressions())) {
-      return EzySql.transpile(fields, Cnd.trueCnd().asExpr());
+      return EzySqlTranspiler.transpile(fields, Cnd.trueCnd().asExpr());
     }
 
     EzyExpr stringExpr = combineExpressions(ezyCriteria.getConditionExpressions());
@@ -97,7 +97,7 @@ public class SqlBuilder {
       combined = apiExpr;
     }
 
-    return EzySql.transpile(fields, combined);
+    return EzySqlTranspiler.transpile(fields, combined);
   }
 
   private EzyExpr combineExpressions(List<String> expressions) {

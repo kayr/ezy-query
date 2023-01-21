@@ -17,6 +17,14 @@ public class EzySqlTranspiler {
     initHandlers();
   }
 
+  public static QueryAndParams transpile(List<Field<?>> fields, EzyExpr ezyExpr) {
+    return new EzySqlTranspiler(ezyExpr, fields).transpile();
+  }
+
+  public static QueryAndParams transpile(List<Field<?>> fields, String sql) {
+    return transpile(fields, ExprParser.parseExpr(sql));
+  }
+
   public QueryAndParams transpile() {
     return transpile(expr);
   }

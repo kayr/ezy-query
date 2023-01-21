@@ -36,21 +36,12 @@ public class EzyCriteria {
     return builder().columns(Arrays.asList(columns)).build();
   }
 
-  public static EzyCriteria select(Field<?>... columns) {
-    List<String> list = new ArrayList<>();
-    for (Field<?> column : columns) {
-      String alias = column.getAlias();
-      list.add(alias);
-    }
-    return builder().columns(list).build();
-  }
-
   public static EzyCriteria selectCount() {
     return builder().count(true).build();
   }
   // endregion
 
-  // region Side effects but these actually create copies of the object for immutability
+  // region Builder methods
   public EzyCriteria addSelect(String... columns) {
     return toBuilder().columns(Elf.addAll(this.columns, columns)).build();
   }
@@ -92,11 +83,12 @@ public class EzyCriteria {
   }
 
   public EzyCriteria orderBy(String... sort) {
-    List<Sort> sorts = new ArrayList<>();
+    List<Sort> sortList = new ArrayList<>();
     for (String s : sort) {
-      sorts.add(Sort.by(s, Sort.DIR.ASC));
+      List<Sort> parse = Sort.parse(s);
+      sortList.addAll(parse);
     }
-    return toBuilder().sorts(Elf.combine(this.sorts, sorts)).build();
+    return toBuilder().sorts(Elf.combine(this.sorts, sortList)).build();
   }
 
   // endregion

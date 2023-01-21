@@ -49,4 +49,9 @@ public class Conds implements ICond {
   public List<Object> getCnds() {
     return cnds;
   }
+
+  @Override
+  public String toString() {
+    return "Conds{" + "cnds=" + cnds + ", op=" + operator + '}';
+  }
 }

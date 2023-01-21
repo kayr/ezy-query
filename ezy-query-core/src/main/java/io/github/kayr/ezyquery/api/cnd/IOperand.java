@@ -68,4 +68,12 @@ public interface IOperand {
   default UnaryCond isNotNull() {
     return Cnd.isNotNull(this);
   }
+
+  default BetweenCond between(Object value1, Object value2) {
+    return Cnd.between(this, value1, value2);
+  }
+
+  default BetweenCond notBetween(Object value1, Object value2) {
+    return Cnd.notBetween(this, value1, value2);
+  }
 }

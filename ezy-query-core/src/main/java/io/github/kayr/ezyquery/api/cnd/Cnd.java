@@ -2,7 +2,6 @@ package io.github.kayr.ezyquery.api.cnd;
 
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
-
 import java.util.Collection;
 
 public class Cnd {

@@ -5,7 +5,6 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.List;
  * LEFT JOIN employees e ON o.officeCode * = e.officeCode LEFT JOIN customers c ON e.employeeNumber
  * = c.salesRepEmployeeNumber
  */
-//@Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-11-05T17:10:56.978")
+// @Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-11-05T17:10:56.978")
 public class CustomerReps implements EzyQuery<CustomerReps.Result> {
   public static Field<Object> FIELD_CUSTOMER_NAME =
       Field.of("c.customerName", "customerName", Object.class);

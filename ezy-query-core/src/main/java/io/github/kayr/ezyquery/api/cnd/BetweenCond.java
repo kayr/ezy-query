@@ -23,4 +23,18 @@ public class BetweenCond implements ICond {
   public EzyExpr asExpr() {
     return new BetweenExpr(ICond.expr(left), ICond.expr(start), ICond.expr(end), not);
   }
+
+  @Override
+  public String toString() {
+    return "BetweenCond{"
+        + "left="
+        + left
+        + ", start="
+        + start
+        + ", end="
+        + end
+        + ", not="
+        + not
+        + '}';
+  }
 }

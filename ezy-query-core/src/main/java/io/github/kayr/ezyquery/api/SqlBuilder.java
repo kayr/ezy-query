@@ -13,7 +13,6 @@ import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@lombok.AllArgsConstructor
 public class SqlBuilder {
 
   private final List<Field<?>> fields;

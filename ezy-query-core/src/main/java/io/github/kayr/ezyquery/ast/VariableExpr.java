@@ -1,6 +1,5 @@
 package io.github.kayr.ezyquery.ast;
 
-@lombok.Setter
 @lombok.AllArgsConstructor
 public class VariableExpr implements EzyExpr {
 

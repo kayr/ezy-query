@@ -19,4 +19,9 @@ public class Val implements ICond {
   public EzyExpr asExpr() {
     return new ConstExpr(value, ConstExpr.Type.ANY);
   }
+
+  @Override
+  public String toString() {
+    return "Val{" + "value=" + value + '}';
+  }
 }

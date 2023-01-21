@@ -13,4 +13,9 @@ public class UnaryCond implements ICond {
   public EzyExpr asExpr() {
     return new UnaryExpr(operator, ICond.expr(left));
   }
+
+  @Override
+  public String toString() {
+    return "UnaryCond{" + "left=" + left + ", op=" + operator + '}';
+  }
 }

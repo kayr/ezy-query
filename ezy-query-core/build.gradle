@@ -13,6 +13,7 @@ plugins {
 
 ext {
     POM_ARTIFACT_ID = 'ezy-query-core'
+    POM_NAME = 'Ezy Query Core'
 }
 
 

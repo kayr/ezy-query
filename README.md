@@ -5,19 +5,8 @@ Convert Your Sql Query To A Queryable Java API/Code.. think of A Queryable View 
 Adding to your gradle build
 
 ```groovy
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "io.github.kayr:ezy-query-gradle-plugin:0.0.2"
-    }
-}
-
-apply plugin: 'io.github.kayr.gradle.ezyquery'
-
-dependencies {
-    implementation 'io.github.kayr:ezy-query-core:0.0.2'
+plugins {
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.5'
 }
 ```
 

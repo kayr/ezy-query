@@ -3,6 +3,7 @@ package mypackage.sql;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.lang.Boolean;
 import java.lang.Byte;
@@ -54,31 +55,31 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static Field<BigInteger> ID = Field.of("td.id", "id", BigInteger.class);
+  public static Field<BigInteger> ID = Field.of("td.id", "id", BigInteger.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Long> LONGVAL = Field.of("td.long_", "longval", Long.class);
+  public static Field<Long> LONGVAL = Field.of("td.long_", "longval", Long.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Integer> INTVAL = Field.of("td.int_", "intval", Integer.class);
+  public static Field<Integer> INTVAL = Field.of("td.int_", "intval", Integer.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Float> FLOATVAL = Field.of("tr.float_", "floatval", Float.class);
+  public static Field<Float> FLOATVAL = Field.of("tr.float_", "floatval", Float.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class);
+  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
 
-  public static Field<String> STRINGVAL = Field.of("mtw.string_", "stringval", String.class);
+  public static Field<String> STRINGVAL = Field.of("mtw.string_", "stringval", String.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Boolean> BOOLEANVAL = Field.of("mtw.boolean_", "booleanval", Boolean.class);
+  public static Field<Boolean> BOOLEANVAL = Field.of("mtw.boolean_", "booleanval", Boolean.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Date> DATEVAL = Field.of("tr.date_", "dateval", Date.class);
+  public static Field<Date> DATEVAL = Field.of("tr.date_", "dateval", Date.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Timestamp> TIMEVAL = Field.of("tr.time", "timeval", Timestamp.class);
+  public static Field<Timestamp> TIMEVAL = Field.of("tr.time", "timeval", Timestamp.class,Field.ExpressionType.COLUMN);
 
-  public static Field<BigInteger> BIGINTVAL = Field.of("tr.bigint_", "bigintval", BigInteger.class);
+  public static Field<BigInteger> BIGINTVAL = Field.of("tr.bigint_", "bigintval", BigInteger.class,Field.ExpressionType.COLUMN);
 
-  public static Field<BigDecimal> BIGDECIMALVAL = Field.of("tr.bigdecimal_", "bigdecimalval", BigDecimal.class);
+  public static Field<BigDecimal> BIGDECIMALVAL = Field.of("tr.bigdecimal_", "bigdecimalval", BigDecimal.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Byte> BLOBVAL = Field.of("tr.blob_", "blobval", Byte.class);
+  public static Field<Byte> BLOBVAL = Field.of("tr.blob_", "blobval", Byte.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Object> OBJECTVAL = Field.of("tr.object_", "objectval", Object.class);
+  public static Field<Object> OBJECTVAL = Field.of("tr.object_", "objectval", Object.class,Field.ExpressionType.COLUMN);
 
   public static final MyQuery QUERY = new MyQuery();
 
@@ -111,7 +112,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
-    return EzyQuery.buildQueryAndParams(criteria, this);
+    return SqlBuilder.buildSql(this, criteria);
   }
 
   @Override

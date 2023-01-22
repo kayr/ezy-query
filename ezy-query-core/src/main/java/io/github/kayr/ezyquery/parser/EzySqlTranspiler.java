@@ -131,9 +131,13 @@ public class EzySqlTranspiler {
             throw new EzyTranspileException("Unknown field " + fieldName);
           }
 
-          Field field = fieldResult.get();
+          Field<?> field = fieldResult.get();
 
-          return QueryAndParams.of(field.getSqlField(), Collections.emptyList());
+          String sqlField = field.getSqlField();
+          if (field.getExpressionType() == Field.ExpressionType.BINARY) {
+            sqlField = "(" + sqlField + ")";
+          }
+          return QueryAndParams.of(sqlField, Collections.emptyList());
         });
 
     register(

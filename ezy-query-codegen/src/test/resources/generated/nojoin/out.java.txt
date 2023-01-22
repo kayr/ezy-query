@@ -3,6 +3,7 @@ package mypackage.sql;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import java.lang.Class;
 import java.lang.Double;
@@ -25,9 +26,9 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class);
+  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class);
+  public static Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
 
   public static final MyQuery QUERY = new MyQuery();
 
@@ -46,7 +47,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
-    return EzyQuery.buildQueryAndParams(criteria, this);
+    return SqlBuilder.buildSql(this, criteria);
   }
 
   @Override

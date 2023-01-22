@@ -7,6 +7,7 @@ import java.util.Collection;
 public class Cnd {
 
   private static final Cond TRUE = Cnd.eq(1, 1);
+  public static final Cond FALSE = Cnd.eq(1, 0);
 
   private Cnd() {}
 
@@ -82,12 +83,12 @@ public class Cnd {
     return new UnaryCond(left, UnaryExpr.Type.IS_NOT_NULL);
   }
 
-  public static Conds every(Object... conds) {
-    return Conds.and(conds);
+  public static Conds andAll(Object... conds) {
+    return Conds.andAll(conds);
   }
 
-  public static Conds any(Object... conds) {
-    return Conds.or(conds);
+  public static Conds orAll(Object... conds) {
+    return Conds.orAll(conds);
   }
 
   public static BetweenCond between(Object left, Object start, Object end) {
@@ -100,5 +101,9 @@ public class Cnd {
 
   public static Cond trueCnd() {
     return TRUE;
+  }
+
+  public static Cond falseCnd() {
+    return FALSE;
   }
 }

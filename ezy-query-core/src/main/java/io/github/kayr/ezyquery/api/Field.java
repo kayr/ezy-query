@@ -8,6 +8,7 @@ public class Field<T> implements IOperand {
   private String sqlField;
   private String alias;
   private Class<T> dataType;
+  private ExpressionType expressionType;
 
   public Field(String sqlField, String alias) {
     this.sqlField = sqlField;
@@ -21,8 +22,13 @@ public class Field<T> implements IOperand {
     return alias;
   }
 
+  public static <T> Field<T> of(
+      String sqlField, String alias, Class<T> dataType, ExpressionType expressionType) {
+    return new Field<>(sqlField, alias, dataType, expressionType);
+  }
+
   public static <T> Field<T> of(String sqlField, String alias, Class<T> dataType) {
-    return new Field<>(sqlField, alias, dataType);
+    return new Field<>(sqlField, alias, dataType, ExpressionType.OTHER);
   }
 
   public Sort asc() {
@@ -31,5 +37,11 @@ public class Field<T> implements IOperand {
 
   public Sort desc() {
     return Sort.by(this, Sort.DIR.DESC);
+  }
+
+  public enum ExpressionType {
+    BINARY,
+    COLUMN,
+    OTHER
   }
 }

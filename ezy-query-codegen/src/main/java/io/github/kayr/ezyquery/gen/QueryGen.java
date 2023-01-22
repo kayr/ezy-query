@@ -5,6 +5,7 @@ import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
@@ -15,7 +16,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -86,7 +90,7 @@ public class QueryGen {
         MethodSpec.methodBuilder("query")
             .addModifiers(Modifier.PUBLIC)
             .addParameter(EzyCriteria.class, "criteria")
-            .addStatement("return $T.buildQueryAndParams(criteria, this)", EzyQuery.class)
+            .addStatement("return $T.buildSql(this, criteria)", SqlBuilder.class)
             .returns(QueryAndParams.class)
             .build();
 
@@ -331,11 +335,13 @@ public class QueryGen {
                         Modifier.PUBLIC,
                         Modifier.STATIC)
                     .initializer(
-                        "$T.of($S, $S, $T.class)",
+                        "$T.of($S, $S, $T.class,$T.$L)",
                         Field.class,
                         f.getSqlField(),
                         f.getAlias(),
-                        f.getDataType())
+                        f.getDataType(),
+                        Field.ExpressionType.class,
+                        f.getExpressionType().name())
                     .build())
         .collect(Collectors.toList());
   }
@@ -368,8 +374,19 @@ public class QueryGen {
     String typeName = parts[1];
 
     Class<?> type = resolveType(typeName);
-    String sqlField = selectItem.getExpression().toString();
-    return Field.of(sqlField, aliasName, type);
+
+    Expression expression = selectItem.getExpression();
+    String sqlField = expression.toString();
+
+    if (expression instanceof Column) {
+      return Field.of(sqlField, aliasName, type, Field.ExpressionType.COLUMN);
+    }
+
+    if (expression instanceof BinaryExpression) {
+      return Field.of(sqlField, aliasName, type, Field.ExpressionType.BINARY);
+    }
+
+    return Field.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
   }
 
   Class<?> resolveType(String type) {

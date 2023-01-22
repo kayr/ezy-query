@@ -23,11 +23,11 @@ public class Conds implements ICond {
     return new ParensExpr(condition);
   }
 
-  public static Conds and(Object... cond) {
+  public static Conds andAll(Object... cond) {
     return createConds(BinaryExpr.Op.AND, cond);
   }
 
-  public static Conds or(Object... cond) {
+  public static Conds orAll(Object... cond) {
     return createConds(BinaryExpr.Op.OR, cond);
   }
 

@@ -31,12 +31,20 @@ public interface ICond {
 
   default Conds and(ICond cond) {
     Optional<Conds> cond1 = combine(cond, BinaryExpr.Op.AND);
-    return cond1.orElse(Conds.and(this, cond));
+    return cond1.orElse(Conds.andAll(this, cond));
+  }
+
+  default Cond and(Field<?> cond) {
+    return Cnd.and(this, cond);
   }
 
   default Conds or(ICond cond) {
     Optional<Conds> combine = combine(cond, BinaryExpr.Op.OR);
-    return combine.orElse(Conds.or(this, cond));
+    return combine.orElse(Conds.orAll(this, cond));
+  }
+
+  default Cond or(Field<?> cond) {
+    return Cnd.or(this, cond);
   }
 
   default Optional<Conds> combine(ICond cond, BinaryExpr.Op combineOperator) {

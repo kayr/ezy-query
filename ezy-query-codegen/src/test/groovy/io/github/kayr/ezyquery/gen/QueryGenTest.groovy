@@ -1,9 +1,6 @@
 package io.github.kayr.ezyquery.gen
 
-
 import spock.lang.Specification
-
-import static org.junit.Assert.assertEquals
 
 class QueryGenTest extends Specification {
 
@@ -15,8 +12,9 @@ class QueryGenTest extends Specification {
         def generated = generateCode(data.v1)
 
 
+        def expected = data.v2.trim()
         then:
-        assertEquals data.v2.trim(), generated
+        generated == expected
     }
 
     private String generateCode(String sql) {
@@ -30,11 +28,22 @@ class QueryGenTest extends Specification {
 
         when:
         def generated = generateCode(data.v1)
-        assertEquals  data.v2.trim(),generated
+        def expected = data.v2.trim()
 
         then:
-        assertEquals  data.v2.trim(),generated
+        generated == expected
     }
+
+    def 'test multi statement'() {
+        def data = load('multi-statement')
+        when:
+        def generated = generateCode(data.v1)
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
 
     Tuple2<String, String> load(String path) {
         def sql = QueryGenTest.class.getResource("/generated/$path/in.sql.txt").text

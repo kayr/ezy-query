@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.itests
 
-import io.github.kayr.ezyquery.EzyQuery
+
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
 import prod.ProdQuery1
@@ -59,10 +59,6 @@ class TestCanFetchDataTest extends Specification {
                 .orderBy(Sort.by(TestQuery1.OFFICE_CODE, Sort.DIR.ASC))
                 .limit(3)
 
-        EzyQuery.buildQueryAndParams(criteria.criteria,TestQuery1.QUERY).tap {
-            println(it.sql)
-        }
-
 
 
         when:
@@ -82,7 +78,6 @@ class TestCanFetchDataTest extends Specification {
         list.every { it.officeCode != null }
         list.every { it.country != null }
         list.every { it.addressLine != null }
-
 
     }
 
@@ -121,11 +116,6 @@ class TestCanFetchDataTest extends Specification {
         given:
         def criteria = ez.from(QueryWithDaultOrderBy.QUERY)
         .select(QueryWithDaultOrderBy.OFFICE_CODE)
-
-
-       criteria.query.print()
-
-
 
         when:
         def list = criteria.list()

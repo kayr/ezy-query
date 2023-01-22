@@ -28,7 +28,7 @@ class DbApitItSpec extends Specification {
         def list = db.ezySql().list(CustomerReps.Q,
                 EzyCriteria.selectAll()
                         .where(
-                                Cnd.every(
+                                Cnd.andAll(
                                         Cnd.eq("#employeeOfficeCode", "2"),
                                         Cnd.isNotNull("#customerName")
                                 )
@@ -45,7 +45,7 @@ class DbApitItSpec extends Specification {
         def list = db.ezySql().list(CustomerReps.Q,
                 EzyCriteria.selectAll()
                         .where(
-                                Cnd.every(
+                                Cnd.andAll(
                                         Cnd.eq(CustomerReps.FIELD_EMPLOYEE_OFFICE_CODE, "2"),
                                         Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME)
                                 )
@@ -61,7 +61,7 @@ class DbApitItSpec extends Specification {
         def criteria = db.ezySql()
                 .from(CustomerReps.Q)
                 .where(
-                        Cnd.every(
+                        Cnd.andAll(
                                 Cnd.eq(CustomerReps.FIELD_EMPLOYEE_OFFICE_CODE, "2"),
                                 Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME)
                         )
@@ -107,7 +107,7 @@ class DbApitItSpec extends Specification {
                 EzyCriteria.selectAll()
                         .where(
                                 Cnd.or(
-                                        Cnd.every(
+                                        Cnd.andAll(
                                                 Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME),
                                                 Cnd.eq(CustomerReps.FIELD_EMPLOYEE_COUNTY, "XXX")),
                                         Cnd.gt(CustomerReps.FIELD_EMPLOYEE_OFFICE, "Kampala")))

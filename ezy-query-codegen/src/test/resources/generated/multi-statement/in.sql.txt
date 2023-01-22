@@ -1,0 +1,8 @@
+ select
+   officeCode as "code",
+   true or true as a ,
+   false as b,
+   1 in (1 ,2 , 4) as c,
+   1 between 5 and 6 as d,
+   (true or true) as e
+ from offices

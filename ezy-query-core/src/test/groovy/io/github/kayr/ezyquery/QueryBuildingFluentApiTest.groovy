@@ -79,7 +79,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Conds.and(
+        def expr = Conds.andAll(
                 Cnd.eq("name", 'ronald'),
                 Cnd.in('#age', [20, 30, 40]))
                 .asExpr()
@@ -103,7 +103,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.every(
+        def expr = Cnd.andAll(
                 Cnd.or("name", 'ronald'),
                 Cnd.in('#age', []))
                 .asExpr()
@@ -122,7 +122,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.any(
+        def expr = Cnd.orAll(
                 Cnd.negate(10),
                 Cnd.positive("5/5"),
                 Cnd.isNull("NV"),
@@ -154,7 +154,7 @@ class QueryBuildingFluentApiTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.any(
+        def expr = Cnd.orAll(
                 Cnd.trueCnd(),
                 Cnd.between(
                         Cnd.negate(10),
@@ -191,11 +191,11 @@ class QueryBuildingFluentApiTest extends Specification {
 
     def 'test rendering of multiple conds'() {
         when:
-        def expr = Cnd.every(
+        def expr = Cnd.andAll(
                 Cnd.trueCnd(),
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),
-                Cnd.any(
+                Cnd.orAll(
                         Cnd.or("lastName", 'mah'),
                         Cnd.lte("lastName1", 'mah2'),
                         Cnd.like('#name', '%kdj%')),

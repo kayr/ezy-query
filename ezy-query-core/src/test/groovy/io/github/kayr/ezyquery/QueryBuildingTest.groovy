@@ -3,7 +3,9 @@ package io.github.kayr.ezyquery
 import io.github.kayr.ezyquery.api.Field
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.api.cnd.Conds
+import io.github.kayr.ezyquery.ast.EzyExpr
 import io.github.kayr.ezyquery.parser.EzySqlTranspiler
+import io.github.kayr.ezyquery.testqueries.Booleans
 import spock.lang.Specification
 
 
@@ -19,10 +21,10 @@ class QueryBuildingTest extends Specification {
 
 
         when:
-        def expr = Cnd.every(
+        def expr = Cnd.andAll(
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),
-                Conds.or(Cnd.gte("lastName", 'mah'),
+                Conds.orAll(Cnd.gte("lastName", 'mah'),
                         Cnd.lte("lastName1", 'mah2'),
                         Cnd.and("lastName2",
                                 Cnd.neq('sex', 'm')),
@@ -40,7 +42,6 @@ class QueryBuildingTest extends Specification {
     }
 
 
-
     def 'test build a query with in'() {
         given:
         def fields = [
@@ -50,7 +51,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Conds.and(
+        def expr = Conds.andAll(
                 Cnd.eq("name", 'ronald'),
                 Cnd.in('#age', [20, 30, 40]))
                 .asExpr()
@@ -74,7 +75,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.every(
+        def expr = Cnd.andAll(
                 Cnd.or("name", 'ronald'),
                 Cnd.in('#age', []))
                 .asExpr()
@@ -93,7 +94,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.any(
+        def expr = Cnd.orAll(
                 Cnd.negate(10),
                 Cnd.positive("5/5"),
                 Cnd.isNull("NV"),
@@ -125,7 +126,7 @@ class QueryBuildingTest extends Specification {
                 new Field('t.maxAge', 'maxAge')
         ]
         when:
-        def expr = Cnd.any(
+        def expr = Cnd.orAll(
                 Cnd.trueCnd(),
                 Cnd.between(
                         Cnd.negate(10),
@@ -162,11 +163,11 @@ class QueryBuildingTest extends Specification {
 
     def 'test rendering of multiple conds'() {
         when:
-        def expr = Cnd.every(
+        def expr = Cnd.andAll(
                 Cnd.trueCnd(),
                 Cnd.eq("name", 'ronald'),
                 Cnd.gt('#age', 20),
-                Cnd.any(
+                Cnd.orAll(
                         Cnd.or("lastName", 'mah'),
                         Cnd.lte("lastName1", 'mah2'),
                         Cnd.like('#name', '%kdj%')),
@@ -192,6 +193,20 @@ class QueryBuildingTest extends Specification {
         expr.toString() == '-1 not between -5/5 and 10'
         transpiled.sql == '-? NOT BETWEEN -? AND ?'
         transpiled.params == [1, '5/5', 10]
+    }
+
+    def 'test binary expressions are wrapped in parens'() {
+        // (name  or age ) and office
+        EzyExpr expr = Booleans.A.and(Booleans.B).asExpr()
+        when:
+        def transpiled = EzySqlTranspiler.transpile(Booleans.QUERY.fields(), expr)
+
+        def (sql, params) = [transpiled.sql, transpiled.params]
+
+        then:
+        sql == '(true OR true) AND false'
+        params == []
+
     }
 
 

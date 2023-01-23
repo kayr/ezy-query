@@ -146,6 +146,8 @@ public class EzySqlTranspiler {
           QueryAndParams sqlExpr = transpile(parensExpr.getExpr());
           return QueryAndParams.of("(").append(sqlExpr).append(")");
         });
+
+    register(SqlExpr.class, sqlExpr -> QueryAndParams.of(sqlExpr.getSql(), sqlExpr.getParams()));
   }
 
   private Optional<Field<?>> findField(String alias) {

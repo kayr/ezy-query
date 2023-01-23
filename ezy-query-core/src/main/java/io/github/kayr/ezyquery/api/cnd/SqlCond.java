@@ -1,0 +1,32 @@
+package io.github.kayr.ezyquery.api.cnd;
+
+import io.github.kayr.ezyquery.ast.EzyExpr;
+import io.github.kayr.ezyquery.ast.SqlExpr;
+import io.github.kayr.ezyquery.util.Elf;
+import java.util.List;
+
+@lombok.Getter
+@lombok.RequiredArgsConstructor
+public class SqlCond implements ICond {
+  private final String sql;
+  private final List<Object> params;
+
+  public static SqlCond sql(String sql, List<Object> params) {
+    return new SqlCond(mayBeAddParens(sql), Elf.copyList(params));
+  }
+
+  @Override
+  public EzyExpr asExpr() {
+    return new SqlExpr(sql, params);
+  }
+
+  @Override
+  public String toString() {
+    return sql;
+  }
+
+  private static String mayBeAddParens(String expression) {
+    if (expression.trim().startsWith("(") && expression.trim().endsWith(")")) return expression;
+    return "(" + expression + ")";
+  }
+}

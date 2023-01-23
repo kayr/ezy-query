@@ -26,6 +26,10 @@ public class Elf {
     return result;
   }
 
+  public static <T> List<T> copyList(List<T> list) {
+    return new ArrayList<>(list);
+  }
+
   @SafeVarargs
   public static <T> List<T> addAll(List<T> list, T... items) {
     List<T> result = new ArrayList<>(list);

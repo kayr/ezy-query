@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery.api.cnd;
 
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class Cnd {
@@ -103,7 +104,11 @@ public class Cnd {
     return TRUE;
   }
 
-  public static Cond falseCnd() {
-    return FALSE;
+  public static ExprCond expr(String expr) {
+    return ExprCond.expr(expr);
+  }
+
+  public static SqlCond sql(String sql, Object... params) {
+    return SqlCond.sql(sql, Arrays.asList(params));
   }
 }

@@ -22,9 +22,13 @@ class CndTranspileTest extends Specification {
         expect:
         def expr = cnd.asExpr()
         def query = EzySqlTranspiler.transpile(fields, expr)
-        query.sql == sql
-        query.params == params
-        expr.toString() == exprString
+        def actualSql = query.sql
+        def actualParams = query.params
+        def actualEzyExpr = expr.toString()
+
+        actualParams == params
+        actualEzyExpr == exprString
+        actualSql == sql
 
         where:
         cnd                                                  || params                   | exprString                 | sql
@@ -43,15 +47,19 @@ class CndTranspileTest extends Specification {
         Cnd.isNull("name")                                   || ['name']                 | 'name is null'             | '? IS NULL'
         Cnd.isNotNull("name")                                || ['name']                 | 'name is not null'         | '? IS NOT NULL'
         Cnd.val("name")                                      || ['name']                 | 'name'                     | '?'
-        Cnd.val("name").and(Cnd.eq("name", 'john'))          || ['name', 'name', 'john'] | '(name AND name = john)'   | '(? AND ? = ?)'
-        Cnd.val("name").or(Cnd.eq("name", 'john'))           || ['name', 'name', 'john'] | '(name OR name = john)'    | '(? OR ? = ?)'
         Cnd.not(Cnd.eq("name", 'john'))                      || ['name', 'john']         | 'not(name = john)'         | 'NOT(? = ?)'
         Cnd.andAll("true", Cnd.val("false"), Cnd.val("foo")) || ['true', 'false', 'foo'] | '(true AND false AND foo)' | '(? AND ? AND ?)'
         Cnd.orAll(Cnd.val("true"), "false", "foo")           || ['true', 'false', 'foo'] | '(true OR false OR foo)'   | '(? OR ? OR ?)'
         Cnd.trueCnd()                                        || [1, 1]                   | '1 = 1'                    | '? = ?'
         Cnd.positive("10")                                   || ['10']                   | '+10'                      | '+?'
         Cnd.negate("10")                                     || ['10']                   | '-10'                      | '-?'
-
+        Cnd.expr("'name' = 'john'")                          || ['name', 'john']         | "('name' = 'john')"        | "(? = ?)"
+        Cnd.expr("1 in (0)")                                 || [1, 0]                   | "1 in [0]"                 | "? IN (?)"
+        Cnd.expr("1 in (0) and 2 > 1")                       || [1, 0, 2, 1]             | "(1 in [0] AND 2 > 1)"     | "(? IN (?) AND ? > ?)"
+        Cnd.expr("name = 'john'")                            || ['john']                 | "(#name = 'john')"         | "(t.name = ?)"
+        Cnd.sql("some sql expression", "param1", "param2")   || ['param1', 'param2']     | "(some sql expression)"    | "(some sql expression)"
+        Cnd.sql("(some sql expression)", "param1", "param2") || ['param1', 'param2']     | "(some sql expression)"    | "(some sql expression)"
+        Cnd.sql("(some sql expression)")                     || []                       | "(some sql expression)"    | "(some sql expression)"
     }
 
     def 'test combining multiple expressions'() {
@@ -61,20 +69,27 @@ class CndTranspileTest extends Specification {
         def actualSql = query.sql
         def actualParams = query.params
         def actualEzyExpr = expr.toString()
+
         actualParams == params
         actualEzyExpr == exprString
         actualSql == sql
 
         where:
-        cnd                                                                               || params                                        | exprString                                            | sql
-        Cnd.eq("name", 'john').and(Cnd.eq("age", 10))                                     || ['name', 'john', 'age', 10]                   | '(name = john AND age = 10)'                          | '(? = ? AND ? = ?)'
-        Cnd.eq("name", 'john').or(Cnd.eq("age", 10))                                      || ['name', 'john', 'age', 10]                   | '(name = john OR age = 10)'                           | '(? = ? OR ? = ?)'
-        Cnd.eq("name", 'john').and(Cnd.eq("age", 10)).or(Cnd.eq("office", 'hcm'))         || ['name', 'john', 'age', 10, 'office', 'hcm']  | '((name = john AND age = 10) OR office = hcm)'        | '((? = ? AND ? = ?) OR ? = ?)'
-        Cnd.andAll("true", "false", "foo").and(Cnd.val("bar"))                            || ['true', 'false', 'foo', 'bar']               | '(true AND false AND foo AND bar)'                    | '(? AND ? AND ? AND ?)'
-        Cnd.andAll("true", "false", "foo").or(Cnd.val("bar"))                             || ['true', 'false', 'foo', 'bar']               | '((true AND false AND foo) OR bar)'                   | '((? AND ? AND ?) OR ?)'
-        Cnd.andAll("true", "false", "foo").or(Cnd.andAll("bar", "foo", "car"))            || ['true', 'false', 'foo', 'bar', 'foo', 'car'] | '((true AND false AND foo) OR (bar AND foo AND car))' | '((? AND ? AND ?) OR (? AND ? AND ?))'
-        Cnd.andAll("true", "false", "foo").and(Cnd.andAll("bar", "foo", "car"))           || ['true', 'false', 'foo', 'bar', 'foo', 'car'] | '(true AND false AND foo AND bar AND foo AND car)'    | '(? AND ? AND ? AND ? AND ? AND ?)'
-        Cnd.val("name").and(Cnd.val("age")).or(Cnd.val("office")).and(Cnd.val("address")) || ['name', 'age', 'office', 'address']          | '(((name AND age) OR office) AND address)'            | '(((? AND ?) OR ?) AND ?)'
+        cnd                                                                               || params                                                | exprString                                            | sql
+        Cnd.eq("name", 'john').and(Cnd.eq("age", 10))                                     || ['name', 'john', 'age', 10]                           | '(name = john AND age = 10)'                          | '(? = ? AND ? = ?)'
+        Cnd.eq("name", 'john').or(Cnd.eq("age", 10))                                      || ['name', 'john', 'age', 10]                           | '(name = john OR age = 10)'                           | '(? = ? OR ? = ?)'
+        Cnd.eq("name", 'john').and(Cnd.eq("age", 10)).or(Cnd.eq("office", 'hcm'))         || ['name', 'john', 'age', 10, 'office', 'hcm']          | '((name = john AND age = 10) OR office = hcm)'        | '((? = ? AND ? = ?) OR ? = ?)'
+        Cnd.andAll("true", "false", "foo").and(Cnd.val("bar"))                            || ['true', 'false', 'foo', 'bar']                       | '(true AND false AND foo AND bar)'                    | '(? AND ? AND ? AND ?)'
+        Cnd.andAll("true", "false", "foo").or(Cnd.val("bar"))                             || ['true', 'false', 'foo', 'bar']                       | '((true AND false AND foo) OR bar)'                   | '((? AND ? AND ?) OR ?)'
+        Cnd.andAll("true", "false", "foo").or(Cnd.andAll("bar", "foo", "car"))            || ['true', 'false', 'foo', 'bar', 'foo', 'car']         | '((true AND false AND foo) OR (bar AND foo AND car))' | '((? AND ? AND ?) OR (? AND ? AND ?))'
+        Cnd.andAll("true", "false", "foo").and(Cnd.andAll("bar", "foo", "car"))           || ['true', 'false', 'foo', 'bar', 'foo', 'car']         | '(true AND false AND foo AND bar AND foo AND car)'    | '(? AND ? AND ? AND ? AND ? AND ?)'
+        Cnd.val("name").and(Cnd.eq("name", 'john'))                                       || ['name', 'name', 'john']                              | '(name AND name = john)'                              | '(? AND ? = ?)'
+        Cnd.val("name").or(Cnd.eq("name", 'john'))                                        || ['name', 'name', 'john']                              | '(name OR name = john)'                               | '(? OR ? = ?)'
+        Cnd.val("name").and(Cnd.val("age")).or(Cnd.val("office")).and(Cnd.val("address")) || ['name', 'age', 'office', 'address']                  | '(((name AND age) OR office) AND address)'            | '(((? AND ?) OR ?) AND ?)'
+        Cnd.expr("true and true or false").and(Cnd.eq("a", 'b'))                          || [Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, 'a', 'b'] | "((true AND true OR false) AND a = b)"                | "((? AND ? OR ?) AND ? = ?)"
+        Cnd.expr("'name' = 'john'").and(Cnd.eq("a", 'b'))                                 || ['name', 'john', 'a', 'b']                            | "(('name' = 'john') AND a = b)"                       | "((? = ?) AND ? = ?)"
+        Cnd.sql("(some sql expression)", "param1", "param2").and(Cnd.eq('a', 'b'))        || ['param1', 'param2', 'a', 'b']                        | "((some sql expression) AND a = b)"                   | "((some sql expression) AND ? = ?)"
+
 
     }
 

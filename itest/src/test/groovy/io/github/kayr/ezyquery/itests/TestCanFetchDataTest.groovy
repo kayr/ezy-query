@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery.itests
 
 
 import io.github.kayr.ezyquery.EzySql
+import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.Sort
 import prod.ProdQuery1
 import spock.lang.Specification
@@ -101,6 +102,9 @@ class TestCanFetchDataTest extends Specification {
         given:
         def criteria = ez.from(ProdQuery1.QUERY)
                 .where(ProdQuery1.ADDRESS_LINE.eq("Kampala"))
+
+
+
 
         when:
         def list = criteria.list()

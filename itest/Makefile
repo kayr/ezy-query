@@ -15,5 +15,3 @@ build: generate
 
 publishLocal:
 	cd ../ && make publishLocal
-
-all: test

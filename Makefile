@@ -22,3 +22,6 @@ format:
 
 generate:
 	./gradlew writeVersion
+
+rebuild: clean build test publishLocal
+	cd itest && make clean build

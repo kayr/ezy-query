@@ -333,6 +333,7 @@ public class QueryGen {
                         ParameterizedTypeName.get(Field.class, f.getDataType()),
                         constantName(f.getAlias()),
                         Modifier.PUBLIC,
+                        Modifier.FINAL,
                         Modifier.STATIC)
                     .initializer(
                         "$T.of($S, $S, $T.class,$T.$L)",

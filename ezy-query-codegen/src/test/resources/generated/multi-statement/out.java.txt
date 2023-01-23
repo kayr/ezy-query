@@ -29,17 +29,17 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static Field<Object> CODE = Field.of("officeCode", "code", Object.class,Field.ExpressionType.COLUMN);
+  public static final Field<Object> CODE = Field.of("officeCode", "code", Object.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Object> A = Field.of("true OR true", "a", Object.class,Field.ExpressionType.BINARY);
+  public static final Field<Object> A = Field.of("true OR true", "a", Object.class,Field.ExpressionType.BINARY);
 
-  public static Field<Object> B = Field.of("false", "b", Object.class,Field.ExpressionType.COLUMN);
+  public static final Field<Object> B = Field.of("false", "b", Object.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Object> C = Field.of("1 IN (1, 2, 4)", "c", Object.class,Field.ExpressionType.OTHER);
+  public static final Field<Object> C = Field.of("1 IN (1, 2, 4)", "c", Object.class,Field.ExpressionType.OTHER);
 
-  public static Field<Object> D = Field.of("1 BETWEEN 5 AND 6", "d", Object.class,Field.ExpressionType.OTHER);
+  public static final Field<Object> D = Field.of("1 BETWEEN 5 AND 6", "d", Object.class,Field.ExpressionType.OTHER);
 
-  public static Field<Object> E = Field.of("(true OR true)", "e", Object.class,Field.ExpressionType.OTHER);
+  public static final Field<Object> E = Field.of("(true OR true)", "e", Object.class,Field.ExpressionType.OTHER);
 
   public static final MyQuery QUERY = new MyQuery();
 

@@ -26,9 +26,9 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
+  public static final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
 
-  public static Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
+  public static final Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
 
   public static final MyQuery QUERY = new MyQuery();
 

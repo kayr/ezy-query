@@ -112,7 +112,7 @@ class DbApitItSpec extends Specification {
                                                 Cnd.eq(CustomerReps.FIELD_EMPLOYEE_COUNTY, "XXX")),
                                         Cnd.gt(CustomerReps.FIELD_EMPLOYEE_OFFICE, "Kampala")))
                         .where(
-                                String.format("(%s is not null and %s = 'XXX') or %s not like '%%Kampala%%'",
+                                Cnd.expr("(%s is not null and %s = 'XXX') or %s not like '%%Kampala%%'",
                                         CustomerReps.FIELD_CUSTOMER_NAME,
                                         CustomerReps.FIELD_EMPLOYEE_COUNTY,
                                         CustomerReps.FIELD_EMPLOYEE_OFFICE

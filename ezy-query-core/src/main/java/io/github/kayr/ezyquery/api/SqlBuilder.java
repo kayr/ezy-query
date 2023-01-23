@@ -5,8 +5,6 @@ import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
-import io.github.kayr.ezyquery.ast.ParensExpr;
-import io.github.kayr.ezyquery.parser.ExprParser;
 import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.util.Elf;
@@ -70,48 +68,18 @@ public class SqlBuilder {
 
   public QueryAndParams whereStmt() {
 
-    if (Elf.isEmpty(ezyCriteria.getConditions())
-        && Elf.isEmpty(ezyCriteria.getConditionExpressions())) {
+    if (Elf.isEmpty(ezyCriteria.getConditions())) {
       return EzySqlTranspiler.transpile(fields, Cnd.trueCnd().asExpr());
     }
 
-    EzyExpr stringExpr = combineExpressions(ezyCriteria.getConditionExpressions());
-
-    BinaryExpr.Op operator = combineOperator();
-
     // process condition objects
-    EzyExpr apiExpr =
+    EzyExpr expr =
         ezyCriteria.getConditions().stream()
             .map(ICond::expr)
-            .reduce((l, r) -> new BinaryExpr(l, r, operator))
+            .reduce((l, r) -> new BinaryExpr(l, r, BinaryExpr.Op.AND))
             .orElse(Cnd.trueCnd().asExpr());
 
-    EzyExpr combined =
-        new BinaryExpr(new ParensExpr(stringExpr), new ParensExpr(apiExpr), operator);
-
-    // avoid statements like 1 = 1 and 7 = x
-    if (Elf.isEmpty(ezyCriteria.getConditions())) {
-      combined = stringExpr;
-    } else if (Elf.isEmpty(ezyCriteria.getConditionExpressions())) {
-      combined = apiExpr;
-    }
-
-    return EzySqlTranspiler.transpile(fields, combined);
-  }
-
-  private EzyExpr combineExpressions(List<String> expressions) {
-
-    if (Elf.isEmpty(expressions)) {
-      return Cnd.trueCnd().asExpr();
-    }
-    BinaryExpr.Op operator = combineOperator();
-
-    Optional<EzyExpr> reduced =
-        expressions.stream()
-            .map(ExprParser::parseExpr)
-            .reduce((l, r) -> new BinaryExpr(l, r, operator));
-
-    return reduced.orElseThrow(() -> new IllegalStateException("Conditions is empty"));
+    return EzySqlTranspiler.transpile(fields, expr);
   }
 
   public String orderByStmt(String defaultOrderBy) {
@@ -139,10 +107,6 @@ public class SqlBuilder {
     }
 
     return orderByPart.toString();
-  }
-
-  private BinaryExpr.Op combineOperator() {
-    return ezyCriteria.isUseOr() ? BinaryExpr.Op.OR : BinaryExpr.Op.AND;
   }
 
   private Field<?> getField(String alias) {

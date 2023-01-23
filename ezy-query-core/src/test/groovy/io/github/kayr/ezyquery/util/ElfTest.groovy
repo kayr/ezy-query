@@ -40,4 +40,18 @@ class ElfTest extends Specification {
         "/path/dot.before.file.sql" | "java"    | "/path/dot.before.file.java"
 
     }
+
+    def 'test adding to array'() {
+        expect:
+        ArrayElf.addAll(array, value) == expected
+
+        where:
+        array                | value                | expected
+        null                 | 1                    | ArrayElf.array(1)
+        ArrayElf.array(1, 2) | ArrayElf.array(2, 4) | ArrayElf.array(1, 2, 2, 4)
+        ArrayElf.array(1, 2) | 3                    | ArrayElf.array(1, 2, 3)
+        ArrayElf.array(1, 2) | null                 | ArrayElf.array(1, 2)
+        null                 | null                 | null
+
+    }
 }

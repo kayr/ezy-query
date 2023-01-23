@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery.api.cnd;
 
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
+import io.github.kayr.ezyquery.util.ArrayElf;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -105,6 +106,11 @@ public class Cnd {
   }
 
   public static ExprCond expr(String expr) {
+    return ExprCond.expr(expr);
+  }
+
+  public static ExprCond expr(String expr, Object arg0, Object... args) {
+    expr = String.format(expr, ArrayElf.addFirst(args, arg0));
     return ExprCond.expr(expr);
   }
 

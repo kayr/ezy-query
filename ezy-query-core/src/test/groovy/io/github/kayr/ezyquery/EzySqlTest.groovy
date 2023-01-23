@@ -1,5 +1,6 @@
 package io.github.kayr.ezyquery
 
+import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.it.Db
 import io.github.kayr.ezyquery.sql.Zql
 import io.github.kayr.ezyquery.testqueries.Offices
@@ -99,7 +100,7 @@ class EzySqlTest extends Specification {
     def 'test that you can filter with string expression'() {
         when:
         def offices = db.ezySql().from(Offices.QUERY)
-                .where("code = '4'")
+                .where(Cnd.expr("code = '4'"))
                 .list()
         then:
         offices.size() == 1

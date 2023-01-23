@@ -43,13 +43,12 @@ class EzyQueryTest extends Specification {
 
 
         def criteria = EzyCriteria.selectAll()
-                .where("name = 'ronald'")
-                .where("age >  20")
+                .where(Cnd.expr("name = 'ronald'"))
+                .where(Cnd.expr("age >  20"))
                 .limit(10, 2)
 
 
         when:
-        def orQuery = SqlBuilder.buildSql(ezyQuery, criteria.useOr())
 
         def query = SqlBuilder.buildSql(ezyQuery, criteria)
 
@@ -60,17 +59,9 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE t.name = ? AND t.age > ?\n' +
+                'WHERE (t.name = ?) AND (t.age > ?)\n' +
                 'LIMIT 10 OFFSET 2'
 
-        orQuery.sql == 'SELECT \n' +
-                '  t.name as "name", \n' +
-                '  t.age as "age", \n' +
-                '  t.office as "office", \n' +
-                '  t.maxAge as "maxAge"\n' +
-                'FROM my_table\n' +
-                'WHERE t.name = ? OR t.age > ?\n' +
-                'LIMIT 10 OFFSET 2'
 
     }
 
@@ -78,32 +69,24 @@ class EzyQueryTest extends Specification {
 
 
         def criteria = EzyCriteria.selectAll()
-                .where(Cnd.eq("#name", 'ronald'))
-                .where(Cnd.gt('#age', 20))
+                .where(Cnd.orAll(Cnd.eq("#name", 'ronald'),
+                        Cnd.gt('#age', 20)))
                 .limit(10, 2)
 
         when:
-        def orQuery = SqlBuilder.buildSql(ezyQuery, criteria.useOr())
 
-        def query = SqlBuilder.buildSql(ezyQuery, criteria.useOr().useAnd())
+        def query = SqlBuilder.buildSql(ezyQuery, criteria)
 
         then:
+
+
         query.sql == 'SELECT \n' +
                 '  t.name as "name", \n' +
                 '  t.age as "age", \n' +
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE t.name = ? AND t.age > ?\n' +
-                'LIMIT 10 OFFSET 2'
-
-        orQuery.sql == 'SELECT \n' +
-                '  t.name as "name", \n' +
-                '  t.age as "age", \n' +
-                '  t.office as "office", \n' +
-                '  t.maxAge as "maxAge"\n' +
-                'FROM my_table\n' +
-                'WHERE t.name = ? OR t.age > ?\n' +
+                'WHERE (t.name = ? OR t.age > ?)\n' +
                 'LIMIT 10 OFFSET 2'
 
     }
@@ -112,27 +95,19 @@ class EzyQueryTest extends Specification {
 
 
         def criteria = EzyCriteria.selectAll()
-                .where(Cnd.eq("#name", 'ronald'))
-                .where(Cnd.gt('#age', 20))
-                .where("office = 'NY'")
-                .where('maxAge > 30')
+                .where(Cnd.orAll(
+                        Cnd.eq("#name", 'ronald'),
+                        Cnd.gt('#age', 20),
+                        Cnd.expr("office = 'NY'"),
+                        Cnd.expr('maxAge > 30')))
                 .limit(10, 2)
 
         when:
-        def orQuery = SqlBuilder.buildSql(ezyQuery, criteria.useOr())
+        def orQuery = SqlBuilder.buildSql(ezyQuery, criteria)
 
-        def query = SqlBuilder.buildSql(ezyQuery, criteria)
 
         then:
-        query.sql == 'SELECT \n' +
-                '  t.name as "name", \n' +
-                '  t.age as "age", \n' +
-                '  t.office as "office", \n' +
-                '  t.maxAge as "maxAge"\n' +
-                'FROM my_table\n' +
-                'WHERE (t.office = ? AND t.maxAge > ?) AND (t.name = ? AND t.age > ?)\n' +
-                'LIMIT 10 OFFSET 2'
-        query.params == ['NY', 30, 'ronald', 20]
+
 
         orQuery.sql == 'SELECT \n' +
                 '  t.name as "name", \n' +
@@ -140,8 +115,9 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE (t.office = ? OR t.maxAge > ?) OR (t.name = ? OR t.age > ?)\n' +
+                'WHERE (t.name = ? OR t.age > ? OR (t.office = ?) OR (t.maxAge > ?))\n' +
                 'LIMIT 10 OFFSET 2'
+        orQuery.params == ['ronald', 20, 'NY', 30]
 
     }
 

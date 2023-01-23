@@ -15,14 +15,12 @@ public class EzyCriteria {
 
   @Builder.Default private List<String> columns = new ArrayList<>();
   @Builder.Default private List<ICond> conditions = new ArrayList<>();
-  @Builder.Default private List<String> conditionExpressions = new ArrayList<>();
 
   @Builder.Default private List<Sort> sorts = new ArrayList<>();
 
   @Builder.Default private Integer offset = 0;
   @Builder.Default private Integer limit = 50;
 
-  @Builder.Default private boolean useOr = false;
   @Builder.Default private boolean count = false;
 
   // region Static methods
@@ -50,10 +48,6 @@ public class EzyCriteria {
     return toBuilder().conditions(Elf.addAll(this.conditions, conds)).build();
   }
 
-  public EzyCriteria where(String expr) {
-    return toBuilder().conditionExpressions(Elf.addAll(this.conditionExpressions, expr)).build();
-  }
-
   public EzyCriteria offset(@lombok.NonNull Integer offset) {
     return toBuilder().offset(offset).build();
   }
@@ -64,14 +58,6 @@ public class EzyCriteria {
 
   public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
     return toBuilder().limit(limit).offset(offset).build();
-  }
-
-  public EzyCriteria useOr() {
-    return toBuilder().useOr(true).build();
-  }
-
-  public EzyCriteria useAnd() {
-    return toBuilder().useOr(false).build();
   }
 
   public EzyCriteria count() {
@@ -94,9 +80,6 @@ public class EzyCriteria {
   // endregion
 
   // region Read only
-  public boolean isUseOr() {
-    return useOr;
-  }
 
   public boolean isCount() {
     return count;
@@ -108,10 +91,6 @@ public class EzyCriteria {
 
   public List<ICond> getConditions() {
     return Collections.unmodifiableList(conditions);
-  }
-
-  public List<String> getConditionExpressions() {
-    return Collections.unmodifiableList(conditionExpressions);
   }
 
   public List<Sort> getSorts() {

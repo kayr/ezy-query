@@ -9,10 +9,7 @@ import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import javax.sql.DataSource;
 import lombok.NonNull;
 
@@ -103,10 +100,6 @@ public class EzySql {
 
     public CriteriaBuilder<T> where(ICond... conds) {
       return withCriteria(criteria.where(conds));
-    }
-
-    public CriteriaBuilder<T> where(String expr) {
-      return withCriteria(criteria.where(expr));
     }
 
     public CriteriaBuilder<T> offset(@NonNull Integer offset) {

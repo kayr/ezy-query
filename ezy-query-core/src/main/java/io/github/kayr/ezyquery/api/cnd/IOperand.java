@@ -45,11 +45,11 @@ public interface IOperand {
     return Cnd.notIn(this, value);
   }
 
-  default Cond and(Object value) {
+  default Conds and(Object value) {
     return Cnd.and(this, value);
   }
 
-  default Cond or(Object value) {
+  default Conds or(Object value) {
     return Cnd.or(this, value);
   }
 

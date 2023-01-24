@@ -14,8 +14,10 @@ class CndTranspileTest extends Specification {
     private Field age = new Field('t.age', 'age')
     private Field office = new Field('t.office', 'office')
     private Field maxAge = new Field('t.maxAge', 'maxAge')
+    @Shared
+    private Field cond1 = new Field('t.maxAge and true', 'cond1', Object.class, Field.ExpressionType.BINARY)
 
-    def fields = [name, age, office, maxAge]
+    def fields = [name, age, office, maxAge, cond1]
 
     @Unroll
     def "test transpiling"() {
@@ -142,29 +144,88 @@ class CndTranspileTest extends Specification {
         actualSql == sql
 
         where:
-        cnd                               || params          | exprString                       | sql
-        name.eq('john')                   || ['john']        | '#name = john'                   | 't.name = ?'
-        name.neq('john')                  || ['john']        | '#name <> john'                  | 't.name <> ?'
-        name.gt('john')                   || ['john']        | '#name > john'                   | 't.name > ?'
-        name.gte('john')                  || ['john']        | '#name >= john'                  | 't.name >= ?'
-        name.lt('john')                   || ['john']        | '#name < john'                   | 't.name < ?'
-        name.lte('john')                  || ['john']        | '#name <= john'                  | 't.name <= ?'
-        name.like('john')                 || ['john']        | '#name LIKE john'                | 't.name LIKE ?'
-        name.notLike('john')              || ['john']        | '#name NOT LIKE john'            | 't.name NOT LIKE ?'
-        name.in(['john', 'doe'])          || ['john', 'doe'] | '#name in [john, doe]'           | 't.name IN (?, ?)'
-        name.notIn(['john', 'doe'])       || ['john', 'doe'] | '#name not in [john, doe]'       | 't.name NOT IN (?, ?)'
-        name.isNull()                     || []              | '#name is null'                  | 't.name IS NULL'
-        name.isNotNull()                  || []              | '#name is not null'              | 't.name IS NOT NULL'
-        name.between('john', 'doe')       || ['john', 'doe'] | '#name between john and doe'     | 't.name BETWEEN ? AND ?'
-        name.notBetween('john', 'doe')    || ['john', 'doe'] | '#name not between john and doe' | 't.name NOT BETWEEN ? AND ?'
-        name.positive()                   || []              | '+#name'                         | '+t.name'
-        name.negate()                     || []              | '-#name'                         | '-t.name'
-        name.and(age)                     || []              | '#name AND #age'                 | 't.name AND t.age'
-        name.and("xxx")                   || ["xxx"]         | '#name AND xxx'                  | 't.name AND ?'
-        name.or(age)                      || []              | '#name OR #age'                  | 't.name OR t.age'
-        Conds.andAll(age, name).and(name) || []              | '(#age AND #name) AND #name'     | '(t.age AND t.name) AND t.name'
-        Conds.orAll(age, age).and(name)   || []              | '(#age OR #age) AND #name'       | '(t.age OR t.age) AND t.name'
+        cnd                                  || params          | exprString                       | sql
+        name.eq('john')                      || ['john']        | '#name = john'                   | 't.name = ?'
+        name.neq('john')                     || ['john']        | '#name <> john'                  | 't.name <> ?'
+        name.gt('john')                      || ['john']        | '#name > john'                   | 't.name > ?'
+        name.gte('john')                     || ['john']        | '#name >= john'                  | 't.name >= ?'
+        name.lt('john')                      || ['john']        | '#name < john'                   | 't.name < ?'
+        name.lte('john')                     || ['john']        | '#name <= john'                  | 't.name <= ?'
+        name.like('john')                    || ['john']        | '#name LIKE john'                | 't.name LIKE ?'
+        name.notLike('john')                 || ['john']        | '#name NOT LIKE john'            | 't.name NOT LIKE ?'
+        name.in(['john', 'doe'])             || ['john', 'doe'] | '#name in [john, doe]'           | 't.name IN (?, ?)'
+        name.notIn(['john', 'doe'])          || ['john', 'doe'] | '#name not in [john, doe]'       | 't.name NOT IN (?, ?)'
+        name.isNull()                        || []              | '#name is null'                  | 't.name IS NULL'
+        name.isNotNull()                     || []              | '#name is not null'              | 't.name IS NOT NULL'
+        name.between('john', 'doe')          || ['john', 'doe'] | '#name between john and doe'     | 't.name BETWEEN ? AND ?'
+        name.notBetween('john', 'doe')       || ['john', 'doe'] | '#name not between john and doe' | 't.name NOT BETWEEN ? AND ?'
+        name.positive()                      || []              | '+#name'                         | '+t.name'
+        name.negate()                        || []              | '-#name'                         | '-t.name'
+        name.and(age)                        || []              | '(#name AND #age)'               | '(t.name AND t.age)'
+        name.and("xxx")                      || ["xxx"]         | '(#name AND xxx)'                | '(t.name AND ?)'
+        name.or(age)                         || []              | '(#name OR #age)'                | '(t.name OR t.age)'
+        Conds.andAll(age, name).and(name)    || []              | '((#age AND #name) AND #name)'   | '((t.age AND t.name) AND t.name)'
+        Conds.andAll('#age', name).and(name) || []              | '((#age AND #name) AND #name)'   | '((t.age AND t.name) AND t.name)'
+        Conds.orAll(age, age).and(name)      || []              | '((#age OR #age) AND #name)'     | '((t.age OR t.age) AND t.name)'
+        Conds.orAll(cond1, age).and(name)    || []              | '((#cond1 OR #age) AND #name)'   | '(((t.maxAge and true) OR t.age) AND t.name)'
 
+
+    }
+
+    def 'test binary boolean conditions'() {
+        expect:
+        def expr = cnd.asExpr()
+        def query = EzySqlTranspiler.transpile(fields, expr)
+
+        def actualSql = query.sql
+        def actualParams = query.params
+        def actualExpr = expr.toString()
+
+        actualParams == params
+        actualExpr == exprString
+        actualSql == sql
+
+        /*
+
+        all( b, bin, b )
+        b and bin and b
+        all( b, bin, b ) and bin
+        all( b, bin, b ) and b
+
+        bin and b
+        b and bin
+        bin and  all( b, bin, b )
+        b and all( b, bin, b )
+         */
+
+        where:
+        cnd                                                               || params                         | exprString                             | sql
+        Cnd.or(Cnd.and('1', '2'), '4')                                    || ['1', '2', '4']                | '((1 AND 2) OR 4)'                     | '((? AND ?) OR ?)'
+        Cnd.andAll('1', '2', '3').and(Cnd.andAll('4', '5', '6'))          || ['1', '2', '3', '4', '5', '6'] | '(1 AND 2 AND 3 AND 4 AND 5 AND 6)'    | '(? AND ? AND ? AND ? AND ? AND ?)'
+        Cnd.andAll('1', '2', '3').or(Cnd.andAll('4', '5', '6'))           || ['1', '2', '3', '4', '5', '6'] | '((1 AND 2 AND 3) OR (4 AND 5 AND 6))' | '((? AND ? AND ?) OR (? AND ? AND ?))'
+        Cnd.val('1').and(Cnd.val("2")).and(Cnd.val("3")).or(Cnd.val('4')) || ['1', '2', '3', '4']           | '((1 AND 2 AND 3) OR 4)'               | '((? AND ? AND ?) OR ?)'
+        Cnd.val('1').and(Cnd.val("2").and(Cnd.val("3"))).or(Cnd.val('4')) || ['1', '2', '3', '4']           | '((1 AND 2 AND 3) OR 4)'               | '((? AND ? AND ?) OR ?)'
+        Cnd.val('1').and("2").or("3").and('4')                            || ['1', '2', '3', '4']           | '(((1 AND 2) OR 3) AND 4)'             | '(((? AND ?) OR ?) AND ?)'
+        Cnd.or(Cnd.and('1', '2'), Cnd.eq('3', '4'))                       || ['1', '2', '3', '4']           | '((1 AND 2) OR 3 = 4)'                 | '((? AND ?) OR ? = ?)'
+        Cnd.andAll(Cnd.val("2"), Cnd.val("3"), Cnd.andAll(Cnd.val('4')))  || ['2', '3', '4']                | '(2 AND 3 AND (4))'                    | '(? AND ? AND (?))'//kayr: could optimize??
+    }
+
+    def "test age"() {
+        expect:
+        def expr = cnd.asExpr()
+        def query = EzySqlTranspiler.transpile(fields, expr)
+
+        def actualSql = query.sql
+        def actualParams = query.params
+        def actualExpr = expr.toString()
+
+        actualParams == params
+        actualExpr == exprString
+        actualSql == sql
+
+        where:
+        cnd                                       || params                    | exprString                 | sql
+        Cnd.and("lastName2", Cnd.neq('sex', 'm')) || ["lastName2", "sex", "m"] | '(lastName2 AND sex <> m)' | '(? AND ? <> ?)'
 
     }
 

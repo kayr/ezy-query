@@ -109,8 +109,8 @@ class QueryBuildingFluentApiTest extends Specification {
                 .asExpr()
 
         then:
-        expr.toString() == '(name OR ronald AND #age in [])'
-        EzySqlTranspiler.transpile(fields, expr).sql == '(? OR ? AND 1 = 0)'
+        expr.toString() == '((name OR ronald) AND #age in [])'
+        EzySqlTranspiler.transpile(fields, expr).sql == '((? OR ?) AND 1 = 0)'
     }
 
     def "test build a query with in with empty list and empty list"() {
@@ -203,7 +203,7 @@ class QueryBuildingFluentApiTest extends Specification {
         ).asExpr()
 
         then:
-        expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND (lastName OR mah OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
+        expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND ((lastName OR mah) OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
 
     }
 

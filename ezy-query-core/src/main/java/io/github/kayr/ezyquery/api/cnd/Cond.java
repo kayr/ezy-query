@@ -1,6 +1,8 @@
 package io.github.kayr.ezyquery.api.cnd;
 
-import io.github.kayr.ezyquery.ast.*;
+import io.github.kayr.ezyquery.ast.BinaryExpr;
+import io.github.kayr.ezyquery.ast.EzyExpr;
+import io.github.kayr.ezyquery.ast.InExpr;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +15,7 @@ public class Cond implements ICond {
 
   private Cond() {}
 
-  public static Cond create(Object left, Object right, BinaryExpr.Op operator) {
+  static Cond create(Object left, Object right, BinaryExpr.Op operator) {
     Cond cond = new Cond();
     cond.left = left;
     cond.right = right;

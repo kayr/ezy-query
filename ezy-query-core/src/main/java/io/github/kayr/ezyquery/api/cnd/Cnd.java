@@ -3,8 +3,11 @@ package io.github.kayr.ezyquery.api.cnd;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
 import io.github.kayr.ezyquery.util.ArrayElf;
+import io.github.kayr.ezyquery.util.Elf;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public class Cnd {
 
@@ -57,12 +60,12 @@ public class Cnd {
     return Cond.create(left, right, BinaryExpr.Op.NOT_IN);
   }
 
-  public static Cond and(Object left, Object right) {
-    return Cond.create(left, right, BinaryExpr.Op.AND);
+  public static Conds and(Object left, Object right) {
+    return combine(left, right, BinaryExpr.Op.AND);
   }
 
-  public static Cond or(Object left, Object right) {
-    return Cond.create(left, right, BinaryExpr.Op.OR);
+  public static Conds or(Object left, Object right) {
+    return combine(left, right, BinaryExpr.Op.OR);
   }
 
   public static UnaryCond negate(Object left) {
@@ -116,5 +119,55 @@ public class Cnd {
 
   public static SqlCond sql(String sql, Object... params) {
     return SqlCond.sql(sql, Arrays.asList(params));
+  }
+
+  private static Conds combine(Object left, Object right, BinaryExpr.Op operator) {
+    if (left instanceof ICond && right instanceof ICond)
+      return combine(((ICond) left), (ICond) right, operator);
+    return Conds.createConds(operator, left, right);
+  }
+
+  static Conds combine(ICond left, ICond right, BinaryExpr.Op combineOperator) {
+    Optional<Conds> cond1 = tryCombine(left, right, combineOperator);
+    return cond1.orElse(Conds.createConds(combineOperator, left, right));
+  }
+
+  private static Optional<Conds> tryCombine(
+      ICond left, ICond right, BinaryExpr.Op combineOperator) {
+
+    BinaryExpr.Op leftOp = booleanOperator(left);
+    BinaryExpr.Op otherOp = booleanOperator(right);
+
+    if (left.isConds() && right.isConds() && leftOp == otherOp && combineOperator == leftOp) {
+
+      List<Object> cnds1 = ((Conds) left).getCnds();
+      List<Object> cnds2 = ((Conds) right).getCnds();
+
+      return Optional.of(
+          Conds.createConds(((Conds) right).getOperator(), Elf.combine(cnds1, cnds2)));
+    }
+
+    if (left.isConds() && !right.isConds() && leftOp == combineOperator) {
+
+      List<Object> cnds1 = ((Conds) left).getCnds();
+
+      return Optional.of(Conds.createConds(combineOperator, Elf.addAll(cnds1, right)));
+    }
+
+    if (!left.isConds() && right.isConds() && otherOp == combineOperator) {
+
+      List<Object> cnds2 = ((Conds) right).getCnds();
+
+      return Optional.of(Conds.createConds(combineOperator, Elf.addFirst(cnds2, left)));
+    }
+
+    return Optional.empty();
+  }
+
+  // todo create an interface
+  public static BinaryExpr.Op booleanOperator(ICond cond) {
+    if (cond.isConds()) return ((Conds) cond).getOperator();
+    if (cond instanceof Cond) return ((Cond) cond).getOperator();
+    return null;
   }
 }

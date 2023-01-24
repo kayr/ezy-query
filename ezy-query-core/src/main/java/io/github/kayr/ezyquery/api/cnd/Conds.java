@@ -3,15 +3,15 @@ package io.github.kayr.ezyquery.api.cnd;
 import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.ast.ParensExpr;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@lombok.RequiredArgsConstructor
 public class Conds implements ICond {
 
-  private final List<Object> cnds = new ArrayList<>();
-  private BinaryExpr.Op operator;
+  private final List<Object> cnds;
+  private final BinaryExpr.Op operator;
 
   @Override
   public EzyExpr asExpr() {
@@ -31,15 +31,12 @@ public class Conds implements ICond {
     return createConds(BinaryExpr.Op.OR, cond);
   }
 
-  static Conds createConds(BinaryExpr.Op or, List<Object> cond) {
-    return createConds(or, cond.toArray());
+  static Conds createConds(BinaryExpr.Op op, List<Object> cond) {
+    return new Conds(cond, op);
   }
 
-  static Conds createConds(BinaryExpr.Op or, Object[] cond) {
-    Conds conds = new Conds();
-    conds.operator = or;
-    Collections.addAll(conds.cnds, cond);
-    return conds;
+  static Conds createConds(BinaryExpr.Op op, Object... cond) {
+    return new Conds(Arrays.asList(cond), op);
   }
 
   public BinaryExpr.Op getOperator() {

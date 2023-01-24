@@ -26,6 +26,12 @@ public class Elf {
     return result;
   }
 
+  public static <T> List<T> addFirst(List<T> items, T left) {
+    List<T> result = new ArrayList<>(items);
+    result.add(0, left);
+    return result;
+  }
+
   public static <T> List<T> copyList(List<T> list) {
     return new ArrayList<>(list);
   }

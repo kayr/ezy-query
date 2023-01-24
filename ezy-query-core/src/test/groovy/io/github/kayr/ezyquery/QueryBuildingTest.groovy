@@ -36,8 +36,8 @@ class QueryBuildingTest extends Specification {
 
 
         then:
-        expr.toString() == '(name = ronald AND #age > 20 AND (lastName >= mah OR lastName1 <= mah2 OR lastName2 AND sex <> m OR #name LIKE %kdj%))'
-        transpiled.sql == '(? = ? AND t.age > ? AND (? >= ? OR ? <= ? OR ? AND ? <> ? OR t.name LIKE ?))'
+        expr.toString() == '(name = ronald AND #age > 20 AND (lastName >= mah OR lastName1 <= mah2 OR (lastName2 AND sex <> m) OR #name LIKE %kdj%))'
+        transpiled.sql == '(? = ? AND t.age > ? AND (? >= ? OR ? <= ? OR (? AND ? <> ?) OR t.name LIKE ?))'
         transpiled.params == ['name', 'ronald', 20, 'lastName', 'mah', 'lastName1', 'mah2', 'lastName2', 'sex', 'm', '%kdj%']
     }
 
@@ -81,8 +81,8 @@ class QueryBuildingTest extends Specification {
                 .asExpr()
 
         then:
-        expr.toString() == '(name OR ronald AND #age in [])'
-        EzySqlTranspiler.transpile(fields, expr).sql == '(? OR ? AND 1 = 0)'
+        expr.toString() == '((name OR ronald) AND #age in [])'
+        EzySqlTranspiler.transpile(fields, expr).sql == '((? OR ?) AND 1 = 0)'
     }
 
     def "test build a query with in with empty list and empty list"() {
@@ -175,7 +175,7 @@ class QueryBuildingTest extends Specification {
         ).asExpr()
 
         then:
-        expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND (lastName OR mah OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
+        expr.toString() == '(1 = 1 AND name = ronald AND #age > 20 AND ((lastName OR mah) OR lastName1 <= mah2 OR #name LIKE %kdj%) AND #age > 30)'
 
     }
 
@@ -204,7 +204,7 @@ class QueryBuildingTest extends Specification {
         def (sql, params) = [transpiled.sql, transpiled.params]
 
         then:
-        sql == '(true OR true) AND false'
+        sql == '((true OR true) AND false)'
         params == []
 
     }

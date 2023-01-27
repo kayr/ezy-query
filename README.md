@@ -6,7 +6,7 @@ Adding to your gradle build
 
 ```groovy
 plugins {
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.6'
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.7'
 }
 ```
 
@@ -21,7 +21,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.github.kayr:ezy-query-codegen:0.0.2"
+        classpath "io.github.kayr:ezy-query-codegen:0.0.7"
     }
 }
 

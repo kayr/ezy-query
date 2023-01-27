@@ -6,16 +6,12 @@ import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.SqlBuilder
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
+import spock.lang.Shared
 import spock.lang.Specification
 
 class EzyQueryTest extends Specification {
 
-    def fields = [
-            new Field('t.name', 'name'),
-            new Field('t.age', 'age'),
-            new Field('t.office', 'office'),
-            new Field('t.maxAge', 'maxAge')
-    ]
+    def fields = [name, age, office, maxAge]
 
     def ezyQuery = new EzyQuery() {
         @Override
@@ -38,6 +34,14 @@ class EzyQueryTest extends Specification {
             return "my_table"
         }
     }
+    @Shared
+    private Field name = new Field('t.name', 'name')
+    @Shared
+    private Field age = new Field('t.age', 'age')
+    @Shared
+    private Field office = new Field('t.office', 'office')
+    @Shared
+    private Field maxAge = new Field('t.maxAge', 'maxAge')
 
     def "test build with a filter"() {
 
@@ -59,7 +63,7 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE (t.name = ?) AND (t.age > ?)\n' +
+                'WHERE ((t.name = ?) AND (t.age > ?))\n' +
                 'LIMIT 10 OFFSET 2'
 
 
@@ -136,9 +140,9 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'LIMIT 10 OFFSET 2'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
@@ -158,18 +162,18 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'LIMIT 50 OFFSET 2'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
     def "test build uses default offset"() {
         def fields = [
-                new Field('t.name', 'name'),
-                new Field('t.age', 'age'),
-                new Field('t.office', 'office'),
-                new Field('t.maxAge', 'maxAge')
+                name,
+                age,
+                office,
+                maxAge
         ]
 
         def criteria = EzyCriteria.selectAll()
@@ -185,9 +189,9 @@ class EzyQueryTest extends Specification {
                 '  t.office as "office", \n' +
                 '  t.maxAge as "maxAge"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
@@ -203,8 +207,8 @@ class EzyQueryTest extends Specification {
         query.sql == 'SELECT \n' +
                 ' COUNT(*) \n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?'
-        query.params == [1, 1]
+                'WHERE (1 = 1)'
+        query.params == []
 
     }
 
@@ -221,9 +225,9 @@ class EzyQueryTest extends Specification {
                 '  t.name as "name", \n' +
                 '  t.age as "age"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
@@ -243,10 +247,10 @@ class EzyQueryTest extends Specification {
                 '  t.name as "name", \n' +
                 '  t.age as "age"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'ORDER BY t.name ASC, t.age DESC\n' +
                 'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
@@ -264,10 +268,10 @@ class EzyQueryTest extends Specification {
                 '  t.name as "name", \n' +
                 '  t.age as "age"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'ORDER BY t.name ASC, t.age ASC\n' +
                 'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
@@ -285,15 +289,67 @@ class EzyQueryTest extends Specification {
                 '  t.name as "name", \n' +
                 '  t.age as "age"\n' +
                 'FROM my_table\n' +
-                'WHERE ? = ?\n' +
+                'WHERE (1 = 1)\n' +
                 'ORDER BY t.name ASC\n' +
                 'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
+        query.params == []
 
     }
 
     def "test builds select query with default where clause"() {
 
+        EzyQuery ezyQueryWithWhere = queryWithWhereClause()
+
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .limit(15)
+                .orderBy('name')
+
+        when:
+        def query = SqlBuilder.buildSql(ezyQueryWithWhere, criteria)
+
+
+        def generatedSql = query.sql
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table\n' +
+                'WHERE (t.name = 123) AND (1 = 1)\n' +
+                'ORDER BY t.name ASC\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == []
+
+    }
+
+    def "test builds select query with default where clause does not add extra parenthesis"() {
+
+        EzyQuery ezyQueryWithWhere = queryWithWhereClause()
+
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .where(name.eq("RK").and(age.eq(1)))
+                .limit(15)
+                .orderBy('name');
+
+        when:
+        def query = SqlBuilder.buildSql(ezyQueryWithWhere, criteria)
+
+
+        def generatedSql = query.sql
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table\n' +
+                'WHERE (t.name = 123) AND (t.name = ? AND t.age = ?)\n' +
+                'ORDER BY t.name ASC\n' +
+                'LIMIT 15 OFFSET 0'
+        query.params == ['RK', 1]
+
+    }
+
+    private EzyQuery queryWithWhereClause() {
         def ezyQueryWithWhere = new EzyQuery() {
             @Override
             QueryAndParams query(EzyCriteria params) {
@@ -320,26 +376,6 @@ class EzyQueryTest extends Specification {
                 return Optional.of('t.name = 123')
             }
         }
-
-
-        def criteria = EzyCriteria.select('name', 'age')
-                .limit(15)
-                .orderBy('name')
-
-        when:
-        def query = SqlBuilder.buildSql(ezyQueryWithWhere, criteria)
-
-
-        def generatedSql = query.sql
-        then:
-        generatedSql == 'SELECT \n' +
-                '  t.name as "name", \n' +
-                '  t.age as "age"\n' +
-                'FROM my_table\n' +
-                'WHERE (t.name = 123) AND (? = ?)\n' +
-                'ORDER BY t.name ASC\n' +
-                'LIMIT 15 OFFSET 0'
-        query.params == [1, 1]
-
+        ezyQueryWithWhere
     }
 }

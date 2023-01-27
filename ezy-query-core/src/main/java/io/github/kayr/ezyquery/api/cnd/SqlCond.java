@@ -12,7 +12,7 @@ public class SqlCond implements ICond {
   private final List<Object> params;
 
   public static SqlCond sql(String sql, List<Object> params) {
-    return new SqlCond(mayBeAddParens(sql), Elf.copyList(params));
+    return new SqlCond(Elf.mayBeAddParens(sql), Elf.copyList(params));
   }
 
   @Override
@@ -23,10 +23,5 @@ public class SqlCond implements ICond {
   @Override
   public String toString() {
     return sql;
-  }
-
-  private static String mayBeAddParens(String expression) {
-    if (expression.trim().startsWith("(") && expression.trim().endsWith(")")) return expression;
-    return "(" + expression + ")";
   }
 }

@@ -154,6 +154,8 @@ class CndTranspileTest extends Specification {
         name.like('john')                    || ['john']        | '#name LIKE john'                | 't.name LIKE ?'
         name.notLike('john')                 || ['john']        | '#name NOT LIKE john'            | 't.name NOT LIKE ?'
         name.in(['john', 'doe'])             || ['john', 'doe'] | '#name in [john, doe]'           | 't.name IN (?, ?)'
+        name.in('john', 'doe')               || ['john', 'doe'] | '#name in [john, doe]'           | 't.name IN (?, ?)'
+        name.in('john')                      || ['john']        | '#name in [john]'                | 't.name IN (?)'
         name.notIn(['john', 'doe'])          || ['john', 'doe'] | '#name not in [john, doe]'       | 't.name NOT IN (?, ?)'
         name.isNull()                        || []              | '#name is null'                  | 't.name IS NULL'
         name.isNotNull()                     || []              | '#name is not null'              | 't.name IS NOT NULL'

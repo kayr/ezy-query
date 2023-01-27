@@ -3,7 +3,6 @@ package io.github.kayr.ezyquery.api;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
-import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
@@ -69,14 +68,14 @@ public class SqlBuilder {
   public QueryAndParams whereStmt() {
 
     if (Elf.isEmpty(ezyCriteria.getConditions())) {
-      return EzySqlTranspiler.transpile(fields, Cnd.trueCnd().asExpr());
+      return EzySqlTranspiler.transpile(fields, Cnd.sql("1 = 1").asExpr());
     }
 
     // process condition objects
     EzyExpr expr =
         ezyCriteria.getConditions().stream()
-            .map(ICond::expr)
-            .reduce((l, r) -> new BinaryExpr(l, r, BinaryExpr.Op.AND))
+            .reduce(Cnd::and)
+            .map(ICond::asExpr)
             .orElse(Cnd.trueCnd().asExpr());
 
     return EzySqlTranspiler.transpile(fields, expr);
@@ -140,9 +139,8 @@ public class SqlBuilder {
       queryBuilder
           .append("(")
           .append(whereClause.get())
-          .append(") AND (")
-          .append(w.getSql())
-          .append(")");
+          .append(") AND ")
+          .append(Elf.mayBeAddParens(w.getSql()));
     } else {
       queryBuilder.append(w.getSql());
     }

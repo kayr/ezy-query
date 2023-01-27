@@ -129,4 +129,9 @@ public class Elf {
   public static boolean isBlank(String str) {
     return str == null || str.trim().isEmpty();
   }
+
+  public static String mayBeAddParens(String expression) {
+    if (expression.trim().startsWith("(") && expression.trim().endsWith(")")) return expression;
+    return "(" + expression + ")";
+  }
 }

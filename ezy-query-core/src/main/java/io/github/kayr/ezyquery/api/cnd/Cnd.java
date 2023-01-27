@@ -56,6 +56,10 @@ public class Cnd {
     return Cond.create(left, right, BinaryExpr.Op.IN);
   }
 
+  public static Cond in(Object left, Object right, Object... values) {
+    return in(left, Arrays.asList(ArrayElf.addFirst(values, right)));
+  }
+
   public static Cond notIn(Object left, Object right) {
     return Cond.create(left, right, BinaryExpr.Op.NOT_IN);
   }

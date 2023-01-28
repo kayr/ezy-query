@@ -31,7 +31,7 @@ You do not have to worry about Sql Injection as the query is generated dynamical
 
 Query using the Java fluent API.
 
-```javas
+```java
 //full query
 ezySql.from(GetCustomers.QUERY)
  .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
@@ -41,7 +41,7 @@ ezySql.from(GetCustomers.QUERY)
 
 Query using String expressions.
 
-```javas
+```java
 ezySql.from(GetCustomers.QUERY)
        .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
        .orderBy("customerName asc, customerEmail desc")
@@ -146,7 +146,7 @@ Next you need to set up the EzyQuery executor.
 
 In pure java you just have to initialize EzySql with a datasource or Sql connection.
 
-```javas
+```java
 EzySql ezySql=EzySql.withDataSource(dataSource);
 // or use an sql connection
   EzySql ezySql=EzySql.withConnection(connection);
@@ -155,7 +155,7 @@ EzySql ezySql=EzySql.withDataSource(dataSource);
 In spring boot you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
 into your code using the `@Autowired` annotation.
 
-```javas
+```java
 @Bean
 public EzySql ezyQuery(DataSource dataSource){
   return EzySql.withDataSource(dataSource);
@@ -167,7 +167,7 @@ public EzySql ezyQuery(DataSource dataSource){
 You can now use the generated code to query your database. This will dynamically generate the sql query and execute it
 then return the result in a pojo.
 
-```javas
+```java
 @Autowired
 private EzySql ezySql;
 
@@ -183,7 +183,7 @@ public void getCustomers(){
 
 #### 6.1. Filtering using the fluent api.
 
-```javas
+```java
 import static docs.GetCustomers.*;
 
  ezySql.from(GetCustomers.QUERY)
@@ -193,7 +193,7 @@ import static docs.GetCustomers.*;
 
 #### 6.2. Filtering using the Condition API
 
-```javas
+```java
 import static docs.GetCustomers.*;
   
 ezySql.from(GetCustomers.QUERY)
@@ -206,7 +206,7 @@ ezySql.from(GetCustomers.QUERY)
 
 #### 6.3. Filtering using the Ezy Query Expressions
 
-```javas
+```java
  ezySql.from(GetCustomers.QUERY)
       .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
       .getQuery().print();
@@ -232,7 +232,7 @@ PARAMS:[John]
 Sometimes you may need to use native sql. This is supported by the `Cnd.sql` method. Make sure not to use any string
 concatenation and use the `?` placeholder instead.
 
-```javas
+```java
 ezySql.from(GetCustomers.QUERY)
       .where(Cnd.sql("c.name = ? and c.created_at > now()", "John" ))
 ```
@@ -241,28 +241,28 @@ ezySql.from(GetCustomers.QUERY)
 
 Using fields
 
-```javas
+```java
  ezySql.from(GetCustomers.QUERY)
       .orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc())
 ```
 
 Using strings
 
-```javas
+```java
 ezySql.from(GetCustomers.QUERY)
       .orderBy("customerName asc, customerEmail desc")
 ```
 
 Using Sort Object
 
-```javas
+```java
 ezySql.from(GetCustomers.QUERY)
       .orderBy(Sort.by("customerName", Sort.DIR.ASC))
 ```
 
 #### 6.6. Pagination
 
-```javas
+```java
  ezySql.from(GetCustomers.QUERY)
        .limit(10).offset(20)
 ```
@@ -302,7 +302,7 @@ SELECT
 
 With the above the generated pojo will have the following fields.
 
-```javas
+```java
 ... // code ommited for brevity
   private Integer customerId;
   private String customerName;
@@ -326,7 +326,7 @@ The supported data types are:
 - `object`
 
 #### 6.10 Optional select fields to be returned.
-```javas
+```java
 ezySql.from(GetCustomers.QUERY)
   .select(CUSTOMER_NAME, CUSTOMER_EMAIL)
 ```

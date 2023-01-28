@@ -1,5 +1,12 @@
 # ezy-query
 
+```groovy
+plugins {
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.7'
+}
+```
+
+
 Convert Your Sql Query To A Queryable Java API/Code.. think of A Queryable View In Your Code Using Java
 
 No more writing sql queries in your code or using string concatenation to build your sql queries.
@@ -49,7 +56,7 @@ ezySql.from(GetCustomers.QUERY)
           
 ```
 
-### 1. Add the CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull() gradle plugin to your build.gradle file.
+### 1. Add the gradle plugin to your build.gradle file.
 
 ```groovy
 plugins {

@@ -15,7 +15,7 @@ public class SqlBuilder {
   private final List<Field<?>> fields;
   private final EzyCriteria ezyCriteria;
 
-  private Map<String, Field<?>> fieldMap = new HashMap<>();
+  private final Map<String, Field<?>> fieldMap = new HashMap<>();
 
   public SqlBuilder(List<Field<?>> fields, EzyCriteria ezyCriteria) {
     this.fields = fields;

@@ -17,8 +17,9 @@ You do not have to worry about Sql Injection as the query is generated dynamical
 ## The workflow
 
 1. You write your sql query file
-2. The query file is converted to a java class. That contains all the field info in the query.
-3. You can now use the java class to query your database with a flexible easy to use api.
+2. You run the gradle plugin to generate the java code
+3. The query file is converted to a java class that contains all the field info in the query.
+4. You can now use the java class to query your database with a flexible easy to use api.
 
 ## Features
 
@@ -55,6 +56,8 @@ ezySql.from(GetCustomers.QUERY)
        .limit(10).offset(20)
           
 ```
+
+## Setup
 
 ### 1. Add the gradle plugin to your build.gradle file.
 
@@ -126,6 +129,9 @@ Or Manually create the directory `src/main/ezyquery` in your project.
 
 Create a sql file in the directory `src/main/ezyquery` an example below. The file name will be used as the generated
 class name.
+
+For more convenience you should place your sql files in a package structure that matches the package structure of your java code.
+
 e.g `get-customer.sql` will be generated as `GetCustomer.java`
 
 ```sql
@@ -154,9 +160,12 @@ Next you need to set up the EzyQuery executor.
 In pure java you just have to initialize EzySql with a datasource or Sql connection.
 
 ```java
+//set up with a datasource
 EzySql ezySql=EzySql.withDataSource(dataSource);
-// or use an sql connection
-  EzySql ezySql=EzySql.withConnection(connection);
+
+
+//or use an sql connection
+EzySql ezySql=EzySql.withConnection(connection);
 ```
 
 In spring boot you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
@@ -182,8 +191,8 @@ public void getCustomers(){
   var query = ezySql.from(GetCustomers.QUERY)
   
 
-  assert result.getCount()==1;
-  assert result.getList().size()>0;
+  assert result.count() > 1;
+  assert result.list().size() > 0;
 
   }
 ```
@@ -211,7 +220,7 @@ ezySql.from(GetCustomers.QUERY)
   ).list();
 ```
 
-#### 6.3. Filtering using the Ezy Query Expressions
+#### 6.3. Filtering using the Ezy-Query String Expressions
 
 ```java
  ezySql.from(GetCustomers.QUERY)
@@ -246,21 +255,21 @@ ezySql.from(GetCustomers.QUERY)
 
 #### 6.5. Sorting
 
-Using fields
+Sort using fields
 
 ```java
  ezySql.from(GetCustomers.QUERY)
       .orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc())
 ```
 
-Using strings
+Sort using strings expression
 
 ```java
 ezySql.from(GetCustomers.QUERY)
       .orderBy("customerName asc, customerEmail desc")
 ```
 
-Using Sort Object
+Sort using Sort Object
 
 ```java
 ezySql.from(GetCustomers.QUERY)
@@ -293,7 +302,7 @@ WHERE
 
 The above will add the where clause `c.status = 'active'` to all queries.
 
-#### 6.8 Adding data type to the generated pojo.
+#### 6.8 Adding data types to the generated pojo.
 
 The generated pojo by default will have all fields as `Object`.
 You can add a data type to the generated pojo by adding a suffix to the field name.
@@ -332,7 +341,7 @@ The supported data types are:
 - `byte`
 - `object`
 
-#### 6.10 Optional select fields to be returned.
+#### 6.10 Optionally select fields to be returned.
 ```java
 ezySql.from(GetCustomers.QUERY)
   .select(CUSTOMER_NAME, CUSTOMER_EMAIL)

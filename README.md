@@ -36,6 +36,29 @@ You do not have to worry about Sql Injection as the query is generated dynamical
 9. Gradle plugin to generate the java code from your sql files.
 
 ## Usage
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Setup](#setup)
+  - [1. Add the gradle plugin to your build.gradle file.](#1-add-the-gradle-plugin-to-your-buildgradle-file)
+  - [2. Create the source directory for your sql files.](#2-create-the-source-directory-for-your-sql-files)
+  - [3. Create your sql files.](#3-create-your-sql-files)
+  - [4. Generate the java code.](#4-generate-the-java-code)
+  - [5. Set up EzyQuery](#5-set-up-ezyquery)
+  - [6. Use the generated code.](#6-use-the-generated-code)
+    - [6.1. Filtering using the fluent api.](#61-filtering-using-the-fluent-api)
+    - [6.2. Filtering using the Condition API](#62-filtering-using-the-condition-api)
+    - [6.3. Filtering using the Ezy-Query String Expressions](#63-filtering-using-the-ezy-query-string-expressions)
+    - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
+    - [6.5. Sorting](#65-sorting)
+    - [6.6. Pagination](#66-pagination)
+    - [6.7 Adding a default where clause.](#67-adding-a-default-where-clause)
+    - [6.8 Adding data types to the generated pojo.](#68-adding-data-types-to-the-generated-pojo)
+    - [6.10 Optionally select fields to be returned.](#610-optionally-select-fields-to-be-returned)
+  - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 Query using the Java fluent API.
 

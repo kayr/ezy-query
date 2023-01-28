@@ -61,59 +61,16 @@ ezySql.from(GetCustomers.QUERY)
 
 ### 1. Add the gradle plugin to your build.gradle file.
 
+This plugin currently only supports gradle 7.0 and above. See below on how to work with older versions of gradle.
+In future versions I will add support for older versions of gradle.
+
 ```groovy
 plugins {
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.7'
+   //gradle 7.0 and above see bottom of this page for older versions
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.7' 
 }
 ```
 
-This plugin currently only supports gradle 7.0 and above. In future we will support older versions. For older versions
-add the script below as a workaround.
-The script adds the necessary tasks to your `build.gradle` file.
-
-```groovy
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "io.github.kayr:ezy-query-codegen:0.0.7"
-    }
-}
-
-task("ezyBuild") {
-
-    def input = file("src/main/ezyquery").toPath()
-    def output = file("build/generated/ezy/main").toPath()
-
-    doLast {
-        if (input.toFile().exists()) {
-            Files.createDirectories(output)
-            BatchQueryGen.generate(input, output)
-        }
-    }
-}
-task("ezyClean") {
-    doLast {
-        project.delete("build/generated/ezy/")
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir "build/generated/ezy/main"
-        }
-
-    }
-    test {
-        java {
-            srcDir "build/generated/ezy/test"
-        }
-    }
-}
-```
 
 ### 2. Create the source directory for your sql files.
 
@@ -345,4 +302,54 @@ The supported data types are:
 ```java
 ezySql.from(GetCustomers.QUERY)
   .select(CUSTOMER_NAME, CUSTOMER_EMAIL)
+```
+
+### 7.0 Using on older versions of Gradle.
+
+In the future, we will support older versions. For older versions
+add the script below as a workaround.
+The script adds the necessary tasks to your `build.gradle` file.
+
+```groovy
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.github.kayr:ezy-query-codegen:0.0.7"
+    }
+}
+
+task("ezyBuild") {
+
+    def input = file("src/main/ezyquery").toPath()
+    def output = file("build/generated/ezy/main").toPath()
+
+    doLast {
+        if (input.toFile().exists()) {
+            Files.createDirectories(output)
+            BatchQueryGen.generate(input, output)
+        }
+    }
+}
+task("ezyClean") {
+    doLast {
+        project.delete("build/generated/ezy/")
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "build/generated/ezy/main"
+        }
+
+    }
+    test {
+        java {
+            srcDir "build/generated/ezy/test"
+        }
+    }
+}
 ```

@@ -6,10 +6,9 @@ plugins {
 }
 ```
 
-
 Convert Your Sql Query To A Queryable Java API/Code.. think of A Queryable View In Your Code Using Java
 
-No more writing sql queries in your code or using string concatenation to build your sql queries.
+You don't have to write your sql queries in your code or use string concatenation to build your sql queries.
 This will work for most sql queries in the
 format `SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... LIMIT ... OFFSET ...`
 You do not have to worry about Sql Injection as the query is generated dynamically parameterized.
@@ -18,14 +17,15 @@ You do not have to worry about Sql Injection as the query is generated dynamical
 
 1. You write your sql query file
 2. You run the gradle plugin to generate the java code
-3. The query file is converted to a java class that contains all the field info in the query.
+3. The query file is converted to a java class.
 4. You can now use the java class to query your database with a flexible easy to use api.
 
 ## Features
 
 1. Flexible Query fluent API e.g   `where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))`
-2. Query Expressions (Avoid Sql Injection). This means you can pass a string expression to query your database without
-   limited risk of Sql Injection. Ideally if you are building a Rest-API then clients get a powerful filtering API by
+2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
+   This means you can pass a string expression to query your database with limited risk of Sql Injection since the query is parsed. Ideally if you
+   are building a Rest-API then clients get a powerful filtering API by
    passing the query expression as a parameter.
 3. You can fall back to native sql queries if you need to.
 4. All generated sql queries are parameterized to avoid sql injection.
@@ -36,26 +36,27 @@ You do not have to worry about Sql Injection as the query is generated dynamical
 9. Gradle plugin to generate the java code from your sql files.
 
 ## Usage
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Setup](#setup)
-  - [1. Add the gradle plugin to your build.gradle file.](#1-add-the-gradle-plugin-to-your-buildgradle-file)
-  - [2. Create the source directory for your sql files.](#2-create-the-source-directory-for-your-sql-files)
-  - [3. Create your sql files.](#3-create-your-sql-files)
-  - [4. Generate the java code.](#4-generate-the-java-code)
-  - [5. Set up EzyQuery](#5-set-up-ezyquery)
-  - [6. Use the generated code.](#6-use-the-generated-code)
-    - [6.1. Filtering using the fluent api.](#61-filtering-using-the-fluent-api)
-    - [6.2. Filtering using the Condition API](#62-filtering-using-the-condition-api)
-    - [6.3. Filtering using the Ezy-Query String Expressions](#63-filtering-using-the-ezy-query-string-expressions)
-    - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
-    - [6.5. Sorting](#65-sorting)
-    - [6.6. Pagination](#66-pagination)
-    - [6.7 Adding a default where clause.](#67-adding-a-default-where-clause)
-    - [6.8 Adding data types to the generated pojo.](#68-adding-data-types-to-the-generated-pojo)
-    - [6.10 Optionally select fields to be returned.](#610-optionally-select-fields-to-be-returned)
-  - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
+    - [1. Add the gradle plugin to your build.gradle file.](#1-add-the-gradle-plugin-to-your-buildgradle-file)
+    - [2. Create the source directory for your sql files.](#2-create-the-source-directory-for-your-sql-files)
+    - [3. Create your sql files.](#3-create-your-sql-files)
+    - [4. Generate the java code.](#4-generate-the-java-code)
+    - [5. Set up EzyQuery](#5-set-up-ezyquery)
+    - [6. Use the generated code.](#6-use-the-generated-code)
+        - [6.1. Filtering using the fluent api.](#61-filtering-using-the-fluent-api)
+        - [6.2. Filtering using the Condition API](#62-filtering-using-the-condition-api)
+        - [6.3. Filtering using the Ezy-Query String Expressions](#63-filtering-using-the-ezy-query-string-expressions)
+        - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
+        - [6.5. Sorting](#65-sorting)
+        - [6.6. Pagination](#66-pagination)
+        - [6.7 Adding a default where clause.](#67-adding-a-default-where-clause)
+        - [6.8 Adding data types to the generated pojo.](#68-adding-data-types-to-the-generated-pojo)
+        - [6.10 Optionally select fields to be returned.](#610-optionally-select-fields-to-be-returned)
+    - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -65,19 +66,19 @@ Query using the Java fluent API.
 ```java
 //full query
 ezySql.from(GetCustomers.QUERY)
- .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
- .orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc())
- .limit(10).offset(20);
+  .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
+  .orderBy(CUSTOMER_NAME.asc(),CUSTOMER_EMAIL.desc())
+  .limit(10).offset(20);
 ```
 
 Query using String expressions.
 
 ```java
 ezySql.from(GetCustomers.QUERY)
-       .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
-       .orderBy("customerName asc, customerEmail desc")
-       .limit(10).offset(20)
-          
+  .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
+  .orderBy("customerName asc, customerEmail desc")
+  .limit(10).offset(20)
+
 ```
 
 ## Setup
@@ -89,11 +90,10 @@ In future versions I will add support for older versions of gradle.
 
 ```groovy
 plugins {
-   //gradle 7.0 and above see bottom of this page for older versions
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.7' 
+    //gradle 7.0 and above see bottom of this page for older versions
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.7'
 }
 ```
-
 
 ### 2. Create the source directory for your sql files.
 
@@ -110,7 +110,8 @@ Or Manually create the directory `src/main/ezyquery` in your project.
 Create a sql file in the directory `src/main/ezyquery` an example below. The file name will be used as the generated
 class name.
 
-For more convenience you should place your sql files in a package structure that matches the package structure of your java code.
+For more convenience you should place your sql files in a package structure that matches the package structure of your
+java code.
 
 e.g `get-customer.sql` will be generated as `GetCustomer.java`
 
@@ -145,7 +146,7 @@ EzySql ezySql=EzySql.withDataSource(dataSource);
 
 
 //or use an sql connection
-EzySql ezySql=EzySql.withConnection(connection);
+  EzySql ezySql=EzySql.withConnection(connection);
 ```
 
 In spring boot you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
@@ -168,11 +169,11 @@ then return the result in a pojo.
 private EzySql ezySql;
 
 public void getCustomers(){
-  var query = ezySql.from(GetCustomers.QUERY)
-  
+  var query=ezySql.from(GetCustomers.QUERY)
 
-  assert result.count() > 1;
-  assert result.list().size() > 0;
+
+  assert result.count()>1;
+  assert result.list().size()>0;
 
   }
 ```
@@ -183,8 +184,8 @@ public void getCustomers(){
 import static docs.GetCustomers.*;
 
  ezySql.from(GetCustomers.QUERY)
-       .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
-       .list();
+   .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
+   .list();
 ```
 
 #### 6.2. Filtering using the Condition API
@@ -194,9 +195,9 @@ import static docs.GetCustomers.*;
   
 ezySql.from(GetCustomers.QUERY)
   .where(
-     Cnd.and(
-        CUSTOMER_NAME.eq("John"),
-        CUSTOMER_EMAIL.isNotNull())
+  Cnd.and(
+  CUSTOMER_NAME.eq("John"),
+  CUSTOMER_EMAIL.isNotNull())
   ).list();
 ```
 
@@ -204,8 +205,8 @@ ezySql.from(GetCustomers.QUERY)
 
 ```java
  ezySql.from(GetCustomers.QUERY)
-      .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
-      .getQuery().print();
+  .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
+  .getQuery().print();
 ```
 
 The above will print the following query. It parses the expression and converts it to the supported Criteria API. This
@@ -230,7 +231,7 @@ concatenation and use the `?` placeholder instead.
 
 ```java
 ezySql.from(GetCustomers.QUERY)
-      .where(Cnd.sql("c.name = ? and c.created_at > now()", "John" ))
+  .where(Cnd.sql("c.name = ? and c.created_at > now()","John"))
 ```
 
 #### 6.5. Sorting
@@ -239,28 +240,28 @@ Sort using fields
 
 ```java
  ezySql.from(GetCustomers.QUERY)
-      .orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc())
+  .orderBy(CUSTOMER_NAME.asc(),CUSTOMER_EMAIL.desc())
 ```
 
 Sort using strings expression
 
 ```java
 ezySql.from(GetCustomers.QUERY)
-      .orderBy("customerName asc, customerEmail desc")
+  .orderBy("customerName asc, customerEmail desc")
 ```
 
 Sort using Sort Object
 
 ```java
 ezySql.from(GetCustomers.QUERY)
-      .orderBy(Sort.by("customerName", Sort.DIR.ASC))
+  .orderBy(Sort.by("customerName",Sort.DIR.ASC))
 ```
 
 #### 6.6. Pagination
 
 ```java
  ezySql.from(GetCustomers.QUERY)
-       .limit(10).offset(20)
+  .limit(10).offset(20)
 ```
 
 #### 6.7 Adding a default where clause.
@@ -300,10 +301,10 @@ With the above the generated pojo will have the following fields.
 
 ```java
 ... // code ommited for brevity
-  private Integer customerId;
-  private String customerName;
-  private Double customerScore;
-...
+private Integer customerId;
+private String customerName;
+private Double customerScore;
+  ...
 ```
 
 The supported data types are:
@@ -322,9 +323,10 @@ The supported data types are:
 - `object`
 
 #### 6.10 Optionally select fields to be returned.
+
 ```java
 ezySql.from(GetCustomers.QUERY)
-  .select(CUSTOMER_NAME, CUSTOMER_EMAIL)
+  .select(CUSTOMER_NAME,CUSTOMER_EMAIL)
 ```
 
 ### 7.0 Using on older versions of Gradle.

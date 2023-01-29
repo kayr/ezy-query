@@ -11,22 +11,20 @@ Convert Your Sql Query To A Queryable Java API/Code.. think of A Queryable View 
 You don't have to write your sql queries in your code or use string concatenation to build your sql queries.
 This will work for most sql queries in the
 format `SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... LIMIT ... OFFSET ...`
-You do not have to worry about Sql Injection as the query is generated dynamically parameterized.
+You do not have to worry about Sql Injection as the generated sql queries are parameterized.
 
 ## The workflow
 
 1. You write your sql query file
-2. You run the gradle plugin to generate the java code
-3. The query file is converted to a java class.
-4. You can now use the java class to query your database with a flexible easy to use api.
+2. Run `./gradlew ezyBuild` to convert your sql query file to a java class.
+3. You can now use the java class to query your database with a flexible easy to use api.
 
 ## Features
 
 1. Flexible Query fluent API e.g   `where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))`
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
-   This means you can pass a string expression to query your database with limited risk of Sql Injection since the query is parsed. Ideally if you
-   are building a Rest-API then clients get a powerful filtering API by
-   passing the query expression as a parameter.
+   Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
+   parameter. The query is parsed and converted to a parameterized sql query to avoid sql injection.
 3. You can fall back to native sql queries if you need to.
 4. All generated sql queries are parameterized to avoid sql injection.
 5. Automatic mapping of sql result to java pojo.

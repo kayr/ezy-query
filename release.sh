@@ -125,7 +125,7 @@ make test
 
 # ======= PUBLISHING =====================
 echo "  -> Publish groovy 3"
-#make publish
+make publish
 
 echo "  -> Creating tag $NEW_VERSION"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"

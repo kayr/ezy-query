@@ -3,7 +3,11 @@
 
 publish: generate format
 	./gradlew clean build publish
+
+close-release:
 	./gradlew closeAndReleaseRepository
+
+publish-and-close: publish close-release
 
 publishLocal: build
 	./gradlew publishAllPublicationsToMavenRepository  -x signMavenJavaPublication -x signMavenPublication -x test

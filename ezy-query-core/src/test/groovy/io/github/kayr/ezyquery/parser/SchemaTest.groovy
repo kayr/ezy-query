@@ -1,0 +1,101 @@
+package io.github.kayr.ezyquery.parser
+
+
+import spock.lang.Specification
+
+class SchemaTest extends Specification {
+
+    def s = Schema.of(
+            Schema.textPart("from table inner join ( select * from table2 where table2.id in ("),
+            Schema.paramPart("param1"),
+            Schema.textPart(")) as t2 on t2.id = table.id "),
+            Schema.paramPart("param2")
+    )
+
+    def query = "from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2"
+
+    def 'should fail if some params are not set'() {
+        when:
+        s.setParam("param1", 1)
+                .getQuery()
+
+        then:
+        def e = thrown(IllegalStateException)
+        e.message == "Param [param2] is not set"
+    }
+
+    def 'should fail if you set a param that does not exist'() {
+        when:
+        s.setParam("param3", 1)
+                .getQuery()
+
+        then:
+        def e = thrown(IllegalArgumentException)
+        e.message == "Param [param3] does not exist"
+    }
+
+    def 'should construct sql with postional params'() {
+        when:
+        def query = s.setParam("param1", "XX1")
+                .setParam("param2", "FF2")
+                .getQuery()
+
+        then:
+        query.getSql() == "from table inner join ( select * from table2 where table2.id in (?)) as t2 on t2.id = table.id ?"
+        query.params == ["XX1", "FF2"]
+    }
+
+    def 'should construct sql with correct list values'() {
+        when:
+        def query = s.setParam("param1", ["XX1", "XX2"])
+                .setParam("param2", "FF2")
+                .getQuery()
+
+        then:
+        query.getSql() == "from table inner join ( select * from table2 where table2.id in (?,?)) as t2 on t2.id = table.id ?"
+        query.params == ["XX1", "XX2", "FF2"]
+    }
+
+
+    def 'convert to param value should handle both collection and objects'() {
+
+        expect:
+        Schema.convertToValueParam(a) == b
+
+        where:
+        a                             | b
+        "a"                           | ["a"]
+        1                             | [1]
+        [1, 2]                        | [1, 2]
+        ["a", "b"]                    | ["a", "b"]
+        null                          | [null]
+        new Vector([1, 2])            | [1, 2]
+        new Vector([1, 2]).iterator() | [1, 2]
+        new Vector([1, 2]).elements() | [1, 2]
+        new HashSet([1, 2])           | [1, 2]
+        createIterable([1, 2])        | [1, 2]
+        [1, 2].stream()               | [1, 2]
+        [1, 2].toArray()              | [1, 2]
+    }
+
+    def 'should be parse raw sql query with params'() {
+        when:
+        def query = Schema.of(query)
+
+        then:
+        query.rawSql == "from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2"
+        query.parts.findAll { it instanceof Schema.IPart.Param }.collect { it.name } == ["param1", "param2"]
+    }
+
+
+    Iterable createIterable(List itesm) {
+        return new Iterable() {
+            @Override
+            Iterator iterator() {
+                return itesm.iterator()
+            }
+        }
+    }
+
+
+}

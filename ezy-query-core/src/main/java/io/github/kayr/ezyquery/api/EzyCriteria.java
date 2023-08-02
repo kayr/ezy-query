@@ -15,6 +15,7 @@ public class EzyCriteria {
 
   @Builder.Default private List<String> columns = new ArrayList<>();
   @Builder.Default private List<ICond> conditions = new ArrayList<>();
+  @Builder.Default private List<NameParamValue> namedParams = new ArrayList<>();
 
   @Builder.Default private List<Sort> sorts = new ArrayList<>();
 
@@ -75,6 +76,12 @@ public class EzyCriteria {
       sortList.addAll(parse);
     }
     return toBuilder().sorts(Elf.combine(this.sorts, sortList)).build();
+  }
+
+  public EzyCriteria setParam(NamedParam namedParam, Object value) {
+    return toBuilder()
+        .namedParams(Elf.addAll(this.namedParams, new NameParamValue(namedParam, value)))
+        .build();
   }
 
   // endregion

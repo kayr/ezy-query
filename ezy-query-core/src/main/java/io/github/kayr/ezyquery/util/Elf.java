@@ -5,10 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +29,7 @@ public class Elf {
     return result;
   }
 
-  public static <T> List<T> copyList(List<T> list) {
+  public static <T> List<T> copyList(Collection<T> list) {
     return new ArrayList<>(list);
   }
 
@@ -133,5 +130,24 @@ public class Elf {
   public static String mayBeAddParens(String expression) {
     if (expression.trim().startsWith("(") && expression.trim().endsWith(")")) return expression;
     return "(" + expression + ")";
+  }
+
+  public static <K, V> Map<K, V> put(Map<K, V> paramValues, K paramName, V value) {
+    HashMap<K, V> map = new HashMap<>(paramValues);
+    map.put(paramName, value);
+    return map;
+  }
+
+  public static List<Object> toList(Enumeration<?> value) {
+    //noinspection unchecked
+    return (List<Object>) Collections.list(value);
+  }
+
+  public static List<Object> toList(Iterator<?> value) {
+    List<Object> list = new ArrayList<>();
+    while (value.hasNext()) {
+      list.add(value.next());
+    }
+    return list;
   }
 }

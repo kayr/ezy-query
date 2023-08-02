@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery;
 
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
@@ -100,6 +101,10 @@ public class EzySql {
 
     public CriteriaBuilder<T> where(ICond... conds) {
       return withCriteria(criteria.where(conds));
+    }
+
+    public CriteriaBuilder<T> setParam(NamedParam param, Object value) {
+      return withCriteria(criteria.setParam(param, value));
     }
 
     public CriteriaBuilder<T> offset(@NonNull Integer offset) {

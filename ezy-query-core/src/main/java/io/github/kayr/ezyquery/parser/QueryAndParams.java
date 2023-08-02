@@ -20,8 +20,8 @@ public class QueryAndParams {
     return new QueryAndParams(sql);
   }
 
-  public static QueryAndParams of(String s, List<Object> singletonList) {
-    return new QueryAndParams(s, singletonList);
+  public static QueryAndParams of(String s, List<Object> params) {
+    return new QueryAndParams(s, params);
   }
 
   QueryAndParams append(boolean conditional, String sql) {

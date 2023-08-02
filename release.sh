@@ -64,7 +64,7 @@ get_current_project_version() {
 
 prompt_for_version() {
   local default_version=$1
-  read -p "Enter the version [$default_version]: " actual_default_version
+  read -p "Enter the next version [$default_version]: " actual_default_version
   actual_default_version=${actual_default_version:-$default_version}
   echo "$actual_default_version"
 }
@@ -100,6 +100,7 @@ echo "check the current branch is up-to-date"
 echo "check the current branch is $MAIN_BRANCH"
 assert_eq "$CURRENT_BRANCH" "$MAIN_BRANCH" "Not on branch $MAIN_BRANCH, aborting."
 
+echo "Current version is $RELEASE_VERSION"
 NEW_VERSION=$(prompt_for_version "$RELEASE_VERSION_INCREMENTED")
 assert_not_empty "$NEW_VERSION" "Version cannot be empty"
 

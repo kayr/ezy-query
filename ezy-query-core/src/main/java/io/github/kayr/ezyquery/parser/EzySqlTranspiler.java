@@ -80,7 +80,8 @@ public class EzySqlTranspiler {
         InExpr.class,
         inExpr -> {
           if (Elf.isEmpty(inExpr.getCandidates())) {
-            return QueryAndParams.of("1 = 0");
+            if (inExpr.isNot()) return QueryAndParams.of("1 = 1");
+            else return QueryAndParams.of("1 = 0");
           }
 
           QueryAndParams left = transpile(inExpr.getLeft());

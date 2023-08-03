@@ -43,6 +43,8 @@ class CndTranspileTest extends Specification {
         Cnd.like("name", 'john')                             || ['name', 'john']         | 'name LIKE john'           | '? LIKE ?'
         Cnd.notLike("name", 'john')                          || ['name', 'john']         | 'name NOT LIKE john'       | '? NOT LIKE ?'
         Cnd.in("name", ['john'])                             || ['name', 'john']         | 'name in [john]'           | '? IN (?)'
+        Cnd.in("name", [])                                   || []                       | "name in []"               | "1 = 0"
+        Cnd.notIn("name", [])                                || []                       | "name not in []"           | "1 = 1"
         Cnd.notIn("name", ['john'])                          || ['name', 'john']         | 'name not in [john]'       | '? NOT IN (?)'
         Cnd.notIn("name", ['john', 'doe'])                   || ['name', 'john', 'doe']  | 'name not in [john, doe]'  | '? NOT IN (?, ?)'
         Cnd.in("name", ['john', 'doe'])                      || ['name', 'john', 'doe']  | 'name in [john, doe]'      | '? IN (?, ?)'

@@ -391,24 +391,27 @@ public class QueryGen {
   }
 
   Class<?> resolveType(String type) {
-    Map<String, Class<?>> typeMap = new HashMap<>();
 
-    typeMap.put("int", Integer.class);
-    typeMap.put("long", Long.class);
-    typeMap.put("float", Float.class);
-    typeMap.put("double", Double.class);
-    typeMap.put("boolean", Boolean.class);
-    typeMap.put("string", String.class);
-    typeMap.put("date", Date.class);
-    typeMap.put("time", java.sql.Timestamp.class);
-    typeMap.put("decimal", java.math.BigDecimal.class);
-    typeMap.put("bigint", java.math.BigInteger.class);
-    typeMap.put("byte", Byte.class);
-    typeMap.put("object", Object.class);
-
-    Class<?> aClass = typeMap.get(type);
+    Class<?> aClass = TYPE_MAP.get(type);
     if (aClass == null) throw new IllegalArgumentException("Unsupported type: " + type);
     return aClass;
+  }
+
+  private static final Map<String, Class<?>> TYPE_MAP = new HashMap<>();
+
+  static {
+    TYPE_MAP.put("int", Integer.class);
+    TYPE_MAP.put("long", Long.class);
+    TYPE_MAP.put("float", Float.class);
+    TYPE_MAP.put("double", Double.class);
+    TYPE_MAP.put("boolean", Boolean.class);
+    TYPE_MAP.put("string", String.class);
+    TYPE_MAP.put("date", Date.class);
+    TYPE_MAP.put("time", java.sql.Timestamp.class);
+    TYPE_MAP.put("decimal", java.math.BigDecimal.class);
+    TYPE_MAP.put("bigint", java.math.BigInteger.class);
+    TYPE_MAP.put("byte", Byte.class);
+    TYPE_MAP.put("object", Object.class);
   }
 
   String unquote(String s) {

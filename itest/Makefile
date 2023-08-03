@@ -7,10 +7,13 @@ generate:
 clean:
 	../gradlew clean
 
+format: generate
+	../gradlew spotlessApply
+
 test: generate
 	../gradlew test
 
-build: generate
+build: format generate
 	../gradlew build
 
 publishLocal:

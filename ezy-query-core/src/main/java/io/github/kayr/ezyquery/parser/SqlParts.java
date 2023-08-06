@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.ToString;
 
 @lombok.With(AccessLevel.PRIVATE)
@@ -27,7 +26,7 @@ public class SqlParts {
     }
   }
 
-  @Getter private List<IPart> parts;
+  private List<IPart> parts;
   private Map<String, IPart.Param> paramParts = new HashMap<>();
   private Map<String, Object> paramValues = new HashMap<>();
 

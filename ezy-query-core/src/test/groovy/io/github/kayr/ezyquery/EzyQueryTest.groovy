@@ -6,6 +6,7 @@ import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.SqlBuilder
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
+import io.github.kayr.ezyquery.parser.SqlParts
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -30,8 +31,8 @@ class EzyQueryTest extends Specification {
         }
 
         @Override
-        String schema() {
-            return "my_table"
+        SqlParts schema() {
+            return SqlParts.of("my_table")
         }
     }
     @Shared
@@ -367,13 +368,13 @@ class EzyQueryTest extends Specification {
             }
 
             @Override
-            String schema() {
-                return "my_table"
+            SqlParts schema() {
+                return SqlParts.of("my_table")
             }
 
             @Override
-            Optional<String> whereClause() {
-                return Optional.of('t.name = 123')
+            Optional<SqlParts> whereClause() {
+                return Optional.of(SqlParts.of('t.name = 123'))
             }
         }
         ezyQueryWithWhere

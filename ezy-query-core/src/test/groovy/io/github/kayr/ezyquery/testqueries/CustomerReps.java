@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,10 +34,11 @@ public class CustomerReps implements EzyQuery<CustomerReps.Result> {
 
   public static final CustomerReps Q = new CustomerReps();
 
-  private final String schema =
-      "offices o\n"
-          + "LEFT JOIN employees e ON o.officeCode = e.officeCode\n"
-          + "LEFT JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber\n";
+  private final SqlParts schema =
+      SqlParts.of(
+          "offices o\n"
+              + "LEFT JOIN employees e ON o.officeCode = e.officeCode\n"
+              + "LEFT JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber\n");
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
@@ -62,7 +64,7 @@ public class CustomerReps implements EzyQuery<CustomerReps.Result> {
   }
 
   @Override
-  public String schema() {
+  public SqlParts schema() {
     return this.schema;
   }
 

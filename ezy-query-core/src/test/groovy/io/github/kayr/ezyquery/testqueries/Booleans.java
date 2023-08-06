@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,7 @@ public class Booleans implements EzyQuery<Booleans.Result> {
 
   public static final Booleans QUERY = new Booleans();
 
-  private final String schema = "offices";
+  private final SqlParts schema = SqlParts.of("offices");
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
@@ -42,17 +43,17 @@ public class Booleans implements EzyQuery<Booleans.Result> {
   }
 
   @Override
-  public String schema() {
+  public SqlParts schema() {
     return this.schema;
   }
 
   @Override
-  public Optional<String> whereClause() {
+  public Optional<SqlParts> whereClause() {
     return Optional.empty();
   }
 
   @Override
-  public Optional<String> orderByClause() {
+  public Optional<SqlParts> orderByClause() {
     return Optional.empty();
   }
 

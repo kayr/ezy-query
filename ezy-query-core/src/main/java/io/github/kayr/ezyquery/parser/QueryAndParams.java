@@ -24,19 +24,23 @@ public class QueryAndParams {
     return new QueryAndParams(s, params);
   }
 
-  QueryAndParams append(boolean conditional, String sql) {
+  public QueryAndParams append(boolean conditional, String sql) {
     if (conditional) {
       return append(sql);
     }
     return this;
   }
 
-  QueryAndParams append(String sql) {
+  public QueryAndParams append(String sql) {
     return of(this.sql + sql, params);
   }
 
-  QueryAndParams append(QueryAndParams sql) {
+  public QueryAndParams append(QueryAndParams sql) {
     return of(this.sql + sql.getSql(), Elf.combine(this.params, sql.params));
+  }
+
+  public QueryAndParams append(String sql, List<Object> params) {
+    return of(this.sql + sql, Elf.combine(this.params, params));
   }
 
   @Override

@@ -6,8 +6,12 @@ import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.ast.EzyExpr;
 import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.util.Elf;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SqlBuilder {
@@ -81,15 +85,15 @@ public class SqlBuilder {
     return EzySqlTranspiler.transpile(fields, expr);
   }
 
-  public String orderByStmt(String defaultOrderBy) {
+  public QueryAndParams orderByStmt(SqlParts defaultOrderBy) {
 
     if (Elf.isEmpty(ezyCriteria.getSorts())) {
-      return Optional.ofNullable(defaultOrderBy).map(s -> " ORDER BY " + s).orElse("");
+      return Optional.ofNullable(defaultOrderBy)
+          .map(sqlParts -> QueryAndParams.of(" ORDER BY ").append(sqlParts.getQuery()))
+          .orElse(null);
     }
 
-    StringBuilder orderByPart = new StringBuilder();
-
-    orderByPart.append("ORDER BY ");
+    QueryAndParams orderByPart = QueryAndParams.of("ORDER BY ");
 
     int size = ezyCriteria.getSorts().size();
     for (int i = 0; i < size; i++) {
@@ -98,14 +102,15 @@ public class SqlBuilder {
 
       Field<?> theField = getField(sort.getField());
 
-      orderByPart.append(theField.getSqlField()).append(" ").append(sort.getDir());
+      orderByPart =
+          orderByPart.append(theField.getSqlField()).append(" ").append(sort.getDir().toString());
 
       if (i < size - 1) {
-        orderByPart.append(", ");
+        orderByPart = orderByPart.append(", ");
       }
     }
 
-    return orderByPart.toString();
+    return orderByPart;
   }
 
   private Field<?> getField(String alias) {
@@ -118,48 +123,51 @@ public class SqlBuilder {
 
   QueryAndParams build(EzyQuery<?> query) {
 
+    QueryAndParams queryBuilder = new QueryAndParams("SELECT \n");
+
     String s = selectStmt();
 
-    QueryAndParams w = whereStmt();
+    QueryAndParams dynamicWhereClause = whereStmt();
 
-    String orderBy = orderByStmt(query.orderByClause().orElse(null));
+    QueryAndParams orderBy = orderByStmt(query.orderByClause().orElse(null));
 
-    StringBuilder sb = new StringBuilder();
-
-    StringBuilder queryBuilder =
-        sb.append("SELECT \n")
+    queryBuilder =
+        queryBuilder
             .append(s)
             .append("FROM ")
-            .append(query.schema())
+            .append(query.schema().getQuery())
             .append("\n")
             .append("WHERE ");
 
-    Optional<String> whereClause = query.whereClause();
-    if (whereClause.isPresent()) {
-      queryBuilder
-          .append("(")
-          .append(whereClause.get())
-          .append(") AND ")
-          .append(Elf.mayBeAddParens(w.getSql()));
+    Optional<SqlParts> defaultWhereClause = query.whereClause();
+    if (defaultWhereClause.isPresent()) {
+      String dynWhereStr = Elf.mayBeAddParens(dynamicWhereClause.getSql());
+      queryBuilder =
+          queryBuilder
+              .append("(")
+              .append(defaultWhereClause.get().getQuery())
+              .append(") AND ")
+              .append(dynWhereStr, dynamicWhereClause.getParams());
     } else {
-      queryBuilder.append(w.getSql());
+      queryBuilder = queryBuilder.append(dynamicWhereClause);
     }
 
     if (!ezyCriteria.isCount()) {
 
-      queryBuilder.append("\n");
+      queryBuilder = queryBuilder.append("\n");
 
-      if (!orderBy.isEmpty()) {
-        queryBuilder.append(orderBy).append("\n");
+      if (orderBy != null) {
+        queryBuilder = queryBuilder.append(orderBy).append("\n");
       }
-      queryBuilder
-          .append("LIMIT ")
-          .append(ezyCriteria.getLimit())
-          .append(" OFFSET ")
-          .append(ezyCriteria.getOffset());
+      queryBuilder =
+          queryBuilder
+              .append("LIMIT ")
+              .append(ezyCriteria.getLimit() + "")
+              .append(" OFFSET ")
+              .append(ezyCriteria.getOffset() + "");
     }
 
-    return new QueryAndParams(queryBuilder.toString(), w.getParams());
+    return queryBuilder;
   }
 
   public static QueryAndParams buildSql(EzyQuery<?> query, EzyCriteria criteria) {

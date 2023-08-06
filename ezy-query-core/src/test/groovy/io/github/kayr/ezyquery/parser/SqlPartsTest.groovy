@@ -88,6 +88,25 @@ class SqlPartsTest extends Specification {
     }
 
 
+    def 'should parse query with named param at beginning'(){
+        when:
+        def query = SqlParts.of(":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :param3")
+
+        then:
+        query.rawSql == ":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :param3"
+        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2", "param3"]
+    }
+
+
+    def 'should parse with no named params'(){
+        when:
+        def query = SqlParts.of("from table inner join ( select * from table2 where table2.id in ( 1 )) as t2 on t2.id = table.id ")
+
+        then:
+        query.rawSql == "from table inner join ( select * from table2 where table2.id in ( 1 )) as t2 on t2.id = table.id "
+        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == []
+    }
+
 
 
     Iterable createIterable(List itesm) {

@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Adopted from Spring Framework's {@code NamedParameterUtils} */
+/** Adapted from Spring Framework's {@code NamedParameterUtils} */
 class NamedParamParser {
 
   /** Set of characters that qualify as comment or quotes starting characters. */
@@ -48,19 +48,19 @@ class NamedParamParser {
     }
   }
 
-  public static Schema buildParts(String sql) {
+  public static SqlParts buildParts(String sql) {
     return buildParts(parse(sql));
   }
 
-  public static Schema buildParts(ParsedSql parsedSql) {
+  public static SqlParts buildParts(ParsedSql parsedSql) {
     List<String> names = parsedSql.getParameterNames();
     int paramsCount = names.size();
 
     if (names.isEmpty()) {
-      return Schema.of(Schema.textPart(parsedSql.getOriginalSql()));
+      return SqlParts.of(SqlParts.textPart(parsedSql.getOriginalSql()));
     }
 
-    List<Schema.IPart> parts = new ArrayList<>(names.size());
+    List<SqlParts.IPart> parts = new ArrayList<>(names.size());
 
     int sqlStartPosition = 0;
     for (int i = 0; i < paramsCount; i++) {
@@ -68,14 +68,14 @@ class NamedParamParser {
       int[] indexes = parsedSql.getParameterIndexes(i);
       int end = indexes[0];
       if (sqlStartPosition != end) {
-        parts.add(Schema.textPart(parsedSql.getOriginalSql().substring(sqlStartPosition, end)));
+        parts.add(SqlParts.textPart(parsedSql.getOriginalSql().substring(sqlStartPosition, end)));
       }
 
-      parts.add(Schema.paramPart(name));
+      parts.add(SqlParts.paramPart(name));
 
       sqlStartPosition = indexes[1];
     }
-    return Schema.of(parts);
+    return SqlParts.of(parts);
   }
 
   /**
@@ -298,7 +298,7 @@ class NamedParamParser {
     String sql =
         "select * from user where name = :name and age = :age and id = :id and name = :name";
 
-    Schema parsedSql = buildParts(sql);
+    SqlParts parsedSql = buildParts(sql);
 
     System.out.println(parsedSql.getQuery());
   }

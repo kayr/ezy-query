@@ -3,13 +3,13 @@ package io.github.kayr.ezyquery.parser
 
 import spock.lang.Specification
 
-class SchemaTest extends Specification {
+class SqlPartsTest extends Specification {
 
-    def s = Schema.of(
-            Schema.textPart("from table inner join ( select * from table2 where table2.id in ("),
-            Schema.paramPart("param1"),
-            Schema.textPart(")) as t2 on t2.id = table.id "),
-            Schema.paramPart("param2")
+    def s = SqlParts.of(
+            SqlParts.textPart("from table inner join ( select * from table2 where table2.id in ("),
+            SqlParts.paramPart("param1"),
+            SqlParts.textPart(")) as t2 on t2.id = table.id "),
+            SqlParts.paramPart("param2")
     )
 
     def query = "from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2"
@@ -60,7 +60,7 @@ class SchemaTest extends Specification {
     def 'convert to param value should handle both collection and objects'() {
 
         expect:
-        Schema.convertToValueParam(a) == b
+        SqlParts.convertToValueParam(a) == b
 
         where:
         a                             | b
@@ -80,12 +80,14 @@ class SchemaTest extends Specification {
 
     def 'should be parse raw sql query with params'() {
         when:
-        def query = Schema.of(query)
+        def query = SqlParts.of(query)
 
         then:
         query.rawSql == "from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2"
-        query.parts.findAll { it instanceof Schema.IPart.Param }.collect { it.name } == ["param1", "param2"]
+        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2"]
     }
+
+
 
 
     Iterable createIterable(List itesm) {

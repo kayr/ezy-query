@@ -11,7 +11,7 @@ import lombok.ToString;
 
 @lombok.With(AccessLevel.PRIVATE)
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
-public class Schema {
+public class SqlParts {
 
   public interface IPart {
     @ToString
@@ -31,15 +31,15 @@ public class Schema {
   private Map<String, IPart.Param> paramParts = new HashMap<>();
   private Map<String, Object> paramValues = new HashMap<>();
 
-  static Schema of(IPart... parts) {
-    return new Schema(Arrays.asList(parts));
+  static SqlParts of(IPart... parts) {
+    return new SqlParts(Arrays.asList(parts));
   }
 
-  public static Schema of(List<IPart> parts) {
-    return new Schema(parts);
+  public static SqlParts of(List<IPart> parts) {
+    return new SqlParts(parts);
   }
 
-  public static Schema of(String sql) {
+  public static SqlParts of(String sql) {
     return NamedParamParser.buildParts(sql);
   }
 
@@ -51,7 +51,7 @@ public class Schema {
     return new IPart.Param(name);
   }
 
-  public Schema(List<IPart> parts) {
+  public SqlParts(List<IPart> parts) {
     this.parts = Elf.copyList(parts);
     for (IPart part : parts) {
       if (part instanceof IPart.Param) {
@@ -60,7 +60,7 @@ public class Schema {
     }
   }
 
-  public Schema setParam(String paramName, Object value) {
+  public SqlParts setParam(String paramName, Object value) {
     if (!paramParts.containsKey(paramName)) {
       throw new IllegalArgumentException("Param [" + paramName + "] does not exist");
     }

@@ -8,7 +8,7 @@ import io.github.kayr.ezyquery.parser.EzyParseException
 import org.junit.Ignore
 import spock.lang.Specification
 
-class LibraryTest extends Specification {
+class ExprParserTest extends Specification {
 
 
     def 'test parsing expression'() {

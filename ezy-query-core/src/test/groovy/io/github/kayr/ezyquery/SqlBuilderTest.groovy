@@ -10,7 +10,7 @@ import io.github.kayr.ezyquery.parser.SqlParts
 import spock.lang.Shared
 import spock.lang.Specification
 
-class EzyQueryTest extends Specification {
+class SqlBuilderTest extends Specification {
 
     def fields = [name, age, office, maxAge]
 

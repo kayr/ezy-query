@@ -9,7 +9,7 @@ import io.github.kayr.ezyquery.testqueries.Booleans
 import spock.lang.Specification
 
 
-class QueryBuildingTest extends Specification {
+class EzySqlTranspilerTest extends Specification {
     def fields = [
             new Field('t.name', 'name'),
             new Field('t.age', 'age'),
@@ -207,6 +207,35 @@ class QueryBuildingTest extends Specification {
         sql == '((true OR true) AND false)'
         params == []
 
+    }
+
+    def 'test transpiling expression'() {
+
+        when:
+        def expr = '''
+'Julius Ceaser' = name and age in (10, 20, 30,maxAge)
+or (office = 'London' and age > 20)
+'''
+
+        def fields = [
+                new Field('t.name', 'name'),
+                new Field('t.age', 'age'),
+                new Field('t.office', 'office'),
+                new Field('t.maxAge', 'maxAge')
+        ]
+
+        def result = EzySqlTranspiler.transpile(fields, expr)
+        println(result)
+        then:
+        result.toString() == 'Result{sql=\'? = t.name AND t.age IN (?, ?, ?, t.maxAge) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'
+        assert result.params == [
+                'Julius Ceaser',
+                10,
+                20,
+                30,
+                'London',
+                20
+        ]
     }
 
 

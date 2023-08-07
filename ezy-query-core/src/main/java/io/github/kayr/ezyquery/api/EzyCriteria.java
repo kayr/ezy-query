@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 
 @lombok.Getter
 @lombok.Builder(toBuilder = true, access = AccessLevel.PRIVATE)
@@ -87,10 +88,6 @@ public class EzyCriteria {
   // endregion
 
   // region Read only
-
-  public boolean isCount() {
-    return count;
-  }
 
   public List<String> getColumns() {
     return Collections.unmodifiableList(columns);

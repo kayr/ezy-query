@@ -12,11 +12,13 @@ public interface EzyQuery<T> {
 
   QueryAndParams query(EzyCriteria params);
 
-  Class<T> resultClass();
-
   List<Field<?>> fields();
 
   SqlParts schema();
+
+  default Class<T> resultClass() {
+    return null;
+  }
 
   default Optional<SqlParts> whereClause() {
     return Optional.empty();

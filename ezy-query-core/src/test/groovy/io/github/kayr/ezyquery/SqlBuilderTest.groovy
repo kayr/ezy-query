@@ -1,9 +1,7 @@
 package io.github.kayr.ezyquery
 
-import io.github.kayr.ezyquery.api.EzyCriteria
-import io.github.kayr.ezyquery.api.Field
-import io.github.kayr.ezyquery.api.Sort
-import io.github.kayr.ezyquery.api.SqlBuilder
+
+import io.github.kayr.ezyquery.api.*
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
 import io.github.kayr.ezyquery.parser.SqlParts
@@ -357,10 +355,6 @@ class SqlBuilderTest extends Specification {
                 return null
             }
 
-            @Override
-            Class resultClass() {
-                return null
-            }
 
             @Override
             List<Field<?>> fields() {
@@ -378,5 +372,199 @@ class SqlBuilderTest extends Specification {
             }
         }
         ezyQueryWithWhere
+    }
+
+
+    def 'test can build query with with name parameters'() {
+        def query = new EzyQueryAdapter() {
+            @Override
+            List<Field<?>> fields() {
+                return fields
+            }
+
+            @Override
+            SqlParts schema() {
+                // my_table inner join my_other_table on my_table.id = my_other_table.id and :name = my_other_table.name  or :gender = my_other_table.gender
+                return SqlParts.of(
+                        SqlParts.textPart("my_table inner join my_other_table on my_table.id = my_other_table.id and "),
+                        SqlParts.paramPart("name"),
+                        SqlParts.textPart(" = my_other_table.name  or "),
+                        SqlParts.textPart(" my_other_table.gender in ("),
+                        SqlParts.paramPart("gender"),
+                        SqlParts.textPart(")")
+
+                )
+            }
+        }
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .where(name.eq("RK"))
+                .setParam(NamedParam.of("name"), "NAME VALUE")
+                .setParam(NamedParam.of("gender"), ['M', 'F']);
+        when:
+        def queryAndParams = SqlBuilder.buildSql(query, criteria)
+        def generatedSql = queryAndParams.sql
+        def params = queryAndParams.params
+
+
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table inner join my_other_table on my_table.id = my_other_table.id and ? = my_other_table.name  or  my_other_table.gender in (?,?)\n' +
+                'WHERE t.name = ?\n' +
+                'LIMIT 50 OFFSET 0'
+
+        params == ['NAME VALUE', 'M', 'F', 'RK']
+    }
+
+    def 'with params params in default where clause'() {
+        def query = new EzyQueryAdapter() {
+            @Override
+            List<Field<?>> fields() {
+                return fields
+            }
+
+            @Override
+            SqlParts schema() {
+                return SqlParts.of("my_table t")
+            }
+
+            @Override
+            Optional<SqlParts> whereClause() {
+                return Optional.of(SqlParts.of('t.name = :name and t.age in (:age)'))
+            }
+        }
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .where(name.eq("RK"))
+                .setParam(NamedParam.of("name"), "NAME VALUE")
+                .setParam(NamedParam.of("age"), [10, 15, 20]);
+        when:
+        def queryAndParams = SqlBuilder.buildSql(query, criteria)
+        def generatedSql = queryAndParams.sql
+        def params = queryAndParams.params
+
+        println generatedSql
+
+
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table t\n' +
+                'WHERE (t.name = ? and t.age in (?,?,?)) AND (t.name = ?)\n' +
+                'LIMIT 50 OFFSET 0'
+
+        params == ['NAME VALUE', 10, 15, 20, 'RK']
+    }
+
+    def 'with params in the order by clause'() {
+        def query = new EzyQueryAdapter() {
+            @Override
+            List<Field<?>> fields() {
+                return fields
+            }
+
+            @Override
+            SqlParts schema() {
+                return SqlParts.of("my_table t")
+            }
+
+            @Override
+            Optional<SqlParts> orderByClause() {
+                return Optional.of(SqlParts.of(' t.age + :age1 * :weight desc'))
+            }
+        }
+
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .where(name.eq("RK"))
+                .setParam(NamedParam.of("age1"), 10)
+                .setParam(NamedParam.of("weight"), 15)
+
+
+        when:
+        def queryAndParams = SqlBuilder.buildSql(query, criteria)
+        def generatedSql = queryAndParams.sql
+        def params = queryAndParams.params
+
+
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table t\n' +
+                'WHERE t.name = ?\n' +
+                ' ORDER BY  t.age + ? * ? desc\n' +
+                'LIMIT 50 OFFSET 0'
+
+        params == ['RK', 10, 15]
+    }
+
+    def 'with params in all clauses'() {
+        def query = new EzyQueryAdapter() {
+            @Override
+            List<Field<?>> fields() {
+                return fields
+            }
+
+            @Override
+            SqlParts schema() {
+                return SqlParts.of("my_table t inner join my_other_table t2 on t.id = t2.id and t.name = :name and t.age in (:ages)")
+            }
+
+            @Override
+            Optional<SqlParts> whereClause() {
+                return Optional.of(SqlParts.of('t.name = :name and t.age in (:ages)'))
+            }
+
+            @Override
+            Optional<SqlParts> orderByClause() {
+                return Optional.of(SqlParts.of(' t.age + :age1 * :weight desc'))
+            }
+        }
+
+        def criteria = EzyCriteria.select('name', 'age')
+                .where(name.eq("RK"))
+                .setParam(NamedParam.of("name"), "NAME VALUE")
+                .setParam(NamedParam.of("ages"), [10, 15, 20])
+//                .setParam(NamedParam.of("age1"), 10) //Don't set this param since it is overridden in the order by clause
+//                .setParam(NamedParam.of("weight"), 15) //Don't set this param since it is overridden in the order by clause
+                .orderBy(age.asc())
+
+        when:
+        def queryAndParams = SqlBuilder.buildSql(query, criteria)
+        def generatedSql = queryAndParams.sql
+        def params = queryAndParams.params
+
+        then:
+        generatedSql == 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age"\n' +
+                'FROM my_table t inner join my_other_table t2 on t.id = t2.id and t.name = ? and t.age in (?,?,?)\n' +
+                'WHERE (t.name = ? and t.age in (?,?,?)) AND (t.name = ?)\n' +
+                'ORDER BY t.age ASC\n' + //default order by is overridden
+                'LIMIT 50 OFFSET 0'
+
+        params == ['NAME VALUE', 10, 15, 20, 'NAME VALUE', 10, 15, 20, 'RK']
+    }
+
+
+    static abstract class EzyQueryAdapter implements EzyQuery {
+        @Override
+        QueryAndParams query(EzyCriteria params) {
+            return null
+        }
+
+        @Override
+        List<Field<?>> fields() {
+            return null
+        }
+
+        @Override
+        SqlParts schema() {
+            return null
+        }
     }
 }

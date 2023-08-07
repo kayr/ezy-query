@@ -88,14 +88,25 @@ class SqlPartsTest extends Specification {
     }
 
 
-    def 'should parse query with named param at beginning'(){
+    def 'should parse query with named param at beginning and end'(){
         when:
-        def query = SqlParts.of(":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :param3")
+        def query = SqlParts.of(":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :p")
 
         then:
-        query.rawSql == ":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :param3"
-        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2", "param3"]
+        query.rawSql == ":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :p"
+        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2", "p"]
     }
+
+    def 'should parse query with params in the middle'(){
+        when:
+        def query = SqlParts.of("from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2 and table.xxx = t2.yyy")
+
+        then:
+        query.rawSql == "from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2 and table.xxx = t2.yyy"
+        query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2"]
+
+    }
+
 
 
     def 'should parse with no named params'(){

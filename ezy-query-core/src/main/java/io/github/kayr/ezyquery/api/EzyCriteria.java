@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 
 @lombok.Getter
 @lombok.Builder(toBuilder = true, access = AccessLevel.PRIVATE)
@@ -16,7 +15,7 @@ public class EzyCriteria {
 
   @Builder.Default private List<String> columns = new ArrayList<>();
   @Builder.Default private List<ICond> conditions = new ArrayList<>();
-  @Builder.Default private List<NameParamValue> namedParams = new ArrayList<>();
+  @Builder.Default private List<NamedParamValue> paramValues = new ArrayList<>();
 
   @Builder.Default private List<Sort> sorts = new ArrayList<>();
 
@@ -81,7 +80,7 @@ public class EzyCriteria {
 
   public EzyCriteria setParam(NamedParam namedParam, Object value) {
     return toBuilder()
-        .namedParams(Elf.addAll(this.namedParams, new NameParamValue(namedParam, value)))
+        .paramValues(Elf.addAll(this.paramValues, new NamedParamValue(namedParam, value)))
         .build();
   }
 

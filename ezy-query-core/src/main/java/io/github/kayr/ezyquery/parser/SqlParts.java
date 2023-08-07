@@ -1,28 +1,36 @@
 package io.github.kayr.ezyquery.parser;
 
+import io.github.kayr.ezyquery.api.NamedParamValue;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.ToString;
 
 @lombok.With(AccessLevel.PRIVATE)
 @AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class SqlParts {
 
   public interface IPart {
-    @ToString
+
     @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     class Text implements IPart {
       private String sql;
+
+      @Override
+      public String toString() {
+        return sql;
+      }
     }
 
-    @ToString
     @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     class Param implements IPart {
       private String name;
+
+      public String toString() {
+        return ":" + name;
+      }
     }
   }
 
@@ -42,11 +50,11 @@ public class SqlParts {
     return NamedParamParser.buildParts(sql);
   }
 
-  static IPart textPart(String fragment) {
+  public static IPart textPart(String fragment) {
     return new IPart.Text(fragment);
   }
 
-  static IPart paramPart(String name) {
+  public static IPart paramPart(String name) {
     return new IPart.Param(name);
   }
 
@@ -64,6 +72,18 @@ public class SqlParts {
       throw new IllegalArgumentException("Param [" + paramName + "] does not exist");
     }
     return withParamValues(Elf.put(paramValues, paramName, value));
+  }
+
+  public SqlParts withParams(List<NamedParamValue> values) {
+    Map<String, Object> newValues = new HashMap<>(paramValues);
+    for (NamedParamValue value : values) {
+      newValues.put(value.getParam().getName(), value.getValue());
+    }
+    return withParamValues(newValues);
+  }
+
+  public QueryAndParams getQuery(List<NamedParamValue> values) {
+    return withParams(values).getQuery();
   }
 
   public QueryAndParams getQuery() {

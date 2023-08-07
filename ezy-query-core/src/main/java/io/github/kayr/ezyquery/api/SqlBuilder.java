@@ -89,7 +89,10 @@ public class SqlBuilder {
 
     if (Elf.isEmpty(ezyCriteria.getSorts())) {
       return Optional.ofNullable(defaultOrderBy)
-          .map(sqlParts -> QueryAndParams.of(" ORDER BY ").append(sqlParts.getQuery()))
+          .map(
+              sqlParts ->
+                  QueryAndParams.of(" ORDER BY ")
+                      .append(sqlParts.getQuery(ezyCriteria.getParamValues())))
           .orElse(null);
     }
 
@@ -135,17 +138,18 @@ public class SqlBuilder {
         queryBuilder
             .append(s)
             .append("FROM ")
-            .append(query.schema().getQuery())
+            .append(query.schema().getQuery(ezyCriteria.getParamValues()))
             .append("\n")
             .append("WHERE ");
 
     Optional<SqlParts> defaultWhereClause = query.whereClause();
     if (defaultWhereClause.isPresent()) {
       String dynWhereStr = Elf.mayBeAddParens(dynamicWhereClause.getSql());
+      QueryAndParams defaultWhere = defaultWhereClause.get().getQuery(ezyCriteria.getParamValues());
       queryBuilder =
           queryBuilder
               .append("(")
-              .append(defaultWhereClause.get().getQuery())
+              .append(defaultWhere)
               .append(") AND ")
               .append(dynWhereStr, dynamicWhereClause.getParams());
     } else {

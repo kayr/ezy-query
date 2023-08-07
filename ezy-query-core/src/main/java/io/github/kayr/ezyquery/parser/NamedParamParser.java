@@ -62,19 +62,24 @@ class NamedParamParser {
 
     List<SqlParts.IPart> parts = new ArrayList<>(names.size());
 
-    int sqlStartPosition = 0;
+    int sqlStartPos = 0;
     for (int i = 0; i < paramsCount; i++) {
       String name = names.get(i);
       int[] indexes = parsedSql.getParameterIndexes(i);
-      int end = indexes[0];
-      if (sqlStartPosition != end) {
-        parts.add(SqlParts.textPart(parsedSql.getOriginalSql().substring(sqlStartPosition, end)));
+      int sqlEndPos = indexes[0];
+      if (sqlStartPos != sqlEndPos) {
+        parts.add(SqlParts.textPart(parsedSql.getOriginalSql().substring(sqlStartPos, sqlEndPos)));
       }
 
       parts.add(SqlParts.paramPart(name));
 
-      sqlStartPosition = indexes[1];
+      sqlStartPos = indexes[1];
     }
+
+    if (sqlStartPos < parsedSql.getOriginalSql().length()) {
+      parts.add(SqlParts.textPart(parsedSql.getOriginalSql().substring(sqlStartPos)));
+    }
+
     return SqlParts.of(parts);
   }
 

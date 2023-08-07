@@ -1,7 +1,8 @@
 package io.github.kayr.ezyquery.api;
 
 @lombok.AllArgsConstructor
-public class NameParamValue {
+@lombok.Getter
+public class NamedParamValue {
   private NamedParam param;
   private Object value;
 }

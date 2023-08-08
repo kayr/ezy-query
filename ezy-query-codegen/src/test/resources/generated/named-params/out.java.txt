@@ -1,0 +1,142 @@
+package mypackage.sql;
+
+import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import java.lang.Class;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ *  select
+ *    officeCode as "code",
+ *    true or true as a ,
+ *    false as b,
+ *    1 in (1 ,2 , 4) as c,
+ *    1 between 5 and 6 as d,
+ *    (true or true) as e
+ *  from offices
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class MyQuery implements EzyQuery<MyQuery.Result> {
+  public static final Field<Object> CODE = Field.of("officeCode", "code", Object.class,Field.ExpressionType.COLUMN);
+
+  public static final Field<Object> A = Field.of("true OR true", "a", Object.class,Field.ExpressionType.BINARY);
+
+  public static final Field<Object> B = Field.of("false", "b", Object.class,Field.ExpressionType.COLUMN);
+
+  public static final Field<Object> C = Field.of("1 IN (1, 2, 4)", "c", Object.class,Field.ExpressionType.OTHER);
+
+  public static final Field<Object> D = Field.of("1 BETWEEN 5 AND 6", "d", Object.class,Field.ExpressionType.OTHER);
+
+  public static final Field<Object> E = Field.of("(true OR true)", "e", Object.class,Field.ExpressionType.OTHER);
+
+  public static final MyQuery QUERY = new MyQuery();
+
+  private final String schema = "offices"
+  ;
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  public MyQuery() {
+    init();
+  }
+
+  private void init() {
+    fields.add(CODE);
+    fields.add(A);
+    fields.add(B);
+    fields.add(C);
+    fields.add(D);
+    fields.add(E);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public String schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<String> whereClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<String> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+        return Result.class;
+  }
+
+  public static class Result {
+    private Object code;
+
+    private Object a;
+
+    private Object b;
+
+    private Object c;
+
+    private Object d;
+
+    private Object e;
+
+    public Object getCode() {
+      return code;
+    }
+
+    public Object getA() {
+      return a;
+    }
+
+    public Object getB() {
+      return b;
+    }
+
+    public Object getC() {
+      return c;
+    }
+
+    public Object getD() {
+      return d;
+    }
+
+    public Object getE() {
+      return e;
+    }
+
+    @Override
+    public String toString() {
+      return "MyQuery.Result{"
+      + "code = " + code
+      + ", a = " + a
+      + ", b = " + b
+      + ", c = " + c
+      + ", d = " + d
+      + ", e = " + e
+       + "}";
+    }
+  }
+}

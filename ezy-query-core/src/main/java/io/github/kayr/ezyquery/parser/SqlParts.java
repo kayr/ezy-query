@@ -14,12 +14,19 @@ public class SqlParts {
 
   public interface IPart {
 
+    String asString();
+
     @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     class Text implements IPart {
       private String sql;
 
       @Override
       public String toString() {
+        return sql;
+      }
+
+      @Override
+      public String asString() {
         return sql;
       }
     }
@@ -31,6 +38,11 @@ public class SqlParts {
       public String toString() {
         return ":" + name;
       }
+
+      @Override
+      public String asString() {
+        return name;
+      }
     }
   }
 
@@ -38,7 +50,7 @@ public class SqlParts {
   private Map<String, IPart.Param> paramParts = new HashMap<>();
   private Map<String, Object> paramValues = new HashMap<>();
 
-  static SqlParts of(IPart... parts) {
+  public static SqlParts of(IPart... parts) {
     return new SqlParts(Arrays.asList(parts));
   }
 

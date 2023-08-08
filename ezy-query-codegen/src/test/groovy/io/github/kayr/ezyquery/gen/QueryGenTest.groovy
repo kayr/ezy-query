@@ -84,5 +84,16 @@ class QueryGenTest extends Specification {
         1 == 1
     }
 
+    def 'test with named params'() {
+        def data = load('named-params')
+        when:
+        def generated = generateCode(data.v1)
+        println generated
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
 
 }

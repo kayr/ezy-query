@@ -1,0 +1,9 @@
+SELECT a.name as name, b.product_name as prodName
+FROM users AS a
+JOIN orders AS b ON a.user_id = b.user_id and a.userId IN (:joinIds)
+WHERE a.user_id = :userID
+AND b.order_id = :orderID
+ORDER BY CASE :orderByColumn
+         WHEN 'name' THEN a.name
+         WHEN 'product_name' THEN b.product_name
+         END ASC;

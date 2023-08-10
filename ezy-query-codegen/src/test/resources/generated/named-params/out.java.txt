@@ -3,8 +3,10 @@ package mypackage.sql;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
 import java.lang.Class;
 import java.lang.Object;
 import java.lang.Override;
@@ -15,36 +17,34 @@ import java.util.Optional;
 import javax.annotation.processing.Generated;
 
 /**
- *  select
- *    officeCode as "code",
- *    true or true as a ,
- *    false as b,
- *    1 in (1 ,2 , 4) as c,
- *    1 between 5 and 6 as d,
- *    (true or true) as e
- *  from offices
+ * SELECT a.name as name, b.product_name as prodName
+ * FROM users AS a
+ * JOIN orders AS b ON a.user_id = b.user_id and a.userId IN (:joinIds)
+ * WHERE a.user_id = :userID
+ * AND b.order_id = :orderID
+ * AND b.user_id2 = :userID
+ * ORDER BY CASE :orderByColumn
+ *          WHEN 'name' THEN a.name
+ *          WHEN 'product_name' THEN b.product_name
+ *          END ASC;
  */
 @Generated(
     value = "io.github.kayr.ezyquery.gen.QueryGen",
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static final Field<Object> CODE = Field.of("officeCode", "code", Object.class,Field.ExpressionType.COLUMN);
+  public static final Field<Object> NAME = Field.of("a.name", "name", Object.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Object> A = Field.of("true OR true", "a", Object.class,Field.ExpressionType.BINARY);
-
-  public static final Field<Object> B = Field.of("false", "b", Object.class,Field.ExpressionType.COLUMN);
-
-  public static final Field<Object> C = Field.of("1 IN (1, 2, 4)", "c", Object.class,Field.ExpressionType.OTHER);
-
-  public static final Field<Object> D = Field.of("1 BETWEEN 5 AND 6", "d", Object.class,Field.ExpressionType.OTHER);
-
-  public static final Field<Object> E = Field.of("(true OR true)", "e", Object.class,Field.ExpressionType.OTHER);
+  public static final Field<Object> PROD_NAME = Field.of("b.product_name", "prodName", Object.class,Field.ExpressionType.COLUMN);
 
   public static final MyQuery QUERY = new MyQuery();
 
-  private final String schema = "offices"
-  ;
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("users AS a\n"
+          + "JOIN orders AS b ON a.user_id = b.user_id AND a.userId IN ("),
+      SqlParts.paramPart("joinIds"),
+      SqlParts.textPart(")")
+  );
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
@@ -53,12 +53,8 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   private void init() {
-    fields.add(CODE);
-    fields.add(A);
-    fields.add(B);
-    fields.add(C);
-    fields.add(D);
-    fields.add(E);
+    fields.add(NAME);
+    fields.add(PROD_NAME);
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
@@ -66,18 +62,31 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   @Override
-  public String schema() {
+  public SqlParts schema() {
     return this.schema;
   }
 
   @Override
-  public Optional<String> whereClause() {
-    return Optional.empty();
+  public Optional<SqlParts> whereClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("a.user_id = "),
+              SqlParts.paramPart("userID"),
+              SqlParts.textPart(" AND b.order_id = "),
+              SqlParts.paramPart("orderID"),
+              SqlParts.textPart(" AND b.user_id2 = "),
+              SqlParts.paramPart("userID")
+          ));
   }
 
   @Override
-  public Optional<String> orderByClause() {
-    return Optional.empty();
+  public Optional<SqlParts> orderByClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("CASE "),
+              SqlParts.paramPart("orderByColumn"),
+              SqlParts.textPart(" WHEN 'name' THEN a.name WHEN 'product_name' THEN b.product_name END ASC")
+          ));
   }
 
   @Override
@@ -87,56 +96,38 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
 
   @Override
   public Class<Result> resultClass() {
-        return Result.class;
+    return Result.class;
   }
 
   public static class Result {
-    private Object code;
+    private Object name;
 
-    private Object a;
+    private Object prodName;
 
-    private Object b;
-
-    private Object c;
-
-    private Object d;
-
-    private Object e;
-
-    public Object getCode() {
-      return code;
+    public Object getName() {
+      return name;
     }
 
-    public Object getA() {
-      return a;
-    }
-
-    public Object getB() {
-      return b;
-    }
-
-    public Object getC() {
-      return c;
-    }
-
-    public Object getD() {
-      return d;
-    }
-
-    public Object getE() {
-      return e;
+    public Object getProdName() {
+      return prodName;
     }
 
     @Override
     public String toString() {
       return "MyQuery.Result{"
-      + "code = " + code
-      + ", a = " + a
-      + ", b = " + b
-      + ", c = " + c
-      + ", d = " + d
-      + ", e = " + e
+      + "name = " + name
+      + ", prodName = " + prodName
        + "}";
     }
+  }
+
+  public static class Params {
+    public static final NamedParam JOIN_IDS = NamedParam.of("joinIds");
+
+    public static final NamedParam USER_ID = NamedParam.of("userID");
+
+    public static final NamedParam ORDER_ID = NamedParam.of("orderID");
+
+    public static final NamedParam ORDER_BY_COLUMN = NamedParam.of("orderByColumn");
   }
 }

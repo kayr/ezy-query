@@ -118,6 +118,17 @@ class SqlPartsTest extends Specification {
         query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == []
     }
 
+    def "empty should return empty query"(){
+        when:
+        def query = SqlParts.empty()
+
+        then:
+        query.rawSql == ""
+        query.getQuery().getSql() == ""
+        query.getQuery().params.isEmpty()
+        query.parts.isEmpty()
+    }
+
 
 
     Iterable createIterable(List itesm) {

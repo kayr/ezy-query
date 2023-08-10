@@ -62,6 +62,10 @@ public class SqlParts {
     return NamedParamParser.buildParts(sql);
   }
 
+  public static SqlParts empty() {
+    return new SqlParts(Collections.emptyList());
+  }
+
   public static IPart textPart(String fragment) {
     return new IPart.Text(fragment);
   }

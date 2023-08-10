@@ -5,10 +5,19 @@ import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQuery;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.util.Elf;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.lang.model.element.Modifier;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -17,147 +26,175 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
-import javax.lang.model.element.Modifier;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
-
 public class QueryGen {
 
-    private final String sql;
-    private final String className;
-    private final String packageName;
+  private final String sql;
+  private final String className;
+  private final String packageName;
 
-    public QueryGen(String packageName, String className, String sql) {
-        this.sql = sql;
-        this.className = className;
-        this.packageName = packageName;
+  public QueryGen(String packageName, String className, String sql) {
+    this.sql = sql;
+    this.className = className;
+    this.packageName = packageName;
+  }
+
+  public Path writeTo(String path) {
+    return writeTo(Paths.get(path));
+  }
+
+  @lombok.SneakyThrows
+  public Path writeTo(Path path) {
+    JavaFile javaFile = javaCode();
+    return javaFile.writeToPath(path);
+  }
+
+  public JavaFile javaCode() throws JSQLParserException {
+    Statement statement = CCJSqlParserUtil.parse(sql);
+
+    if (!(statement instanceof Select)) {
+      throw new IllegalArgumentException("Only SELECT statements are supported");
     }
 
-    public Path writeTo(String path) {
-        return writeTo(Paths.get(path));
+    Select select = (Select) statement;
+
+    if (!(select.getSelectBody() instanceof PlainSelect)) {
+      throw new IllegalArgumentException("Only SELECT statements are supported");
     }
 
-    @lombok.SneakyThrows
-    public Path writeTo(Path path) {
-        JavaFile javaFile = javaCode();
-        return javaFile.writeToPath(path);
-    }
+    PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+    List<Field<?>> fieldList = extractFields(plainSelect);
 
-    public JavaFile javaCode() throws JSQLParserException {
-        Statement statement = CCJSqlParserUtil.parse(sql);
+    return buildCode(fieldList, plainSelect);
+  }
 
-        if (!(statement instanceof Select)) {
-            throw new IllegalArgumentException("Only SELECT statements are supported");
-        }
+  private JavaFile buildCode(List<Field<?>> fieldList, PlainSelect plainSelect) {
 
-        Select select = (Select) statement;
+    List<FieldSpec> fConstants = fieldConstants(fieldList);
 
-        if (!(select.getSelectBody() instanceof PlainSelect)) {
-            throw new IllegalArgumentException("Only SELECT statements are supported");
-        }
+    Pair<FieldSpec, SqlParts> fSchemaAndParts = fieldSchema(plainSelect);
+    FieldSpec fSchema = fSchemaAndParts.getOne();
 
-        PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-        List<Field<?>> fieldList = extractFields(plainSelect);
-
-        return buildCode(fieldList, plainSelect);
-    }
-
-    private JavaFile buildCode(List<Field<?>> fieldList, PlainSelect plainSelect) {
-
-        List<FieldSpec> fConstants = fieldConstants(fieldList);
-
-        FieldSpec fSchema = fieldSchema(plainSelect);
-
-        ClassName thisClassName = ClassName.get(packageName, className);
-        FieldSpec fSingleton =
-          FieldSpec.builder(thisClassName, "QUERY", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+    ClassName thisClassName = ClassName.get(packageName, className);
+    FieldSpec fSingleton =
+        FieldSpec.builder(thisClassName, "QUERY", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
             .initializer("new $T()", thisClassName)
             .build();
 
-        FieldSpec fFields = fieldAllFields();
+    FieldSpec fFields = fieldAllFields();
 
-        MethodSpec mConstructor = methodConstructor();
+    MethodSpec mConstructor = methodConstructor();
 
-        MethodSpec mInit = methodInit(fConstants, fFields);
+    MethodSpec mInit = methodInit(fConstants, fFields);
 
-        TypeSpec resultClass = resultClass(fieldList);
-        ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
+    TypeSpec resultClass = resultClass(fieldList);
+    ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
 
-        // main query method
-        MethodSpec queryMethod =
-          MethodSpec.methodBuilder("query")
+    // main query method
+    MethodSpec queryMethod =
+        MethodSpec.methodBuilder("query")
             .addModifiers(Modifier.PUBLIC)
             .addParameter(EzyCriteria.class, "criteria")
             .addStatement("return $T.buildSql(this, criteria)", SqlBuilder.class)
             .returns(QueryAndParams.class)
             .build();
 
-        // result class override method
-        MethodSpec resultClassMethod =
-          MethodSpec.methodBuilder("resultClass")
+    // result class override method
+    MethodSpec resultClassMethod =
+        MethodSpec.methodBuilder("resultClass")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
             .returns(ParameterizedTypeName.get(ClassName.get(Class.class), resultClassName))
-            .addStatement("    return $T.class", resultClassName)
+            .addStatement("return $T.class", resultClassName)
             .build();
 
-        // fields override method
-        MethodSpec fieldsMethod =
-          MethodSpec.methodBuilder("fields")
+    // fields override method
+    MethodSpec fieldsMethod =
+        MethodSpec.methodBuilder("fields")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
             .returns(typeListOfFields())
             .addStatement("return this.fields")
             .build();
 
-        // schema override method
-        MethodSpec schemaMethod =
-          MethodSpec.methodBuilder("schema")
+    // schema override method
+    MethodSpec schemaMethod =
+        MethodSpec.methodBuilder("schema")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
-            .returns(String.class)
+            .returns(SqlParts.class)
             .addStatement("return this.schema")
             .build();
 
-        // where override method
-        MethodSpec whereMethod =
-          MethodSpec.methodBuilder("whereClause")
+    // where override method
+    Optional<SqlParts> whereParts =
+        Optional.ofNullable(plainSelect.getWhere()).map(Object::toString).map(SqlParts::of);
+    CodeBlock whereStatement = toReturnSqlPartReturnStatement(whereParts.orElse(null));
+    MethodSpec whereMethod =
+        MethodSpec.methodBuilder("whereClause")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
-            .returns(ParameterizedTypeName.get(Optional.class, String.class))
-            .addStatement(
-              plainSelect.getWhere() == null
-                ? "return Optional.empty()"
-                : "return Optional.of($S)",
-              plainSelect.getWhere())
+            .returns(ParameterizedTypeName.get(Optional.class, SqlParts.class))
+            .addStatement(whereStatement)
             .build();
 
-        // orderBy override method
-        Optional<String> orderByElements = toOrderByStatement(plainSelect.getOrderByElements());
-        MethodSpec orderByMethod =
-          MethodSpec.methodBuilder("orderByClause")
+    // orderBy override method
+    Optional<SqlParts> orderByElements =
+        toOrderByStatement(plainSelect.getOrderByElements()).map(SqlParts::of);
+    CodeBlock orderByStatement = toReturnSqlPartReturnStatement(orderByElements.orElse(null));
+    MethodSpec orderByMethod =
+        MethodSpec.methodBuilder("orderByClause")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
-            .returns(ParameterizedTypeName.get(Optional.class, String.class))
-            .addStatement(
-              orderByElements.isPresent() ? "return Optional.of($S)" : "return Optional.empty()",
-              orderByElements.orElse(""))
+            .returns(ParameterizedTypeName.get(Optional.class, SqlParts.class))
+            .addStatement(orderByStatement)
             .build();
 
-        // the class
+    // the params
 
-        ClassName generatedAnnotation = resolveGeneratedAnnotation();
+    List<SqlParts.IPart.Param> params =
+        Elf.combine(
+                fSchemaAndParts.getTwo().getParts(),
+                whereParts.map(SqlParts::getParts).orElse(Collections.emptyList()),
+                orderByElements.map(SqlParts::getParts).orElse(Collections.emptyList()))
+            .stream()
+            .filter(isParamPart())
+            .map(p -> (SqlParts.IPart.Param) p)
+            .collect(Collectors.toList());
 
-        TypeSpec finalClazz =
-          TypeSpec.classBuilder(className)
+    /*
+    //build a class to contain the params as static final fields
+
+     */
+    TypeSpec paramsClass =
+        TypeSpec.classBuilder("Params")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addFields(
+                params.stream()
+                    .map(SqlParts.IPart.Param::asString)
+                    .distinct()
+                    .map(
+                        name ->
+                            FieldSpec.builder(
+                                    NamedParam.class,
+                                    toSnakeCase(name),
+                                    Modifier.PUBLIC,
+                                    Modifier.STATIC,
+                                    Modifier.FINAL)
+                                .initializer("$T.of($S)", NamedParam.class, name)
+                                .build())
+                    .collect(Collectors.toList()))
+            .build();
+
+    // the class
+
+    ClassName generatedAnnotation = resolveGeneratedAnnotation();
+
+    TypeSpec.Builder finalClassBuilder =
+        TypeSpec.classBuilder(className)
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(sql)
             .addSuperinterface(
-              ParameterizedTypeName.get(ClassName.get(EzyQuery.class), resultClassName))
+                ParameterizedTypeName.get(ClassName.get(EzyQuery.class), resultClassName))
             .addFields(fConstants)
             .addField(fSchema)
             .addField(fFields)
@@ -169,295 +206,304 @@ public class QueryGen {
             .addMethod(whereMethod)
             .addMethod(orderByMethod)
             .addAnnotation(
-              AnnotationSpec.builder(generatedAnnotation)
-                .addMember("value", "$S", QueryGen.class.getName())
-                .addMember("date", "$S", timeStamp())
-                .build())
+                AnnotationSpec.builder(generatedAnnotation)
+                    .addMember("value", "$S", QueryGen.class.getName())
+                    .addMember("date", "$S", timeStamp())
+                    .build())
             .addMethod(fieldsMethod)
             .addMethod(resultClassMethod)
-            .addType(resultClass)
-            .build();
+            .addType(resultClass);
 
-        return JavaFile.builder(packageName, finalClazz).build();
+    if (!params.isEmpty()) finalClassBuilder.addType(paramsClass);
+    TypeSpec finalClazz = finalClassBuilder.build();
+
+    return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  private static Predicate<SqlParts.IPart> isParamPart() {
+    return p -> p instanceof SqlParts.IPart.Param;
+  }
+
+  private static CodeBlock toReturnSqlPartReturnStatement(SqlParts orderByElements) {
+    return Optional.ofNullable(orderByElements)
+        .map(s -> buildSqlParts(s).build())
+        .map(c -> CodeBlock.builder().add("return Optional.of(\n$>").add(c).add(")$<").build())
+        .orElse(CodeBlock.of("return Optional.empty()"));
+  }
+
+  private static SqlParts parseFragment(String plainSelect) {
+    return SqlParts.of(plainSelect);
+  }
+
+  private static Optional<String> toOrderByStatement(List<OrderByElement> orderByElements1) {
+    if (Elf.isEmpty(orderByElements1)) {
+      return Optional.empty();
+    }
+    StringBuilder sb = new StringBuilder();
+    for (OrderByElement orderByElement : orderByElements1) {
+      sb.append(orderByElement).append(", ");
+    }
+    sb.setLength(sb.length() - 2);
+
+    return Optional.of(sb.toString());
+  }
+
+  protected String timeStamp() {
+    return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+  }
+
+  private static ClassName resolveGeneratedAnnotation() {
+    // if Generated annotation is available, add it
+    ClassName generatedAnnotation;
+    if (Elf.classExists("javax.annotation.Generated")) {
+      generatedAnnotation = ClassName.get("javax.annotation", "Generated");
+    } else {
+      generatedAnnotation = ClassName.get("javax.annotation.processing", "Generated");
+    }
+    return generatedAnnotation;
+  }
+
+  private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {
+    CodeBlock.Builder toStringMethodBody =
+        CodeBlock.builder().add("return \"$L.Result{\"\n", className);
+
+    boolean isFirst = true;
+    for (Field<?> f : fieldList) {
+      if (isFirst) {
+        toStringMethodBody.add("+ $S + $L\n", f.getAlias() + " = ", f.getAlias());
+      } else {
+        toStringMethodBody.add("+ $S + $L\n", ", " + f.getAlias() + " = ", f.getAlias());
+      }
+      isFirst = false;
     }
 
-    private static Optional<String> toOrderByStatement(List<OrderByElement> orderByElements1) {
-        if (Elf.isEmpty(orderByElements1)) {
-            return Optional.empty();
-        }
-        StringBuilder sb = new StringBuilder();
-        for (OrderByElement orderByElement : orderByElements1) {
-            sb.append(orderByElement).append(", ");
-        }
-        sb.setLength(sb.length() - 2);
+    toStringMethodBody.addStatement(" + $S", "}");
+    return toStringMethodBody;
+  }
 
-        return Optional.of(sb.toString());
+  private TypeSpec resultClass(List<Field<?>> fieldList) {
+    TypeSpec.Builder resultClassBuilder =
+        TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+    for (Field<?> f : fieldList) {
+      resultClassBuilder.addField(
+          FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
     }
 
-    protected String timeStamp() {
-        return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+    // add getters
+    for (Field<?> f : fieldList) {
+      resultClassBuilder.addMethod(
+          MethodSpec.methodBuilder(toGetterName(f.getAlias()))
+              .addModifiers(Modifier.PUBLIC)
+              .returns(f.getDataType())
+              .addStatement("return $L", f.getAlias())
+              .build());
     }
 
-    private static ClassName resolveGeneratedAnnotation() {
-        // if Generated annotation is available, add it
-        ClassName generatedAnnotation;
-        if (Elf.classExists("javax.annotation.Generated")) {
-            generatedAnnotation = ClassName.get("javax.annotation", "Generated");
-        } else {
-            generatedAnnotation = ClassName.get("javax.annotation.processing", "Generated");
-        }
-        return generatedAnnotation;
-    }
-
-    private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {
-        CodeBlock.Builder toStringMethodBody =
-          CodeBlock.builder().add("return \"$L.Result{\"\n", className);
-
-        boolean isFirst = true;
-        for (Field<?> f : fieldList) {
-            if (isFirst) {
-                toStringMethodBody.add("+ $S + $L\n", f.getAlias() + " = ", f.getAlias());
-            } else {
-                toStringMethodBody.add("+ $S + $L\n", ", " + f.getAlias() + " = ", f.getAlias());
-            }
-            isFirst = false;
-        }
-
-        toStringMethodBody.addStatement(" + $S", "}");
-        return toStringMethodBody;
-    }
-
-    private TypeSpec resultClass(List<Field<?>> fieldList) {
-        TypeSpec.Builder resultClassBuilder =
-          TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-        for (Field<?> f : fieldList) {
-            resultClassBuilder.addField(
-              FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
-        }
-
-        // add getters
-        for (Field<?> f : fieldList) {
-            resultClassBuilder.addMethod(
-              MethodSpec.methodBuilder(toGetterName(f.getAlias()))
-                .addModifiers(Modifier.PUBLIC)
-                .returns(f.getDataType())
-                .addStatement("return $L", f.getAlias())
-                .build());
-        }
-
-        // to string methods
-        CodeBlock.Builder toStringMethodBody = toStringMethodBody(fieldList);
-        MethodSpec toStringMethod =
-          MethodSpec.methodBuilder("toString")
+    // to string methods
+    CodeBlock.Builder toStringMethodBody = toStringMethodBody(fieldList);
+    MethodSpec toStringMethod =
+        MethodSpec.methodBuilder("toString")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
             .returns(String.class)
             .addCode(toStringMethodBody.build())
             .build();
 
-        resultClassBuilder.addMethod(toStringMethod);
+    resultClassBuilder.addMethod(toStringMethod);
 
-        return resultClassBuilder.build();
+    return resultClassBuilder.build();
+  }
+
+  private static String toGetterName(String fieldName) {
+    return "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+  }
+
+  /** Init() method */
+  private MethodSpec methodInit(List<FieldSpec> fConstants, FieldSpec fFields) {
+    MethodSpec.Builder initBuilder =
+        MethodSpec.methodBuilder("init").addModifiers(Modifier.PRIVATE);
+    for (FieldSpec field : fConstants) {
+      initBuilder.addStatement("$N.add($N)", fFields, field);
     }
+    return initBuilder.build();
+  }
 
-    private static String toGetterName(String fieldName) {
-        return "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    }
+  /** Constructor() method */
+  private MethodSpec methodConstructor() {
+    return MethodSpec.constructorBuilder()
+        .addModifiers(Modifier.PUBLIC)
+        .addStatement("init()")
+        .build();
+  }
 
-    /**
-     * Init() method
-     */
-    private MethodSpec methodInit(List<FieldSpec> fConstants, FieldSpec fFields) {
-        MethodSpec.Builder initBuilder =
-          MethodSpec.methodBuilder("init").addModifiers(Modifier.PRIVATE);
-        for (FieldSpec field : fConstants) {
-            initBuilder.addStatement("$N.add($N)", fFields, field);
-        }
-        return initBuilder.build();
-    }
+  /** allFields field */
+  private FieldSpec fieldAllFields() {
 
-    /**
-     * Constructor() method
-     */
-    private MethodSpec methodConstructor() {
-        return MethodSpec.constructorBuilder()
-                 .addModifiers(Modifier.PUBLIC)
-                 .addStatement("init()")
-                 .build();
-    }
+    ParameterizedTypeName fListOfFields = typeListOfFields();
 
-    /**
-     * allFields field
-     */
-    private FieldSpec fieldAllFields() {
+    return FieldSpec.builder(fListOfFields, "fields", Modifier.PRIVATE, Modifier.FINAL)
+        .initializer("new $T<$T<?>>()", ArrayList.class, Field.class)
+        .build();
+  }
 
-        ParameterizedTypeName fListOfFields = typeListOfFields();
+  private static ParameterizedTypeName typeListOfFields() {
+    ParameterizedTypeName wildField = typeFieldWildCard();
+    return ParameterizedTypeName.get(ClassName.get(List.class), wildField);
+  }
 
-        return FieldSpec.builder(fListOfFields, "fields", Modifier.PRIVATE, Modifier.FINAL)
-                 .initializer("new $T<$T<?>>()", ArrayList.class, Field.class)
-                 .build();
-    }
+  private static ParameterizedTypeName typeFieldWildCard() {
+    WildcardTypeName wildcardTypeName = WildcardTypeName.subtypeOf(Object.class);
+    return ParameterizedTypeName.get(ClassName.get(Field.class), wildcardTypeName);
+  }
 
-    private static ParameterizedTypeName typeListOfFields() {
-        ParameterizedTypeName wildField = typeFieldWildCard();
-        return ParameterizedTypeName.get(ClassName.get(List.class), wildField);
-    }
+  /** schema field */
+  private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) {
+    List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
 
-    private static ParameterizedTypeName typeFieldWildCard() {
-        WildcardTypeName wildcardTypeName = WildcardTypeName.subtypeOf(Object.class);
-        return ParameterizedTypeName.get(ClassName.get(Field.class), wildcardTypeName);
-    }
-
-    /**
-     * schema field
-     */
-    private FieldSpec fieldSchema(PlainSelect plainSelect) {
-        List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
-
-        StringBuilder sb = new StringBuilder();
-        String fromTable =
-          joins.isEmpty()
+    StringBuilder sb = new StringBuilder();
+    String fromTable =
+        joins.isEmpty()
             ? plainSelect.getFromItem().toString()
             : plainSelect.getFromItem().toString() + "\n";
 
-        sb.append(fromTable);
+    sb.append(fromTable);
 
-        for (int i = 0; i < joins.size(); i++) {
-            Join j = joins.get(i);
+    for (int i = 0; i < joins.size(); i++) {
+      Join j = joins.get(i);
 
-            String joinString = i < joins.size() - 1 ? j.toString() + "\n" : j.toString();
+      String joinString = i < joins.size() - 1 ? j.toString() + "\n" : j.toString();
 
-            sb.append(joinString);
-        }
-
-        String finalFromClause = sb.toString();
-
-        SqlParts sqlParts = SqlParts.of(finalFromClause);
-
-    /*
-    SqlParts sqlParts1 = SqlParts.of(SqlParts.textPart("xxxx"),
-      SqlParts.paramPart("yyyy"),
-      SqlParts.textPart("zzzz"));
-    */
-
-        CodeBlock.Builder schemaBuilder = CodeBlock.builder();
-
-        schemaBuilder.add("$T.of(\n", SqlParts.class);
-
-        List<SqlParts.IPart> parts = sqlParts.getParts();
-        for (int i = 0, partsSize = parts.size(); i < partsSize; i++) {
-            SqlParts.IPart sqlPart = parts.get(i);
-            if (sqlPart instanceof SqlParts.IPart.Text) {
-                schemaBuilder.add("$T.textPart($S)", SqlParts.class, sqlPart.asString());
-            } else {
-                schemaBuilder.add("$T.paramPart($S)", SqlParts.class, sqlPart.asString());
-            }
-
-            if (i < partsSize - 1) {
-                schemaBuilder.add(",\n");
-            }
-        }
-
-        schemaBuilder.add(")");
-
-        return FieldSpec.builder(SqlParts.class, "schema", Modifier.PRIVATE, Modifier.FINAL)
-                 .initializer(schemaBuilder.build())
-                 .build();
-
-
+      sb.append(joinString);
     }
 
-    private List<FieldSpec> fieldConstants(List<Field<?>> fieldList) {
-        // Constant fields
-        return fieldList.stream()
-                 .map(
-                   f ->
-                     FieldSpec.builder(
-                         ParameterizedTypeName.get(Field.class, f.getDataType()),
-                         constantName(f.getAlias()),
-                         Modifier.PUBLIC,
-                         Modifier.FINAL,
-                         Modifier.STATIC)
-                       .initializer(
-                         "$T.of($S, $S, $T.class,$T.$L)",
-                         Field.class,
-                         f.getSqlField(),
-                         f.getAlias(),
-                         f.getDataType(),
-                         Field.ExpressionType.class,
-                         f.getExpressionType().name())
-                       .build())
-                 .collect(Collectors.toList());
+    String finalFromClause = sb.toString();
+
+    SqlParts sqlParts = SqlParts.of(finalFromClause);
+
+    CodeBlock.Builder schema = buildSqlParts(sqlParts);
+
+    FieldSpec schemaField =
+        FieldSpec.builder(SqlParts.class, "schema", Modifier.PRIVATE, Modifier.FINAL)
+            .initializer(schema.build())
+            .build();
+    return Pair.of(schemaField, sqlParts);
+  }
+
+  private static CodeBlock.Builder buildSqlParts(SqlParts sqlParts) {
+    CodeBlock.Builder schemaBuilder = CodeBlock.builder();
+    schemaBuilder.add("$T.of(", SqlParts.class);
+    schemaBuilder.add("\n$>$>");
+    List<SqlParts.IPart> parts = sqlParts.getParts();
+    for (int i = 0, partsSize = parts.size(); i < partsSize; i++) {
+      SqlParts.IPart sqlPart = parts.get(i);
+      if (sqlPart instanceof SqlParts.IPart.Text) {
+        schemaBuilder.add("$T.textPart($S)", SqlParts.class, sqlPart.asString());
+      } else {
+        schemaBuilder.add("$T.paramPart($S)", SqlParts.class, sqlPart.asString());
+      }
+
+      if (i < partsSize - 1) {
+        schemaBuilder.add(",\n");
+      }
     }
 
-    String constantName(String name) {
-        return toSnakeCase(name);
-    }
+    schemaBuilder.add("\n$<$<)");
+    return schemaBuilder;
+  }
 
-    String toSnakeCase(String name) {
-        return name.replaceAll("([A-Z])", "_$1").toUpperCase();
-    }
+  private List<FieldSpec> fieldConstants(List<Field<?>> fieldList) {
+    // Constant fields
+    return fieldList.stream()
+        .map(
+            f ->
+                FieldSpec.builder(
+                        ParameterizedTypeName.get(Field.class, f.getDataType()),
+                        constantName(f.getAlias()),
+                        Modifier.PUBLIC,
+                        Modifier.FINAL,
+                        Modifier.STATIC)
+                    .initializer(
+                        "$T.of($S, $S, $T.class,$T.$L)",
+                        Field.class,
+                        f.getSqlField(),
+                        f.getAlias(),
+                        f.getDataType(),
+                        Field.ExpressionType.class,
+                        f.getExpressionType().name())
+                    .build())
+        .collect(Collectors.toList());
+  }
 
-    public List<Field<?>> extractFields(PlainSelect plainSelect) {
+  String constantName(String name) {
+    return toSnakeCase(name);
+  }
 
-        return plainSelect.getSelectItems().stream()
-                 .map(selectItem -> toField((SelectExpressionItem) selectItem))
-                 .collect(Collectors.toList());
-    }
+  String toSnakeCase(String name) {
+    return name.replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
+        .replaceAll("([a-z\\d])([A-Z])", "$1_$2")
+        .toUpperCase();
+  }
 
-    private Field<?> toField(SelectExpressionItem selectItem) {
-        String alias =
-          Objects.requireNonNull(
-              selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")
+  public List<Field<?>> extractFields(PlainSelect plainSelect) {
+
+    return plainSelect.getSelectItems().stream()
+        .map(selectItem -> toField((SelectExpressionItem) selectItem))
+        .collect(Collectors.toList());
+  }
+
+  private Field<?> toField(SelectExpressionItem selectItem) {
+    String alias =
+        Objects.requireNonNull(
+                selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")
             .getName();
-        alias = unquote(alias);
+    alias = unquote(alias);
 
-        String[] parts = alias.contains("_") ? alias.split("_") : new String[]{alias, "object"};
+    String[] parts = alias.contains("_") ? alias.split("_") : new String[] {alias, "object"};
 
-        String aliasName = parts[0];
-        String typeName = parts[1];
+    String aliasName = parts[0];
+    String typeName = parts[1];
 
-        Class<?> type = resolveType(typeName);
+    Class<?> type = resolveType(typeName);
 
-        Expression expression = selectItem.getExpression();
-        String sqlField = expression.toString();
+    Expression expression = selectItem.getExpression();
+    String sqlField = expression.toString();
 
-        if (expression instanceof Column) {
-            return Field.of(sqlField, aliasName, type, Field.ExpressionType.COLUMN);
-        }
-
-        if (expression instanceof BinaryExpression) {
-            return Field.of(sqlField, aliasName, type, Field.ExpressionType.BINARY);
-        }
-
-        return Field.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
+    if (expression instanceof Column) {
+      return Field.of(sqlField, aliasName, type, Field.ExpressionType.COLUMN);
     }
 
-    Class<?> resolveType(String type) {
-
-        Class<?> aClass = TYPE_MAP.get(type);
-        if (aClass == null) throw new IllegalArgumentException("Unsupported type: " + type);
-        return aClass;
+    if (expression instanceof BinaryExpression) {
+      return Field.of(sqlField, aliasName, type, Field.ExpressionType.BINARY);
     }
 
-    private static final Map<String, Class<?>> TYPE_MAP = new HashMap<>();
+    return Field.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
+  }
 
-    static {
-        TYPE_MAP.put("int", Integer.class);
-        TYPE_MAP.put("long", Long.class);
-        TYPE_MAP.put("float", Float.class);
-        TYPE_MAP.put("double", Double.class);
-        TYPE_MAP.put("boolean", Boolean.class);
-        TYPE_MAP.put("string", String.class);
-        TYPE_MAP.put("date", Date.class);
-        TYPE_MAP.put("time", java.sql.Timestamp.class);
-        TYPE_MAP.put("decimal", java.math.BigDecimal.class);
-        TYPE_MAP.put("bigint", java.math.BigInteger.class);
-        TYPE_MAP.put("byte", Byte.class);
-        TYPE_MAP.put("object", Object.class);
-    }
+  Class<?> resolveType(String type) {
 
-    String unquote(String s) {
-        return s.replaceAll("^\"|\"$", "").replaceAll("^'|'$", "");
-    }
+    Class<?> aClass = TYPE_MAP.get(type);
+    if (aClass == null) throw new IllegalArgumentException("Unsupported type: " + type);
+    return aClass;
+  }
+
+  private static final Map<String, Class<?>> TYPE_MAP = new HashMap<>();
+
+  static {
+    TYPE_MAP.put("int", Integer.class);
+    TYPE_MAP.put("long", Long.class);
+    TYPE_MAP.put("float", Float.class);
+    TYPE_MAP.put("double", Double.class);
+    TYPE_MAP.put("boolean", Boolean.class);
+    TYPE_MAP.put("string", String.class);
+    TYPE_MAP.put("date", Date.class);
+    TYPE_MAP.put("time", java.sql.Timestamp.class);
+    TYPE_MAP.put("decimal", java.math.BigDecimal.class);
+    TYPE_MAP.put("bigint", java.math.BigInteger.class);
+    TYPE_MAP.put("byte", Byte.class);
+    TYPE_MAP.put("object", Object.class);
+  }
+
+  String unquote(String s) {
+    return s.replaceAll("^\"|\"$", "").replaceAll("^'|'$", "");
+  }
 }

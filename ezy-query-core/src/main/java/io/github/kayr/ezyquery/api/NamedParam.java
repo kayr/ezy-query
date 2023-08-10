@@ -1,11 +1,7 @@
 package io.github.kayr.ezyquery.api;
 
 @lombok.Getter
-@lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+@lombok.AllArgsConstructor(staticName = "of")
 public class NamedParam {
   private String name;
-
-  public static NamedParam of(String name) {
-    return new NamedParam(name);
-  }
 }

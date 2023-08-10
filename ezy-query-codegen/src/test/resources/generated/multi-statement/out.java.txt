@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
 import java.lang.Class;
 import java.lang.Object;
 import java.lang.Override;
@@ -43,8 +44,9 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
 
   public static final MyQuery QUERY = new MyQuery();
 
-  private final String schema = "offices"
-  ;
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("offices")
+  );
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
@@ -66,17 +68,17 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   @Override
-  public String schema() {
+  public SqlParts schema() {
     return this.schema;
   }
 
   @Override
-  public Optional<String> whereClause() {
+  public Optional<SqlParts> whereClause() {
     return Optional.empty();
   }
 
   @Override
-  public Optional<String> orderByClause() {
+  public Optional<SqlParts> orderByClause() {
     return Optional.empty();
   }
 
@@ -87,7 +89,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
 
   @Override
   public Class<Result> resultClass() {
-        return Result.class;
+    return Result.class;
   }
 
   public static class Result {

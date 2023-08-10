@@ -2,6 +2,10 @@ package io.github.kayr.ezyquery.gen
 
 import spock.lang.Specification
 
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+import java.util.concurrent.TimeUnit
+
 class QueryGenTest extends Specification {
 
     def "test ex1"() {
@@ -10,7 +14,6 @@ class QueryGenTest extends Specification {
 
         when:
         def generated = generateCode(data.v1)
-
 
         def expected = data.v2.trim()
         then:
@@ -88,11 +91,15 @@ class QueryGenTest extends Specification {
         def data = load('named-params')
         when:
         def generated = generateCode(data.v1)
-        println generated
         def expected = data.v2.trim()
 
         then:
         generated == expected
+    }
+
+    private void copyToClipboard(String s) {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
+        TimeUnit.SECONDS.sleep(5)
     }
 
 

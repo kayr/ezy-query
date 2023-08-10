@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.Sort
 import prod.ProdQuery1
+import prod.QueryWithParams
 import spock.lang.Specification
 import test.QueryWithDaultOrderBy
 import test.TestQuery1
@@ -96,6 +97,25 @@ class TestCanFetchDataTest extends Specification {
         r.country == "UG"
         r.addressLine == "Kampala"
         count == 1
+    }
+
+    def 'test can retries data with named param'(){
+        given:
+        def c = ez.from(QueryWithParams.QUERY)
+        .setParam(QueryWithParams.Params.FIRST_NAME,["Kay"])
+
+        c.query.print()
+
+
+
+
+        when:
+        def r = c.one()
+        def count = c.count()
+
+        then:
+        r.addressLine == "Kampala"
+        r.country == "UG"
     }
 
     def 'test that prod query is compiled and usable'() {

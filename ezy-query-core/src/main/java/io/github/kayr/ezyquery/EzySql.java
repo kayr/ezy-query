@@ -7,6 +7,7 @@ import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
+import io.github.kayr.ezyquery.sql.ResultsMapper;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import java.sql.Connection;
@@ -44,12 +45,19 @@ public class EzySql {
 
   private <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
-    return zql.rows(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
+    return zql.rows(
+        ResultsMapper.usingReflection(query.resultClass()),
+        queryAndParams.getSql(),
+        queryAndParams.getParams());
   }
 
   private <T> Optional<T> mayBeOne(EzyQuery<T> query, EzyCriteria params) {
     QueryAndParams queryAndParams = query.query(params);
-    T one = zql.firstRow(query.resultClass(), queryAndParams.getSql(), queryAndParams.getParams());
+    T one =
+        zql.firstRow(
+            ResultsMapper.usingReflection(query.resultClass()),
+            queryAndParams.getSql(),
+            queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 

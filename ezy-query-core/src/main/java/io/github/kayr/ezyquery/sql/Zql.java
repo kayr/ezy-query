@@ -1,5 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
+import io.github.kayr.ezyquery.api.EzyQueryUnCheckedException;
 import io.github.kayr.ezyquery.util.Elf;
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,23 +15,23 @@ public class Zql {
   }
 
   @lombok.SneakyThrows
-  public <T> List<T> rows(Class<T> clazz, String sql, List<Object> params) {
+  public <T> List<T> rows(ResultsMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      return mapData(clazz, resultSet.resultSet);
+      return mapData(mapper, resultSet.resultSet);
     }
   }
 
   @lombok.SneakyThrows
-  public <T> List<T> rows(Class<T> clazz, String sql, Object... params) {
+  public <T> List<T> rows(ResultsMapper<T> mapper, String sql, Object... params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      return mapData(clazz, resultSet.resultSet);
+      return mapData(mapper, resultSet.resultSet);
     }
   }
 
   @lombok.SneakyThrows
-  public <T> T firstRow(Class<T> clazz, String sql, List<Object> params) {
+  public <T> T firstRow(ResultsMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      List<T> results = mapData(clazz, resultSet.resultSet, 1);
+      List<T> results = mapData(mapper, resultSet.resultSet, 1);
 
       if (resultSet.resultSet.next())
         throw new IllegalArgumentException("More than one row returned");
@@ -39,7 +40,7 @@ public class Zql {
     }
   }
 
-  public DbReSources rows(String sql, List<Object> params) {
+  private DbReSources rows(String sql, List<Object> params) {
     return rows(sql, params.toArray());
   }
 
@@ -62,38 +63,39 @@ public class Zql {
     }
   }
 
-  private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet) throws SQLException {
-    return mapData(clazz, resultSet, Integer.MAX_VALUE);
+  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet) throws SQLException {
+    return mapData(mapper, resultSet, Integer.MAX_VALUE);
   }
 
-  private <T> List<T> mapData(Class<T> clazz, ResultSet resultSet, int numRecords)
+  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet, int numRecords)
       throws SQLException {
-    List<ResultSetMapper.Column> columns = getColumns(resultSet);
-    ResultSetMapper<T> mapper = ResultSetMapper.forClass(clazz);
+    List<Column> columns = getColumns(resultSet);
     List<T> data = new ArrayList<>();
     int count = 0;
     while (count < numRecords && resultSet.next()) {
-      T t = mapper.mapRow(resultSet, columns);
-      data.add(t);
-      count++;
+      try {
+        T t = mapper.mapRow(count, columns, resultSet);
+        data.add(t);
+      } catch (Exception e) {
+        EzyQueryUnCheckedException.throwException("Error mapping row", e);
+      }
     }
     return data;
   }
 
-  @lombok.SneakyThrows
-  public List<ResultSetMapper.Column> getColumns(ResultSet resultSet) {
-    List<ResultSetMapper.Column> columns = new ArrayList<>();
+  public static List<Column> getColumns(ResultSet resultSet) throws SQLException {
+    List<Column> columns = new ArrayList<>();
     ResultSetMetaData metaData = resultSet.getMetaData();
     for (int i = 1; i <= metaData.getColumnCount(); i++) {
       String columnName = metaData.getColumnName(i);
       String columnLabel = metaData.getColumnLabel(i);
-      columns.add(new ResultSetMapper.Column(columnName, columnLabel));
+      columns.add(new Column(columnName, columnLabel));
     }
     return columns;
   }
 
   @lombok.SneakyThrows
-  public DbReSources rows(String sql, Object... params) {
+  private DbReSources rows(String sql, Object... params) {
 
     Connection connection = connectionProvider.getConnection();
     PreparedStatement statement = connection.prepareStatement(sql);
@@ -119,6 +121,13 @@ public class Zql {
     for (int i = 0; i < values.length; i++) {
       preparedStatement.setObject(i + 1, values[i]);
     }
+  }
+
+  @lombok.AllArgsConstructor
+  @lombok.Getter
+  public static class Column {
+    private String name;
+    private String label;
   }
 
   @lombok.AllArgsConstructor

@@ -15,21 +15,21 @@ public class Zql {
     this.connectionProvider = connectionProvider;
   }
 
-  public <T> List<T> rows(Mappers.ResultsMapper<T> mapper, String sql, List<Object> params) {
+  public <T> List<T> rows(Mappers.Row<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      return JdbcUtils.mapData(mapper, resultSet.resultSet);
+      return Mappers.mapResultSet(resultSet.resultSet, Integer.MAX_VALUE, mapper);
     }
   }
 
-  public <T> List<T> rows(Mappers.ResultsMapper<T> mapper, String sql, Object... params) {
+  public <T> List<T> rows(Mappers.Row<T> mapper, String sql, Object... params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      return JdbcUtils.mapData(mapper, resultSet.resultSet);
+      return Mappers.mapResultSet(resultSet.resultSet, Integer.MAX_VALUE, mapper);
     }
   }
 
-  public <T> T firstRow(Mappers.ResultsMapper<T> mapper, String sql, List<Object> params) {
+  public <T> T firstRow(Mappers.Row<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
-      List<T> results = JdbcUtils.mapData(mapper, resultSet.resultSet, 1);
+      List<T> results = Mappers.mapResultSet(resultSet.resultSet, 1, mapper);
 
       if (resultSet.resultSet.next())
         throw new IllegalArgumentException("More than one row returned");

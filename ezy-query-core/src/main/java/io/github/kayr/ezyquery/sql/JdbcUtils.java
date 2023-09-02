@@ -7,28 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Utility class for JDBC to make it easier to work with JDBC checked exceptions. */
 public class JdbcUtils {
   private JdbcUtils() {}
-
-  public static <T> List<T> mapData(Mappers.ResultsMapper<T> mapper, ResultSet resultSet) {
-    return mapData(mapper, resultSet, Integer.MAX_VALUE);
-  }
-
-  public static <T> List<T> mapData(
-      Mappers.ResultsMapper<T> mapper, ResultSet resultSet, int numRecords) {
-
-    List<Zql.Column> columns = getColumns(resultSet);
-    List<T> data = new ArrayList<>();
-    int count = 0;
-    while (count < numRecords && next(resultSet)) {
-      try {
-        data.add(mapper.mapRow(count, columns, resultSet));
-      } catch (Exception e) {
-        throw new UnCaughtException("Error mapping row", e);
-      }
-    }
-    return data;
-  }
 
   public static List<Zql.Column> getColumns(ResultSet resultSet) {
     List<Zql.Column> columns = new ArrayList<>();

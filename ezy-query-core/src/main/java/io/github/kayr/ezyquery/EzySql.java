@@ -47,20 +47,19 @@ public class EzySql {
     return withProvider(ConnectionProvider.of(connection));
   }
 
-  private <T> List<T> list(
-      EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
+  private <T> List<T> list(EzyQuery<?> query, EzyCriteria params, Mappers.Row<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
     return zql.rows(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
   }
 
   private <T> Optional<T> mayBeOne(
-      EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
+      EzyQuery<?> query, EzyCriteria params, Mappers.Row<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
     T one = zql.firstRow(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 
-  private <T> T one(EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
+  private <T> T one(EzyQuery<?> query, EzyCriteria params, Mappers.Row<T> resultMapper) {
     return mayBeOne(query, params, resultMapper)
         .orElseThrow(() -> new NoSuchElementException("No result found"));
   }
@@ -82,14 +81,14 @@ public class EzySql {
     private final EzyQuery<?> query;
     private final EzySql ezySql;
     private final EzyCriteria criteria;
-    private final Mappers.ResultsMapper<T> resultsMapper;
+    private final Mappers.Row<T> resultsMapper;
 
     public CriteriaBuilder(EzyQuery<T> query, EzySql ezySql) {
       this(query, ezySql, EzyCriteria.selectAll(), Mappers.toClass(query.resultClass()));
     }
 
     public CriteriaBuilder(
-        EzyQuery<?> query, EzySql ezySql, EzyCriteria criteria, Mappers.ResultsMapper<T> mapper) {
+        EzyQuery<?> query, EzySql ezySql, EzyCriteria criteria, Mappers.Row<T> mapper) {
       this.query = query;
       this.ezySql = ezySql;
       this.criteria = criteria;
@@ -134,7 +133,7 @@ public class EzySql {
       return withCriteria(criteria.orderBy(sort));
     }
 
-    public CriteriaBuilder<T> mapTo(Mappers.ResultsMapper<T> mapper) {
+    public CriteriaBuilder<T> mapTo(Mappers.Row<T> mapper) {
       return new CriteriaBuilder<>(query, ezySql, criteria, mapper);
     }
 

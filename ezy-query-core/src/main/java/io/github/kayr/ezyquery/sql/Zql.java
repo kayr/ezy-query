@@ -5,7 +5,6 @@ import static io.github.kayr.ezyquery.api.UnCaughtException.doGet;
 import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.Elf;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Zql {
@@ -65,17 +64,6 @@ public class Zql {
     } catch (Exception e) {
       throw new UnCaughtException("Error executing query", e);
     }
-  }
-
-  public static List<Column> getColumns(ResultSet resultSet) throws SQLException {
-    List<Column> columns = new ArrayList<>();
-    ResultSetMetaData metaData = resultSet.getMetaData();
-    for (int i = 1; i <= metaData.getColumnCount(); i++) {
-      String columnName = metaData.getColumnName(i);
-      String columnLabel = metaData.getColumnLabel(i);
-      columns.add(new Column(columnName, columnLabel));
-    }
-    return columns;
   }
 
   private DbReSources rows(String sql, Object... params) {

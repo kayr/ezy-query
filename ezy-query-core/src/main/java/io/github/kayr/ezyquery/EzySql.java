@@ -134,6 +134,10 @@ public class EzySql {
       return withCriteria(criteria.orderBy(sort));
     }
 
+    public CriteriaBuilder<T> mapTo(Mappers.ResultsMapper<T> mapper) {
+      return new CriteriaBuilder<>(query, ezySql, criteria, mapper);
+    }
+
     public List<T> list() {
       return ezySql.list(query, criteria, resultsMapper);
     }

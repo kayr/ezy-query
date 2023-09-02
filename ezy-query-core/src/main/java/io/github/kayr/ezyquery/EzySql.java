@@ -7,11 +7,14 @@ import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
-import io.github.kayr.ezyquery.sql.ResultsMapper;
+import io.github.kayr.ezyquery.sql.Mappers;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import java.sql.Connection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.NonNull;
 
@@ -19,9 +22,10 @@ import lombok.NonNull;
  * This class works with the EzySQL query objects as opposed to raw Sql Strings. All the db handling
  * is delegated to Zql with handles all the database problems.
  */
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class EzySql {
 
-  private Zql zql;
+  @lombok.Getter private final Zql zql;
 
   private EzySql(Zql zql) {
     this.zql = zql;
@@ -43,26 +47,22 @@ public class EzySql {
     return withProvider(ConnectionProvider.of(connection));
   }
 
-  private <T> List<T> list(EzyQuery<T> query, EzyCriteria params) {
+  private <T> List<T> list(
+      EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
-    return zql.rows(
-        ResultsMapper.usingReflection(query.resultClass()),
-        queryAndParams.getSql(),
-        queryAndParams.getParams());
+    return zql.rows(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
   }
 
-  private <T> Optional<T> mayBeOne(EzyQuery<T> query, EzyCriteria params) {
+  private <T> Optional<T> mayBeOne(
+      EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
-    T one =
-        zql.firstRow(
-            ResultsMapper.usingReflection(query.resultClass()),
-            queryAndParams.getSql(),
-            queryAndParams.getParams());
+    T one = zql.firstRow(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 
-  private <T> T one(EzyQuery<T> query, EzyCriteria params) {
-    return mayBeOne(query, params).orElseThrow(() -> new NoSuchElementException("No result found"));
+  private <T> T one(EzyQuery<?> query, EzyCriteria params, Mappers.ResultsMapper<T> resultMapper) {
+    return mayBeOne(query, params, resultMapper)
+        .orElseThrow(() -> new NoSuchElementException("No result found"));
   }
 
   private <T> Long count(EzyQuery<T> query, EzyCriteria criteria) {
@@ -74,27 +74,26 @@ public class EzySql {
     return CoercionUtil.toLong(one);
   }
 
-  public Zql getZql() {
-    return zql;
-  }
-
   public <T> CriteriaBuilder<T> from(EzyQuery<T> q) {
     return new CriteriaBuilder<>(q, this);
   }
 
   public static class CriteriaBuilder<T> {
-    private final EzyQuery<T> query;
+    private final EzyQuery<?> query;
     private final EzySql ezySql;
     private final EzyCriteria criteria;
+    private final Mappers.ResultsMapper<T> resultsMapper;
 
     public CriteriaBuilder(EzyQuery<T> query, EzySql ezySql) {
-      this(query, ezySql, EzyCriteria.selectAll());
+      this(query, ezySql, EzyCriteria.selectAll(), Mappers.toClass(query.resultClass()));
     }
 
-    public CriteriaBuilder(EzyQuery<T> query, EzySql ezySql, EzyCriteria criteria) {
+    public CriteriaBuilder(
+        EzyQuery<?> query, EzySql ezySql, EzyCriteria criteria, Mappers.ResultsMapper<T> mapper) {
       this.query = query;
       this.ezySql = ezySql;
       this.criteria = criteria;
+      this.resultsMapper = mapper;
     }
 
     public CriteriaBuilder<T> select(Field<?> field, Field<?>... otherFields) {
@@ -136,7 +135,7 @@ public class EzySql {
     }
 
     public List<T> list() {
-      return ezySql.list(query, criteria);
+      return ezySql.list(query, criteria, resultsMapper);
     }
 
     public Long count() {
@@ -150,15 +149,15 @@ public class EzySql {
     }
 
     public Optional<T> mayBeOne() {
-      return ezySql.mayBeOne(query, criteria);
+      return ezySql.mayBeOne(query, criteria, resultsMapper);
     }
 
     public T one() {
-      return ezySql.one(query, criteria);
+      return ezySql.one(query, criteria, resultsMapper);
     }
 
     public CriteriaBuilder<T> withCriteria(EzyCriteria criteria) {
-      return new CriteriaBuilder<>(query, ezySql, criteria);
+      return new CriteriaBuilder<>(query, ezySql, criteria, resultsMapper);
     }
 
     public QueryAndParams getQuery() {

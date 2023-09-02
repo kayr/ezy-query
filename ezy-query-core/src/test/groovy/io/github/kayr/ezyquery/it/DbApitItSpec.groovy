@@ -3,6 +3,7 @@ package io.github.kayr.ezyquery.it
 
 import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.cnd.Cnd
+import io.github.kayr.ezyquery.sql.Mappers
 import io.github.kayr.ezyquery.testqueries.CustomerReps
 import spock.lang.Shared
 import spock.lang.Specification
@@ -33,7 +34,7 @@ class DbApitItSpec extends Specification {
                                         Cnd.isNotNull("#customerName")
                                 )
                         )
-                        .limit(10).offset(0))
+                        .limit(10).offset(0), Mappers.toClass(CustomerReps.Result.class))
 
         then:
         list.size() == 2
@@ -50,7 +51,7 @@ class DbApitItSpec extends Specification {
                                         Cnd.isNotNull(CustomerReps.FIELD_CUSTOMER_NAME)
                                 )
                         )
-                        .limit(10).offset(0))
+                        .limit(10).offset(0), Mappers.toClass(CustomerReps.Result.class))
 
         then:
         list.size() == 2
@@ -120,7 +121,8 @@ class DbApitItSpec extends Specification {
 
                                 )
                         )
-                        .limit(10).offset(20)
+                        .limit(10).offset(20),
+                Mappers.toClass(CustomerReps.Result.class)
         )
 
 

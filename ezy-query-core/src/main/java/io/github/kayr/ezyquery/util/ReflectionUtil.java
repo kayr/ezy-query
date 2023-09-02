@@ -2,7 +2,6 @@ package io.github.kayr.ezyquery.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -98,14 +97,17 @@ public class ReflectionUtil {
     return t;
   }
 
-  public static void setFieldValue(ResultSet rs, Object obj, Field field) {
+  public static void setNonSyntheticField(Object target, Field field, Object value) {
     makeAccessible(field);
     try {
       if (field.isSynthetic()) return;
-      setField(field, obj, rs.getObject(field.getName()));
+      setField(field, target, value);
     } catch (Exception e) {
       throw new UnsupportedOperationException(
-          "Unable to set field on :" + field.getName() + " for class: " + obj.getClass().getName(),
+          "Unable to set field on :"
+              + field.getName()
+              + " for class: "
+              + target.getClass().getName(),
           e);
     }
   }

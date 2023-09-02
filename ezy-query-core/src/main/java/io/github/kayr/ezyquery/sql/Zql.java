@@ -1,6 +1,8 @@
 package io.github.kayr.ezyquery.sql;
 
-import io.github.kayr.ezyquery.api.EzyQueryUnCheckedException;
+import static io.github.kayr.ezyquery.api.EzyQueryUnCaughtException.doGet;
+
+import io.github.kayr.ezyquery.api.EzyQueryUnCaughtException;
 import io.github.kayr.ezyquery.util.Elf;
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,21 +16,18 @@ public class Zql {
     this.connectionProvider = connectionProvider;
   }
 
-  @lombok.SneakyThrows
   public <T> List<T> rows(ResultsMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
       return mapData(mapper, resultSet.resultSet);
     }
   }
 
-  @lombok.SneakyThrows
   public <T> List<T> rows(ResultsMapper<T> mapper, String sql, Object... params) {
     try (DbReSources resultSet = rows(sql, params)) {
       return mapData(mapper, resultSet.resultSet);
     }
   }
 
-  @lombok.SneakyThrows
   public <T> T firstRow(ResultsMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
       List<T> results = mapData(mapper, resultSet.resultSet, 1);
@@ -37,14 +36,16 @@ public class Zql {
         throw new IllegalArgumentException("More than one row returned");
 
       return results.isEmpty() ? null : results.get(0);
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error executing query", e);
     }
   }
 
   private DbReSources rows(String sql, List<Object> params) {
+
     return rows(sql, params.toArray());
   }
 
-  @lombok.SneakyThrows
   public <T> T one(Class<T> clazz, String sql, List<Object> params) {
     try (DbReSources r = rows(sql, params)) {
 
@@ -60,27 +61,28 @@ public class Zql {
       }
 
       return result;
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error executing query", e);
     }
   }
 
-  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet) throws SQLException {
+  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet) {
     return mapData(mapper, resultSet, Integer.MAX_VALUE);
   }
 
-  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet, int numRecords)
-      throws SQLException {
-    List<Column> columns = getColumns(resultSet);
-    List<T> data = new ArrayList<>();
-    int count = 0;
-    while (count < numRecords && resultSet.next()) {
-      try {
+  private <T> List<T> mapData(ResultsMapper<T> mapper, ResultSet resultSet, int numRecords) {
+    try {
+      List<Column> columns = getColumns(resultSet);
+      List<T> data = new ArrayList<>();
+      int count = 0;
+      while (count < numRecords && resultSet.next()) {
         T t = mapper.mapRow(count, columns, resultSet);
         data.add(t);
-      } catch (Exception e) {
-        EzyQueryUnCheckedException.throwException("Error mapping row", e);
       }
+      return data;
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error mapping data", e);
     }
-    return data;
   }
 
   public static List<Column> getColumns(ResultSet resultSet) throws SQLException {
@@ -94,25 +96,36 @@ public class Zql {
     return columns;
   }
 
-  @lombok.SneakyThrows
   private DbReSources rows(String sql, Object... params) {
-
-    Connection connection = connectionProvider.getConnection();
-    PreparedStatement statement = connection.prepareStatement(sql);
-    setValues(statement, params);
-    ResultSet resultSet = statement.executeQuery();
-    return new DbReSources(connection, statement, resultSet);
+    try {
+      Connection connection = connectionProvider.getConnection();
+      PreparedStatement statement = connection.prepareStatement(sql);
+      setValues(statement, params);
+      ResultSet resultSet = statement.executeQuery();
+      return new DbReSources(connection, statement, resultSet);
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error executing query", e);
+    }
   }
 
-  @lombok.SneakyThrows
   public Integer executeUpdate(String sql, Object... params) {
-    Connection connection = connectionProvider.getConnection();
+    Connection connection = doGet(connectionProvider::getConnection);
     try {
       PreparedStatement statement = connection.prepareStatement(sql);
       setValues(statement, params);
       return statement.executeUpdate();
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error executing update", e);
     } finally {
+      closeConnection(connection);
+    }
+  }
+
+  private void closeConnection(Connection connection) {
+    try {
       connectionProvider.closeConnection(connection);
+    } catch (Exception e) {
+      throw new EzyQueryUnCaughtException("Error closing connection", e);
     }
   }
 
@@ -138,10 +151,10 @@ public class Zql {
     private ResultSet resultSet;
 
     @Override
-    public void close() throws Exception {
+    public void close() {
       Elf.closeQuietly(resultSet);
       Elf.closeQuietly(statement);
-      connectionProvider.closeConnection(connection);
+      closeConnection(connection);
     }
   }
 }

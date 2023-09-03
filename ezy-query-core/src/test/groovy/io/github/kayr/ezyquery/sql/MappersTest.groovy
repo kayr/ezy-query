@@ -19,14 +19,12 @@ class MappersTest extends Specification {
         db.close()
     }
 
-    def 'test that can map result set'() {
+    def 'test #Mappers.toClass'() {
         when:
         def result = db.ezySql().from(Offices.QUERY)
                 .where(Offices.CODE.in('1', '2', '3'))
                 .orderBy(Offices.CODE.asc())
-                .query {
-                    Mappers.resultSetToList(it, 100, Mappers.toClass(Offices.Result.class))
-                }
+                .query { Mappers.resultSetToList(it, Mappers.toClass(Offices.Result.class)) }
 
         then:
         result.size() == 3
@@ -43,6 +41,29 @@ class MappersTest extends Specification {
         result[2].country == 'TZ'
 
 
+    }
+
+    def 'test #Mappers.toMap'(){
+
+        when:
+        def result = db.ezySql().from(Offices.QUERY)
+                .where(Offices.CODE.in('1', '2', '3'))
+                .orderBy(Offices.CODE.asc())
+                .query { Mappers.resultSetToList(it, Mappers.toMap()) }
+
+        then:
+        result.size() == 3
+        result[0].get('code') == '1'
+        result[0].get('addressLine') == 'Kampala'
+        result[0].get('country') == 'UG'
+
+        result[1].get('code') == '2'
+        result[1].get('addressLine') == 'Nairobi'
+        result[1].get('country') == 'KE'
+
+        result[2].get('code') == '3'
+        result[2].get('addressLine') == 'Dar es Salaam'
+        result[2].get('country') == 'TZ'
     }
 
 }

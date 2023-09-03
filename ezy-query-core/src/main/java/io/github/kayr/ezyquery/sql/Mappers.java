@@ -4,13 +4,12 @@ import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.ReflectionUtil;
 import io.github.kayr.ezyquery.util.ThrowingSupplier;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /** Simple mapper to convert a ResultSet to a List of Objects */
 public interface Mappers<T> {
 
-  interface Row<T> {
+  interface RowMapper<T> {
     T mapRow(int rowIndex, List<Zql.Column> columns, ResultSet rs) throws Exception;
 
     default T mapRowUnChecked(int rowIndex, List<Zql.Column> columns, ResultSet rs) {
@@ -22,11 +21,15 @@ public interface Mappers<T> {
     }
   }
 
-  interface Cell<T> {
+  interface CellMapper<T> {
     void set(Zql.Column column, T obj, Object cellValue) throws Exception;
   }
 
-  static <T> List<T> resultSetToList(ResultSet resultSet, int limit, Row<T> mapper) {
+  static <T> List<T> resultSetToList(ResultSet resultSet, RowMapper<T> mapper) {
+    return resultSetToList(resultSet, Integer.MAX_VALUE, mapper);
+  }
+
+  static <T> List<T> resultSetToList(ResultSet resultSet, int limit, RowMapper<T> mapper) {
     List<Zql.Column> columns = JdbcUtils.getColumns(resultSet);
     List<T> data = new ArrayList<>();
     int count = 0;
@@ -36,7 +39,7 @@ public interface Mappers<T> {
     return data;
   }
 
-  static <T> Row<T> toObject(ThrowingSupplier<T> factory, Cell<T> setter) {
+  static <T> RowMapper<T> toObject(ThrowingSupplier<T> factory, CellMapper<T> setter) {
     return (rowIndex, columns, rs) -> {
       T obj = factory.get();
       for (Zql.Column column : columns) {
@@ -46,12 +49,17 @@ public interface Mappers<T> {
     };
   }
 
-  static <T> Row<T> toClass(Class<T> target) {
+  static <T> RowMapper<T> toClass(Class<T> target) {
     return toObject(
         () -> ReflectionUtil.construct(target),
         (col, obj, cellValue) -> {
           java.lang.reflect.Field field = ReflectionUtil.getField(target, col.getLabel());
           if (field != null) ReflectionUtil.setNonSyntheticField(obj, field, cellValue);
         });
+  }
+
+  static RowMapper<Map<String, Object>> toMap() {
+    return toObject(
+        LinkedHashMap::new, (column, obj, cellValue) -> obj.put(column.getLabel(), cellValue));
   }
 }

@@ -11,6 +11,7 @@ publish-and-close: publish close-release
 
 publishLocal: build
 	./gradlew publishAllPublicationsToMavenRepository  -x signMavenJavaPublication -x signMavenPublication -x test
+# -x javadoc
 
 clean:
 	./gradlew clean

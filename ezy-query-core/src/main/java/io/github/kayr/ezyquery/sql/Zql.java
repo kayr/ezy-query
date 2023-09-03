@@ -17,19 +17,19 @@ public class Zql {
     this.connectionProvider = connectionProvider;
   }
 
-  public <T> List<T> rows(Mappers.Row<T> mapper, String sql, List<Object> params) {
+  public <T> List<T> rows(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources resultSet = rows(sql, params)) {
       return Mappers.resultSetToList(resultSet.resultSet, Integer.MAX_VALUE, mapper);
     }
   }
 
-  public <T> List<T> rows(Mappers.Row<T> mapper, String sql, Object... params) {
+  public <T> List<T> rows(Mappers.RowMapper<T> mapper, String sql, Object... params) {
     try (DbReSources resultSet = rows(sql, params)) {
       return Mappers.resultSetToList(resultSet.resultSet, Integer.MAX_VALUE, mapper);
     }
   }
 
-  public <T> T firstRow(Mappers.Row<T> mapper, String sql, List<Object> params) {
+  public <T> T firstRow(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources dbReSources = rows(sql, params)) {
       List<T> results = Mappers.resultSetToList(dbReSources.resultSet, 1, mapper);
       assertNoMoreRecords(dbReSources.resultSet);

@@ -1,7 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.api.UnCaughtException;
-
 import java.sql.Connection;
 import javax.sql.DataSource;
 

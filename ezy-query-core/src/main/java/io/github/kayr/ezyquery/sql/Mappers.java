@@ -26,7 +26,7 @@ public interface Mappers<T> {
     void set(Zql.Column column, T obj, Object cellValue) throws Exception;
   }
 
-  static <T> List<T> mapResultSet(ResultSet resultSet, int limit, Row<T> mapper) {
+  static <T> List<T> resultSetToList(ResultSet resultSet, int limit, Row<T> mapper) {
     List<Zql.Column> columns = JdbcUtils.getColumns(resultSet);
     List<T> data = new ArrayList<>();
     int count = 0;

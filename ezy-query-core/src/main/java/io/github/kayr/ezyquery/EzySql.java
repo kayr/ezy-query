@@ -10,7 +10,9 @@ import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Mappers;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
+import io.github.kayr.ezyquery.util.ThrowingFunction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -71,6 +73,12 @@ public class EzySql {
       return 0L;
     }
     return CoercionUtil.toLong(one);
+  }
+
+  private <R> R query(
+      EzyQuery<?> sql, EzyCriteria criteria, ThrowingFunction<ResultSet, R> rsConsumer) {
+    QueryAndParams queryAndParams = sql.query(criteria);
+    return zql.query(queryAndParams.getSql(), queryAndParams.getParams(), rsConsumer);
   }
 
   public <T> CriteriaBuilder<T> from(EzyQuery<T> q) {
@@ -157,6 +165,10 @@ public class EzySql {
 
     public T one() {
       return ezySql.one(query, criteria, resultsMapper);
+    }
+
+    public <R> R query(ThrowingFunction<ResultSet, R> rsConsumer) {
+      return ezySql.query(query, criteria, rsConsumer);
     }
 
     public CriteriaBuilder<T> withCriteria(EzyCriteria criteria) {

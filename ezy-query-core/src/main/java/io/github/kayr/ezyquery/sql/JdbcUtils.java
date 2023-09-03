@@ -1,7 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.api.UnCaughtException;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +76,7 @@ public class JdbcUtils {
     }
   }
 
-  public static  PreparedStatement preparedStatement(Connection connection,String sql){
+  public static PreparedStatement preparedStatement(Connection connection, String sql) {
     try {
       return connection.prepareStatement(sql);
     } catch (SQLException e) {
@@ -85,7 +84,7 @@ public class JdbcUtils {
     }
   }
 
-  public static Integer executeUpdate(PreparedStatement statement){
+  public static Integer executeUpdate(PreparedStatement statement) {
     try {
       return statement.executeUpdate();
     } catch (SQLException e) {
@@ -93,13 +92,11 @@ public class JdbcUtils {
     }
   }
 
-  public static ResultSet executeQuery(PreparedStatement statement){
+  public static ResultSet executeQuery(PreparedStatement statement) {
     try {
       return statement.executeQuery();
     } catch (SQLException e) {
       throw new UnCaughtException("Error executing query", e);
     }
   }
-
-
 }

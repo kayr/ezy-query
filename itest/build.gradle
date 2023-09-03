@@ -26,7 +26,7 @@ apply plugin: 'io.github.kayr.gradle.ezyquery'
 
 dependencies {
     testImplementation group: 'com.h2database', name: 'h2', version: '2.1.214'
-    testImplementation 'io.github.kayr:fuzzy-csv:1.8.1-groovy3'
+    testImplementation 'io.github.kayr:fuzzy-csv:1.9.1-groovy3'
     testImplementation 'org.codehaus.groovy:groovy:3.0.9'
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     testImplementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3'

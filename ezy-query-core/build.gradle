@@ -20,7 +20,7 @@ ext {
 dependencies {
     //add h2 database for testing
     testImplementation group: 'com.h2database', name: 'h2', version: '2.1.214'
-    testImplementation 'io.github.kayr:fuzzy-csv:1.8.1-groovy3'
+    testImplementation 'io.github.kayr:fuzzy-csv:1.9.1-groovy3'
 
 }
 

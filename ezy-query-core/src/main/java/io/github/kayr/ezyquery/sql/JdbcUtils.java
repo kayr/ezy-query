@@ -1,9 +1,8 @@
 package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.api.UnCaughtException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +13,7 @@ public class JdbcUtils {
   public static List<Zql.Column> getColumns(ResultSet resultSet) {
     List<Zql.Column> columns = new ArrayList<>();
     ResultSetMetaData metaData = getMetaData(resultSet);
-    for (int i = 1; i <= getColumnCount(resultSet); i++) {
+    for (int i = 1; i <= getColumnCount(metaData); i++) {
       String columnName = getColumnName(metaData, i);
       String columnLabel = getColumnLabel(metaData, i);
       columns.add(new Zql.Column(columnName, columnLabel));
@@ -30,9 +29,9 @@ public class JdbcUtils {
     }
   }
 
-  public static int getColumnCount(ResultSet resultSet) {
+  public static int getColumnCount(ResultSetMetaData metaData) {
     try {
-      return resultSet.getMetaData().getColumnCount();
+      return metaData.getColumnCount();
     } catch (SQLException e) {
       throw new UnCaughtException("Error getting column count", e);
     }
@@ -61,4 +60,46 @@ public class JdbcUtils {
       throw new UnCaughtException("Error getting next row", e);
     }
   }
+
+  public static void setObject(PreparedStatement preparedStatement, int index, Object value) {
+    try {
+      preparedStatement.setObject(index, value);
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error setting object on statement", e);
+    }
+  }
+
+  public static Object getObject(ResultSet resultSet, int index) {
+    try {
+      return resultSet.getObject(index);
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error getting object from result set", e);
+    }
+  }
+
+  public static  PreparedStatement preparedStatement(Connection connection,String sql){
+    try {
+      return connection.prepareStatement(sql);
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error creating prepared statement", e);
+    }
+  }
+
+  public static Integer executeUpdate(PreparedStatement statement){
+    try {
+      return statement.executeUpdate();
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error executing update", e);
+    }
+  }
+
+  public static ResultSet executeQuery(PreparedStatement statement){
+    try {
+      return statement.executeQuery();
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error executing query", e);
+    }
+  }
+
+
 }

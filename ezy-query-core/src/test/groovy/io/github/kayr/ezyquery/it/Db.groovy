@@ -49,14 +49,18 @@ class Db {
 
     def intoDb(List<Map> data, String name) {
         def exportParams = ExportParams.
-                of(DbExportFlags.CREATE_IF_NOT_EXISTS, DbExportFlags.INSERT).
-                withSqlRenderer(Db.h2_RENDERER)
+                of(DbExportFlags.CREATE_IF_NOT_EXISTS, DbExportFlags.INSERT)
+                .withSqlRenderer(getH2_RENDERER())
 
 
         def csvData = FuzzyCSVTable.fromMapList(data).name(name)
 
-        withDb { csvData.dbExport(it, exportParams) }
+        withDb {
+            csvData.export().toDb().withDatasource(ds)
+                    .withExportParams(exportParams)
+                    .export()
 
+        }
     }
 
 

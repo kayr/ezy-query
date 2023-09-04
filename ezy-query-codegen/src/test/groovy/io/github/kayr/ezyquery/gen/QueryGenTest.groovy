@@ -2,7 +2,7 @@ package io.github.kayr.ezyquery.gen
 
 import spock.lang.Specification
 
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.util.concurrent.TimeUnit
 
@@ -20,8 +20,8 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
-    private String generateCode(String sql) {
-        new NoTimeQueryGen("mypackage.sql", "MyQuery", sql).javaCode().toString().trim()
+    private String generateCode(String sql, Properties config = new Properties()) {
+        new NoTimeQueryGen("mypackage.sql", "MyQuery", sql,config).javaCode().toString().trim()
     }
 
     def "no joins test"() {
@@ -48,10 +48,18 @@ class QueryGenTest extends Specification {
     }
 
 
-    Tuple2<String, String> load(String path) {
+    Tuple3<String, String, Properties> load(String path) {
         def sql = QueryGenTest.class.getResource("/generated/$path/in.sql.txt").text
         def java = QueryGenTest.class.getResource("/generated/$path/out.java.txt").text
-        return new Tuple2(sql, java)
+        def pUrl = QueryGenTest.class.getResource("/generated/$path/ezy-query.properties")
+        def properties = new Properties();
+        if (pUrl != null) {
+            pUrl.withInputStream {
+                properties.load(it)
+            }
+
+        }
+        return new Tuple3(sql, java, properties)
     }
 
     @spock.lang.Ignore("not implemented nested classes")
@@ -82,7 +90,7 @@ class QueryGenTest extends Specification {
 
 
         when:
-        def code = new QueryGen("mypackage.sql", "MyQuery", sql).javaCode()
+        def code = new QueryGen("mypackage.sql", "MyQuery", sql, new Properties()).javaCode()
         then:
         1 == 1
     }
@@ -91,6 +99,16 @@ class QueryGenTest extends Specification {
         def data = load('named-params')
         when:
         def generated = generateCode(data.v1)
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
+    def 'test can read custom java types'() {
+        def data = load('custom-java-types')
+        when:
+        def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
 
         then:

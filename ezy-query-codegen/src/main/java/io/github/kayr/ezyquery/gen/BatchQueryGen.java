@@ -4,6 +4,7 @@ import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
@@ -13,12 +14,22 @@ public class BatchQueryGen {
 
   private final Path inputPath;
   private final Path outputPath;
+  private final Properties config;
 
   public BatchQueryGen(Path inputPath, Path outputPath) {
     this.inputPath = inputPath;
     this.outputPath = outputPath;
     Elf.assertTrue(Files.isDirectory(inputPath), "Input path must be a directory");
     Elf.assertTrue(Files.isDirectory(outputPath), "Output path must be a directory");
+
+    // read properties
+    Path propFile = inputPath.resolve("ezy-query.properties");
+    if (Files.exists(propFile)) {
+      log.info("Reading properties from: " + propFile);
+      config = Elf.readProperties(propFile);
+    } else {
+      config = new Properties();
+    }
   }
 
   public static List<Path> generate(Path inputPath, Path outputPath) {
@@ -50,7 +61,7 @@ public class BatchQueryGen {
     String className =
         Elf.fromKebabToCamelCase(code.path.getFileName().toString().replace(".sql", ""));
     String sql = code.code;
-    return new QueryGen(packageName, className, sql);
+    return new QueryGen(packageName, className, sql, config);
   }
 
   private String resolvePackageName(Path parentPath, Path filePath) {

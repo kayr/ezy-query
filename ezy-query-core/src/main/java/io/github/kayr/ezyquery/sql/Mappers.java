@@ -15,7 +15,9 @@ public interface Mappers<T> {
     default T mapRowUnChecked(int rowIndex, List<Zql.Column> columns, ResultSet rs) {
       try {
         return mapRow(rowIndex, columns, rs);
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Throwable e) {
         throw new UnCaughtException("Error mapping row", e);
       }
     }

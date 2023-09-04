@@ -13,7 +13,7 @@ SELECT
     tr.blob_ AS 'blobval_byte',
     tr.object_ AS 'objectval_object'
 FROM
-    m_awamo_wallet maw
+    m_wallet maw
 INNER JOIN m_tenant_wallet mtw ON
     mtw.id = maw.wallet_id
 INNER JOIN w_wallet_transaction_request tr ON

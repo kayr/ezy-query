@@ -41,7 +41,7 @@ import javax.annotation.processing.Generated;
  *     tr.blob_ AS 'blobval_byte',
  *     tr.object_ AS 'objectval_object'
  * FROM
- *     m_awamo_wallet maw
+ *     m_wallet maw
  * INNER JOIN m_tenant_wallet mtw ON
  *     mtw.id = maw.wallet_id
  * INNER JOIN w_wallet_transaction_request tr ON
@@ -85,7 +85,7 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   public static final MyQuery QUERY = new MyQuery();
 
   private final SqlParts schema = SqlParts.of(
-      SqlParts.textPart("m_awamo_wallet maw\n"
+      SqlParts.textPart("m_wallet maw\n"
           + "INNER JOIN m_tenant_wallet mtw ON mtw.id = maw.wallet_id\n"
           + "INNER JOIN w_wallet_transaction_request tr ON tr.wallet_id = mtw.id\n"
           + "INNER JOIN m_wallet_transaction_detail td ON td.wallet_tx_request_id = tr.id")

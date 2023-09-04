@@ -7,18 +7,22 @@ import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import java.lang.Class;
-import java.lang.Double;
 import java.lang.Override;
 import java.lang.String;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Vector;
 import javax.annotation.processing.Generated;
 
 /**
  * SELECT
- *     maw.double_ AS 'doubleval_double',
- *     maw.double_ AS 'doubleval2_double'
+ *    maq.f1 as f1_double,
+ *    maq.f2 as f2_random,
+ *    maq.f3 as f3_vector,
+ *    maq.f4 as f4_date
  * FROM
  *     m_wallet maw
  */
@@ -27,9 +31,13 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQuery<MyQuery.Result> {
-  public static final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
+  public static final Field<BigDecimal> F1 = Field.of("maq.f1", "f1", BigDecimal.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
+  public static final Field<String> F2 = Field.of("maq.f2", "f2", String.class,Field.ExpressionType.COLUMN);
+
+  public static final Field<Vector> F3 = Field.of("maq.f3", "f3", Vector.class,Field.ExpressionType.COLUMN);
+
+  public static final Field<LocalDate> F4 = Field.of("maq.f4", "f4", LocalDate.class,Field.ExpressionType.COLUMN);
 
   public static final MyQuery QUERY = new MyQuery();
 
@@ -44,8 +52,10 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   private void init() {
-    fields.add(DOUBLEVAL);
-    fields.add(DOUBLEVAL2);
+    fields.add(F1);
+    fields.add(F2);
+    fields.add(F3);
+    fields.add(F4);
   }
 
   public QueryAndParams query(EzyCriteria criteria) {
@@ -78,23 +88,37 @@ public class MyQuery implements EzyQuery<MyQuery.Result> {
   }
 
   public static class Result {
-    private Double doubleval;
+    private BigDecimal f1;
 
-    private Double doubleval2;
+    private String f2;
 
-    public Double getDoubleval() {
-      return doubleval;
+    private Vector f3;
+
+    private LocalDate f4;
+
+    public BigDecimal getF1() {
+      return f1;
     }
 
-    public Double getDoubleval2() {
-      return doubleval2;
+    public String getF2() {
+      return f2;
+    }
+
+    public Vector getF3() {
+      return f3;
+    }
+
+    public LocalDate getF4() {
+      return f4;
     }
 
     @Override
     public String toString() {
       return "MyQuery.Result{"
-      + "doubleval = " + doubleval
-      + ", doubleval2 = " + doubleval2
+      + "f1 = " + f1
+      + ", f2 = " + f2
+      + ", f3 = " + f3
+      + ", f4 = " + f4
        + "}";
     }
   }

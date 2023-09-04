@@ -1,5 +1,8 @@
 package io.github.kayr.ezyquery.util;
 
+import io.github.kayr.ezyquery.api.UnCaughtException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -149,5 +152,19 @@ public class Elf {
       list.add(value.next());
     }
     return list;
+  }
+
+  public static Properties readProperties(Path path) {
+    Properties properties = new Properties();
+
+    if (!Files.exists(path)) throw new IllegalArgumentException("File does not exist: " + path);
+
+    try (InputStream is = Files.newInputStream(path)) {
+      properties.load(is);
+    } catch (IOException e) {
+      throw new UnCaughtException("Error reading properties file", e);
+    }
+
+    return properties;
   }
 }

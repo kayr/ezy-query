@@ -31,11 +31,13 @@ public class QueryGen {
   private final String sql;
   private final String className;
   private final String packageName;
+  private final Properties config;
 
-  public QueryGen(String packageName, String className, String sql) {
+  public QueryGen(String packageName, String className, String sql, Properties config) {
     this.sql = sql;
     this.className = className;
     this.packageName = packageName;
+    this.config = config;
   }
 
   public Path writeTo(String path) {
@@ -62,12 +64,12 @@ public class QueryGen {
     }
 
     PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-    List<Field<?>> fieldList = extractFields(plainSelect);
+    List<EzyQueryFieldSpec> fieldList = extractFields(plainSelect);
 
     return buildCode(fieldList, plainSelect);
   }
 
-  private JavaFile buildCode(List<Field<?>> fieldList, PlainSelect plainSelect) {
+  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) {
 
     List<FieldSpec> fConstants = fieldConstants(fieldList);
 
@@ -263,12 +265,12 @@ public class QueryGen {
     return generatedAnnotation;
   }
 
-  private CodeBlock.Builder toStringMethodBody(List<Field<?>> fieldList) {
+  private CodeBlock.Builder toStringMethodBody(List<EzyQueryFieldSpec> fieldList) {
     CodeBlock.Builder toStringMethodBody =
         CodeBlock.builder().add("return \"$L.Result{\"\n", className);
 
     boolean isFirst = true;
-    for (Field<?> f : fieldList) {
+    for (EzyQueryFieldSpec f : fieldList) {
       if (isFirst) {
         toStringMethodBody.add("+ $S + $L\n", f.getAlias() + " = ", f.getAlias());
       } else {
@@ -281,16 +283,16 @@ public class QueryGen {
     return toStringMethodBody;
   }
 
-  private TypeSpec resultClass(List<Field<?>> fieldList) {
+  private TypeSpec resultClass(List<EzyQueryFieldSpec> fieldList) {
     TypeSpec.Builder resultClassBuilder =
         TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-    for (Field<?> f : fieldList) {
+    for (EzyQueryFieldSpec f : fieldList) {
       resultClassBuilder.addField(
           FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
     }
 
     // add getters
-    for (Field<?> f : fieldList) {
+    for (EzyQueryFieldSpec f : fieldList) {
       resultClassBuilder.addMethod(
           MethodSpec.methodBuilder(toGetterName(f.getAlias()))
               .addModifiers(Modifier.PUBLIC)
@@ -411,13 +413,13 @@ public class QueryGen {
     return schemaBuilder;
   }
 
-  private List<FieldSpec> fieldConstants(List<Field<?>> fieldList) {
+  private List<FieldSpec> fieldConstants(List<EzyQueryFieldSpec> fieldList) {
     // Constant fields
     return fieldList.stream()
         .map(
             f ->
                 FieldSpec.builder(
-                        ParameterizedTypeName.get(Field.class, f.getDataType()),
+                        ParameterizedTypeName.get(ClassName.get(Field.class), f.getDataType()),
                         constantName(f.getAlias()),
                         Modifier.PUBLIC,
                         Modifier.FINAL,
@@ -444,14 +446,14 @@ public class QueryGen {
         .toUpperCase();
   }
 
-  public List<Field<?>> extractFields(PlainSelect plainSelect) {
+  private List<EzyQueryFieldSpec> extractFields(PlainSelect plainSelect) {
 
     return plainSelect.getSelectItems().stream()
         .map(selectItem -> toField((SelectExpressionItem) selectItem))
         .collect(Collectors.toList());
   }
 
-  private Field<?> toField(SelectExpressionItem selectItem) {
+  private EzyQueryFieldSpec toField(SelectExpressionItem selectItem) {
     String alias =
         Objects.requireNonNull(
                 selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")
@@ -463,27 +465,30 @@ public class QueryGen {
     String aliasName = parts[0];
     String typeName = parts[1];
 
-    Class<?> type = resolveType(typeName);
+    TypeName type = resolveType(typeName);
 
     Expression expression = selectItem.getExpression();
     String sqlField = expression.toString();
 
     if (expression instanceof Column) {
-      return Field.of(sqlField, aliasName, type, Field.ExpressionType.COLUMN);
+      return EzyQueryFieldSpec.of(sqlField, aliasName, type, Field.ExpressionType.COLUMN);
     }
 
     if (expression instanceof BinaryExpression) {
-      return Field.of(sqlField, aliasName, type, Field.ExpressionType.BINARY);
+      return EzyQueryFieldSpec.of(sqlField, aliasName, type, Field.ExpressionType.BINARY);
     }
 
-    return Field.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
+    return EzyQueryFieldSpec.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
   }
 
-  Class<?> resolveType(String type) {
-
+  TypeName resolveType(String type) {
+    String javaType = config.getProperty("type." + type);
+    if (javaType != null) {
+      return ClassName.bestGuess(javaType);
+    }
     Class<?> aClass = TYPE_MAP.get(type);
     if (aClass == null) throw new IllegalArgumentException("Unsupported type: " + type);
-    return aClass;
+    return ClassName.get(aClass);
   }
 
   private static final Map<String, Class<?>> TYPE_MAP = new HashMap<>();
@@ -501,6 +506,15 @@ public class QueryGen {
     TYPE_MAP.put("bigint", java.math.BigInteger.class);
     TYPE_MAP.put("byte", Byte.class);
     TYPE_MAP.put("object", Object.class);
+  }
+
+  @lombok.Getter
+  @lombok.AllArgsConstructor(staticName = "of")
+  static class EzyQueryFieldSpec {
+    private String sqlField;
+    private String alias;
+    private TypeName dataType;
+    private Field.ExpressionType expressionType;
   }
 
   String unquote(String s) {

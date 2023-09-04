@@ -2,4 +2,4 @@ SELECT
     maw.double_ AS 'doubleval_double',
     maw.double_ AS 'doubleval2_double'
 FROM
-    m_awamo_wallet maw
+    m_wallet maw

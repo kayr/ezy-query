@@ -1,9 +1,11 @@
 package io.github.kayr.ezyquery.gen;
 
+import java.util.Properties;
+
 public class NoTimeQueryGen extends QueryGen {
 
-  public NoTimeQueryGen(String packageName, String className, String sql) {
-    super(packageName, className, sql);
+  public NoTimeQueryGen(String packageName, String className, String sql, Properties config) {
+    super(packageName, className, sql, config);
   }
 
   @Override

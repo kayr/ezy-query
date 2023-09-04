@@ -40,4 +40,33 @@ class BatchQueryGenTest extends Specification {
         !customersPath.toFile().text.contains("package")
 
     }
+
+    def 'test uses ezy-query properties file'(){
+        def inputPathStr = BatchQueryGenTest.class.getResource("/generated/custom-java-types").toURI()
+
+
+        when:
+        //get package directory from classpath
+        def inputDir = Paths.get(inputPathStr)
+        println("inputDir: " + inputDir)
+
+        //create a temporary directory
+        def outputDir = Files.createDirectories(inputDir.resolveSibling("sql-files-out"))
+        println("outputDir: " + outputDir)
+
+
+        def generatedFiles = BatchQueryGen.generate(inputDir, outputDir)
+
+        def javaTypesFile = outputDir.resolve("JavaTypes.java")
+
+        then:
+        generatedFiles.size() == 1
+        generatedFiles.contains(javaTypesFile)
+
+        Files.exists(javaTypesFile)
+        javaTypesFile.toFile().text.contains("Field.of(\"maq.f1\", \"f1\", BigDecimal.class,Field.ExpressionType.COLUMN);")
+        javaTypesFile.toFile().text.contains("Field.of(\"maq.f2\", \"f2\", String.class,Field.ExpressionType.COLUMN);")
+        javaTypesFile.toFile().text.contains("Field.of(\"maq.f3\", \"f3\", Vector.class,Field.ExpressionType.COLUMN);")
+        javaTypesFile.toFile().text.contains("Field.of(\"maq.f4\", \"f4\", LocalDate.class,Field.ExpressionType.COLUMN);")
+    }
 }

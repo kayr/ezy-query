@@ -45,7 +45,7 @@ public class EzyQueryBuildTask extends DefaultTask {
           LogLevel.LIFECYCLE, "Generating Classes to: " + directory + " : From : " + ezyQueryDir);
 
       BatchQueryGen batchQueryGen =
-          new BatchQueryGen(ezyQueryDir.get().toPath(), directory.toPath());
+          BatchQueryGen.create(ezyQueryDir.get().toPath(), directory.toPath());
 
       batchQueryGen.generateAndWrite();
     }

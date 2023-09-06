@@ -20,7 +20,7 @@ class BatchQueryGenTest extends Specification {
         println("outputDir: " + outputDir)
 
 
-        def generatedFiles = BatchQueryGen.generate(inputDir, outputDir)
+        def generatedFiles = BatchQueryGen.create(inputDir, outputDir).generateAndWrite()
         def departmentsPath = outputDir.resolve("office/SelectDepartments.java")
         def employeesPath = outputDir.resolve("office/SelectEmployees.java")
         def customersPath = outputDir.resolve("SelectCustomers.java")
@@ -55,7 +55,7 @@ class BatchQueryGenTest extends Specification {
         println("outputDir: " + outputDir)
 
 
-        def generatedFiles = BatchQueryGen.generate(inputDir, outputDir)
+        def generatedFiles = BatchQueryGen.create(inputDir, outputDir).generateAndWrite()
 
         def javaTypesFile = outputDir.resolve("JavaTypes.java")
 

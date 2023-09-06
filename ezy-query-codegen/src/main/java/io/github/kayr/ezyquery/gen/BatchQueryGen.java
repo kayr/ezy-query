@@ -16,25 +16,31 @@ public class BatchQueryGen {
   private final Path outputPath;
   private final Properties config;
 
-  public BatchQueryGen(Path inputPath, Path outputPath) {
+  private BatchQueryGen(Path inputPath, Path outputPath, Properties config) {
     this.inputPath = inputPath;
     this.outputPath = outputPath;
+    this.config = config;
     Elf.assertTrue(Files.isDirectory(inputPath), "Input path must be a directory");
     Elf.assertTrue(Files.isDirectory(outputPath), "Output path must be a directory");
-
-    // read properties
-    Path propFile = inputPath.resolve("ezy-query.properties");
-    if (Files.exists(propFile)) {
-      log.info("Reading properties from: " + propFile);
-      config = Elf.readProperties(propFile);
-    } else {
-      config = new Properties();
-    }
   }
 
-  public static List<Path> generate(Path inputPath, Path outputPath) {
-    BatchQueryGen gen = new BatchQueryGen(inputPath, outputPath);
-    return gen.generateAndWrite();
+  public static BatchQueryGen create(Path inputPath, Path outputPath) {
+    Properties prop = mayBeLoadConfig(inputPath);
+    return create(inputPath, outputPath, prop);
+  }
+
+  public static BatchQueryGen create(Path inputPath, Path outputPath, Properties config) {
+    return new BatchQueryGen(inputPath, outputPath, config);
+  }
+
+  private static Properties mayBeLoadConfig(Path inputPath) {
+    Path propFile = inputPath.resolve("ezy-query.properties");
+    Properties prop = new Properties();
+    if (Files.exists(propFile)) {
+      log.info("Reading properties from: " + propFile);
+      prop = Elf.readProperties(propFile);
+    }
+    return prop;
   }
 
   public List<Path> generateAndWrite() {

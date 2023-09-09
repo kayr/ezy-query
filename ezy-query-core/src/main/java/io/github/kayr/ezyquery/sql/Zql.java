@@ -107,13 +107,6 @@ public class Zql {
   }
 
   @lombok.AllArgsConstructor
-  @lombok.Getter
-  public static class Column {
-    private String name;
-    private String label;
-  }
-
-  @lombok.AllArgsConstructor
   @lombok.NoArgsConstructor
   private static class DbReSources implements AutoCloseable {
     private Connection connection;

@@ -142,7 +142,7 @@ public class EzySql {
       return withCriteria(criteria.orderBy(sort));
     }
 
-    public CriteriaBuilder<T> mapTo(Mappers.RowMapper<T> mapper) {
+    public <T2> CriteriaBuilder<T2> mapTo(Mappers.RowMapper<T2> mapper) {
       return new CriteriaBuilder<>(query, ezySql, criteria, mapper);
     }
 

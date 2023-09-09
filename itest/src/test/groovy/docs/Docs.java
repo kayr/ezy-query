@@ -6,7 +6,14 @@ import static docs.GetCustomers.CUSTOMER_NAME;
 import io.github.kayr.ezyquery.EzySql;
 import io.github.kayr.ezyquery.api.Sort;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
+import io.github.kayr.ezyquery.sql.ColumnInfo;
+import io.github.kayr.ezyquery.sql.Mappers;
+import io.github.kayr.ezyquery.sql.Zql;
+import prod.QueryWithParams;
+
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Docs {
 
@@ -70,5 +77,28 @@ public class Docs {
         .orderBy("customerName asc, customerEmail desc")
         .limit(10)
         .offset(20);
+
+    // named params
+    ezySql.from(GetOrders.QUERY)
+      .where(GetOrders.PRICE.gt(100).and(GetOrders.QUANTITY.lt(10)))
+      .setParam(GetOrders.Params.MEMBERSHIP, "GOLD")
+      .getQuery().print();
+
+    // custom mappers
+    ezySql.from(GetOrders.QUERY)
+      .mapTo(Mappers.toObject(HashMap::new,(column, result, o) ->result.put(column.getLabel(),o) ))
+      .list();
+
+
+    ezySql.from(QueryWithParams.QUERY)
+      .mapTo((rowIndex, columns, rs) -> {
+        Map<String,Object> map = new HashMap<>();
+        for (ColumnInfo column : columns) {
+          map.put(column.getLabel(), rs.getObject(column.getLabel()));
+        }
+        return map;
+      })
+      .list();
+
   }
 }

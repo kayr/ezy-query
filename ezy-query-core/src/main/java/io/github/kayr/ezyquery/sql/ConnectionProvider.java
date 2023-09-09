@@ -11,6 +11,8 @@ public interface ConnectionProvider {
   default Connection getConnectionUnChecked() {
     try {
       return getConnection();
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception e) {
       throw new UnCaughtException(e);
     }

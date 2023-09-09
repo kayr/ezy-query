@@ -1,6 +1,14 @@
 # ezy-query
 
+Add the following to your `build.gradle` file.
+
 ```groovy
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
     id 'io.github.kayr.gradle.ezyquery' version '0.0.11'
 }
@@ -25,13 +33,14 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
    Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
    parameter. The query is parsed and converted to a parameterized sql query to avoid sql injection.
-3. You can fall back to native sql queries if you need to.
-4. All generated sql queries are parameterized to avoid sql injection.
-5. Automatic mapping of sql result to java pojo.
-6. The same query is used to count and list data. Make it easy to build pagination.
-7. Sort by any field in the query. e.g `orderBy(CUSTOMER_NAME.asc())`
-8. You can sort using a string expression. e.g `customerName asc, customerEmail desc`
-9. Gradle plugin to generate the java code from your sql files.
+3. Named parameters. You can add named parameters to static parts of your SQL query and these will recognized.
+4. You can fall back to native sql queries if you need to.
+5. All generated sql queries are parameterized to avoid sql injection.
+6. Automatic mapping of sql result to java pojo.
+7. The same query is used to count and list data. Make it easy to build pagination.
+8. Sort by any field in the query. e.g `orderBy(CUSTOMER_NAME.asc())`
+9. You can sort using a string expression. e.g `customerName asc, customerEmail desc`
+10. Gradle plugin to generate the java code from your sql files.
 
 ## Usage
 
@@ -230,6 +239,89 @@ concatenation and use the `?` placeholder instead.
 ```java
 ezySql.from(GetCustomers.QUERY)
   .where(Cnd.sql("c.name = ? and c.created_at > now()","John"))
+```
+
+### 6.5 Named Parameters
+
+You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some parts of the query are not necessarily e.g if you have an sql query that has derived tables that need named params.
+
+Name parameters are supported in the where clause, join conditions and order by clause.
+
+Given the following sql query.
+```sql
+-- file: get-customers.sql
+SELECT
+   o.id as customerId,
+   c.name as customerName,
+   c.email as customerEmail,
+   o.item as item,
+   o.price as price,
+    o.quantity as quantity
+FROM
+    orders o
+    inner join customers c on c.id = o.customerId
+WHERE
+    c.membership = :membership
+```
+
+You can pass the named parameter `:membership` at runtime as follows.
+
+```groovy
+    ezySql.from(GetOrders.QUERY)
+        .where(GetOrders.PRICE.gt(100).and(GetOrders.QUANTITY.lt(10)))
+        .setParam(GetOrders.Params.MEMBERSHIP, "GOLD") //set the named parameter
+        .getQuery().print()
+```
+
+This will print the following sql query along with the params.
+
+```sql
+SELECT 
+  o.id as "customerId", 
+  c.name as "customerName", 
+  c.email as "customerEmail", 
+  o.item as "item", 
+  o.price as "price", 
+  o.quantity as "quantity"
+FROM orders o
+INNER JOIN customers c ON c.id = o.customerId
+WHERE (c.membership = ?) AND (o.price > ? AND o.quantity < ?)
+LIMIT 50 OFFSET 0
+PARAMS:[GOLD, 100, 10]
+```
+
+You can see that the `GOLD` param has been added to the list of params. 
+
+### 6.6 Specifying a custom result mapper
+
+You can specify a custom mapper to control how you want the result to returned from the database. E.g Instead of returning a list of pojos you can return a list of maps.
+Here is an example.
+
+We already have a built in mapper that converts the result to a map. You can use it as follows.
+```groovy
+    ezySql.from(QueryWithParams.QUERY)
+    .mapTo(Mappers.toMap())
+    .list();
+```
+
+For illustration purposes we will create a custom mapper that converts the result to a map. See code below.
+
+```groovy
+    ezySql.from(QueryWithParams.QUERY)
+    .mapTo((rowIndex, columns, rs) -> {
+        Map<String,Object> map = new HashMap<>();
+        for (ColumnInfo column : columns) {
+            map.put(column.getLabel(), rs.getObject(column.getLabel()));
+        }
+        return map;
+    })
+    .list();
+
+// or you can use the Mappers.toObject helper method.
+    ezySql.from(GetOrders.QUERY)
+        .mapTo(Mappers.toObject(HashMap::new,(column, result, o) ->result.put(column.getLabel(),o) ))
+        .list();
+
 ```
 
 #### 6.5. Sorting

@@ -2,6 +2,7 @@ package io.github.kayr.ezyquery
 
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.it.Db
+import io.github.kayr.ezyquery.sql.Mappers
 import io.github.kayr.ezyquery.sql.Zql
 import io.github.kayr.ezyquery.testqueries.Offices
 import spock.lang.Shared
@@ -219,6 +220,21 @@ class EzySqlTest extends Specification {
         then:
         offices.size() == 4
         offices[0].code == '4'
+        offices[1].code == '3'
+        offices[2].code == '2'
+        offices[3].code == '1'
+    }
+
+    def 'test that you can convert results to a map'() {
+        when:
+        def offices = db.ezySql().from(Offices.QUERY)
+                .mapTo(Mappers.toMap())
+                .orderBy(Offices.CODE.desc())
+                .list()
+        then:
+        offices.first() instanceof Map
+        offices.size() == 4
+        offices[0].get('code') == '4'
         offices[1].code == '3'
         offices[2].code == '2'
         offices[3].code == '1'

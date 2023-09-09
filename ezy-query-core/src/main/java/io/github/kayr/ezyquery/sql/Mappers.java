@@ -10,9 +10,9 @@ import java.util.*;
 public interface Mappers<T> {
 
   interface RowMapper<T> {
-    T mapRow(int rowIndex, List<Zql.Column> columns, ResultSet rs) throws Exception;
+    T mapRow(int rowIndex, List<ColumnInfo> columns, ResultSet rs) throws Exception;
 
-    default T mapRowUnChecked(int rowIndex, List<Zql.Column> columns, ResultSet rs) {
+    default T mapRowUnChecked(int rowIndex, List<ColumnInfo> columns, ResultSet rs) {
       try {
         return mapRow(rowIndex, columns, rs);
       } catch (RuntimeException e) {
@@ -24,7 +24,7 @@ public interface Mappers<T> {
   }
 
   interface CellMapper<T> {
-    void set(Zql.Column column, T obj, Object cellValue) throws Exception;
+    void set(ColumnInfo column, T obj, Object cellValue) throws Exception;
   }
 
   static <T> List<T> resultSetToList(ResultSet resultSet, RowMapper<T> mapper) {
@@ -32,7 +32,7 @@ public interface Mappers<T> {
   }
 
   static <T> List<T> resultSetToList(ResultSet resultSet, int limit, RowMapper<T> mapper) {
-    List<Zql.Column> columns = JdbcUtils.getColumns(resultSet);
+    List<ColumnInfo> columns = JdbcUtils.getColumns(resultSet);
     List<T> data = new ArrayList<>();
     int count = 0;
     while (count < limit && JdbcUtils.next(resultSet)) {
@@ -44,7 +44,7 @@ public interface Mappers<T> {
   static <T> RowMapper<T> toObject(ThrowingSupplier<T> factory, CellMapper<T> setter) {
     return (rowIndex, columns, rs) -> {
       T obj = factory.get();
-      for (Zql.Column column : columns) {
+      for (ColumnInfo column : columns) {
         setter.set(column, obj, rs.getObject(column.getLabel()));
       }
       return obj;

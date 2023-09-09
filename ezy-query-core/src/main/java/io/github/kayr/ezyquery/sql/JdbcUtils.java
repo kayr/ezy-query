@@ -9,13 +9,13 @@ import java.util.List;
 public class JdbcUtils {
   private JdbcUtils() {}
 
-  public static List<Zql.Column> getColumns(ResultSet resultSet) {
-    List<Zql.Column> columns = new ArrayList<>();
+  public static List<ColumnInfo> getColumns(ResultSet resultSet) {
+    List<ColumnInfo> columns = new ArrayList<>();
     ResultSetMetaData metaData = getMetaData(resultSet);
     for (int i = 1; i <= getColumnCount(metaData); i++) {
       String columnName = getColumnName(metaData, i);
       String columnLabel = getColumnLabel(metaData, i);
-      columns.add(new Zql.Column(columnName, columnLabel));
+      columns.add(new ColumnInfo(columnName, columnLabel));
     }
     return columns;
   }

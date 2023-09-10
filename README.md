@@ -14,7 +14,7 @@ plugins {
 }
 ```
 
-Convert Your Sql Query To A Queryable Java API/Code.. think of A Queryable View In Your Code Using Java
+Convert your SQL query to A queryable Java API/Code.. think of A Queryable View In Your Code Using Java
 
 You don't have to write your sql queries in your code or use string concatenation to build your sql queries.
 This will work for most sql queries in the
@@ -23,23 +23,24 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 
 ## The workflow
 
-1. You write your sql query file
-2. Run `./gradlew ezyBuild` to convert your sql query file to a java class.
+1. You write your sql query file.
+2. Run `./gradlew ezyBuild` to convert your SQL query file to a java class.
 3. You can now use the java class to query your database with a flexible easy to use api.
 
 ## Features
 
-1. Flexible Query fluent API e.g   `where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))`
+1. Flexible Query fluent API e.g   `where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))`.
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
    Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
-   parameter. The query is parsed and converted to a parameterized sql query to avoid sql injection.
+   parameter. The query is parsed and converted to a parameterized sql query.
 3. Named parameters. You can add named parameters to static parts of your SQL query and these will recognized.
 4. You can fall back to native sql queries if you need to.
 5. All generated sql queries are parameterized to avoid sql injection.
 6. Automatic mapping of sql result to java pojo.
-7. The same query is used to count and list data. Make it easy to build pagination.
-8. Sort by any field in the query. e.g `orderBy(CUSTOMER_NAME.asc())`
-9. You can sort using a string expression. e.g `customerName asc, customerEmail desc`
+7. The same query is used to count and list data. Which makes building pagination easy and prevents the need to write
+   two queries.
+8. Sort by any field in the query. e.g `orderBy(CUSTOMER_NAME.asc())`.
+9. You can sort using a string expression. e.g `customerName asc, customerEmail desc`.
 10. Gradle plugin to generate the java code from your sql files.
 
 ## Usage
@@ -60,11 +61,11 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
     - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
     - [6.5 Named Parameters](#65-named-parameters)
     - [6.6 Specifying a custom result mapper](#66-specifying-a-custom-result-mapper)
-    - [6.5. Sorting](#65-sorting)
-    - [6.6. Pagination](#66-pagination)
-    - [6.7 Adding a default where clause.](#67-adding-a-default-where-clause)
-    - [6.8 Adding data types to the generated pojo.](#68-adding-data-types-to-the-generated-pojo)
-    - [6.9 Optionally select fields to be returned.](#69-optionally-select-fields-to-be-returned)
+    - [6.7. Sorting](#67-sorting)
+    - [6.8. Pagination](#68-pagination)
+    - [6.9 Adding a default where clause.](#69-adding-a-default-where-clause)
+    - [6.10 Adding data types to the generated pojo.](#610-adding-data-types-to-the-generated-pojo)
+    - [6.11 Optionally select fields to be returned.](#611-optionally-select-fields-to-be-returned)
   - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -119,8 +120,7 @@ Or Manually create the directory `src/main/ezyquery` in your project.
 Create a sql file in the directory `src/main/ezyquery` an example below. The file name will be used as the generated
 class name.
 
-For more convenience you should place your sql files in a package structure that matches the package structure of your
-java code.
+For better organization, consider placing your SQL files in a package structure that aligns with the package structure of your Java code.
 
 e.g `get-customer.sql` will be generated as `GetCustomer.java`
 
@@ -158,14 +158,14 @@ EzySql ezySql=EzySql.withDataSource(dataSource);
   EzySql ezySql=EzySql.withConnection(connection);
 ```
 
-In spring boot you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
+If you are using spring boot, you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
 into your code using the `@Autowired` annotation.
 
 ```java
 @Bean
 public EzySql ezyQuery(DataSource dataSource){
   return EzySql.withDataSource(dataSource);
-  }
+}
 ```
 
 ### 6. Use the generated code.
@@ -218,8 +218,7 @@ ezySql.from(GetCustomers.QUERY)
   .getQuery().print();
 ```
 
-The above will print the following query. It parses the expression and converts it to the supported Criteria API. This
-helps avoid sql injection. Notice how the `customerName` is converted to `c.name` in the sql query.
+The above will print the following query. It parses the expression and converts it to the supported Criteria API. Notice how the `customerName` is converted to `c.name` in the sql query.
 
 ```sql
 SELECT 
@@ -240,14 +239,14 @@ concatenation and use the `?` placeholder instead.
 
 ```java
 ezySql.from(GetCustomers.QUERY)
-  .where(Cnd.sql("c.name = ? and c.created_at > now()","John"))
+  .where(Cnd.sql("c.name = ? and c.created_at > now()","John")) //use the ? placeholder to avoid sql injection
 ```
 
 #### 6.5 Named Parameters
 
-You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some parts of the query are not necessarily e.g if you have an sql query that has derived tables that need named params.
+You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some parts of the query are not necessarily dynamic e.g if you have an sql query that has derived tables that need named params.
 
-Name parameters are supported in the where clause, join conditions and order by clause.
+Name parameters are supported in the where clause, join conditions and order by clauses.
 
 Given the following sql query.
 ```sql
@@ -326,7 +325,7 @@ For illustration purposes we will create a custom mapper that converts the resul
 
 ```
 
-#### 6.5. Sorting
+#### 6.7. Sorting
 
 Sort using fields
 
@@ -349,14 +348,14 @@ ezySql.from(GetCustomers.QUERY)
   .orderBy(Sort.by("customerName",Sort.DIR.ASC))
 ```
 
-#### 6.6. Pagination
+#### 6.8. Pagination
 
 ```java
  ezySql.from(GetCustomers.QUERY)
   .limit(10).offset(20)
 ```
 
-#### 6.7 Adding a default where clause.
+#### 6.9 Adding a default where clause.
 
 To add a default where clause to all queries then you can add it to the input sql file.
 
@@ -375,7 +374,7 @@ WHERE
 
 The above will add the where clause `c.status = 'active'` to all queries.
 
-#### 6.8 Adding data types to the generated pojo.
+#### 6.10 Adding data types to the generated pojo.
 
 The generated pojo by default will have all fields as `Object`.
 You can add a data type to the generated pojo by adding a suffix to the field name.
@@ -389,7 +388,7 @@ SELECT
 ....
 ```
 
-With the above the generated pojo will have the following fields.
+With the above sql,the generated pojo will have the following fields.
 
 ```java
 ... // code ommited for brevity
@@ -414,7 +413,7 @@ The supported data types are:
 - `byte`
 - `object`
 
-#### 6.9 Optionally select fields to be returned.
+#### 6.11 Optionally select fields to be returned.
 
 ```java
 ezySql.from(GetCustomers.QUERY)

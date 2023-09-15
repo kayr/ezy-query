@@ -53,6 +53,9 @@ public class EzyQueryBuildTask extends DefaultTask {
     if (!ezyQueryDir.isPresent()) return;
 
     File theInputDir = ezyQueryDir.get();
+
+    if (!theInputDir.exists()) return;
+
     String sourceSetName = sourceSet.getName();
 
     switch (sourceSetName) {
@@ -88,6 +91,7 @@ public class EzyQueryBuildTask extends DefaultTask {
   }
 
   @InputDirectory
+  @org.gradle.api.tasks.Optional
   public DirectoryProperty getMainInputDir() {
     return mainInputDir;
   }
@@ -98,6 +102,7 @@ public class EzyQueryBuildTask extends DefaultTask {
   }
 
   @InputDirectory
+  @org.gradle.api.tasks.Optional
   public DirectoryProperty getTestInputDir() {
     return testInputDir;
   }

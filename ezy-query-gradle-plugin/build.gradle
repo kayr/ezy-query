@@ -16,8 +16,7 @@ gradlePlugin {
     }
 }
 
-
 dependencies {
-    implementation gradleApi()
+//    implementation gradleApi()
     implementation project(':ezy-query-codegen')
 }

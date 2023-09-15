@@ -43,6 +43,8 @@ tasks.named('test') {
 }
 
 
+
+
 spotless {
 
     format 'misc', {
@@ -56,5 +58,7 @@ spotless {
     }
     java {
         googleJavaFormat('1.7')
+        targetExclude('build/generated/sources/ezyquery/')
     }
+
 }

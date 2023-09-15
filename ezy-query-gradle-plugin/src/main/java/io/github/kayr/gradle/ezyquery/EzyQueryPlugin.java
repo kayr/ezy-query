@@ -7,6 +7,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.TaskProvider;
 
 public class EzyQueryPlugin implements Plugin<Project> {
 
@@ -27,6 +28,15 @@ public class EzyQueryPlugin implements Plugin<Project> {
     EzyQueryPluginExtension extension =
         project.getExtensions().create("ezyQuery", EzyQueryPluginExtension.class);
 
+    // set up :compileJava to depend on
+
+    TaskProvider<EzyQueryBuildTask> ezyBuild =
+        project.getTasks().register("ezyBuild", EzyQueryBuildTask.class, extension);
+
+    project.getTasks().register("ezyClean", EzyQueryCleanTask.class, extension);
+
+    project.getTasks().register("ezyInitFolders", EzyQueryInitTask.class);
+
     SourceSetContainer sourceSets = EzyQueryGradleHelper.getSourceSets(project);
 
     sourceSets.configureEach(
@@ -34,18 +44,12 @@ public class EzyQueryPlugin implements Plugin<Project> {
           if (sourceSet.getName().equals("main")) {
 
             sourceSet.getResources().srcDir("src/main/ezyquery");
-            sourceSet.getJava().srcDir(extension.mainOutputDir());
+            sourceSet.getJava().srcDir(ezyBuild.map(EzyQueryBuildTask::getMainOutputDir));
 
           } else if (sourceSet.getName().equals("test")) {
             sourceSet.getResources().srcDir("src/test/ezyquery");
-            sourceSet.getJava().srcDir(extension.testOutputDir());
+            sourceSet.getJava().srcDir(ezyBuild.map(EzyQueryBuildTask::getTestOutputDir));
           }
         });
-
-    project.getTasks().register("ezyBuild", EzyQueryBuildTask.class, extension);
-
-    project.getTasks().register("ezyClean", EzyQueryCleanTask.class, extension);
-
-    project.getTasks().register("ezyInitFolders", EzyQueryInitTask.class);
   }
 }

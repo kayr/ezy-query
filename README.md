@@ -65,6 +65,7 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
     - [6.8. Pagination](#68-pagination)
     - [6.9 Adding a default where clause.](#69-adding-a-default-where-clause)
     - [6.10 Adding data types to the generated pojo.](#610-adding-data-types-to-the-generated-pojo)
+      - [6.10.1 Overriding default type mappings e.g for newer JDBC drivers.](#6101-overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
     - [6.11 Optionally select fields to be returned.](#611-optionally-select-fields-to-be-returned)
   - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
 
@@ -120,7 +121,8 @@ Or Manually create the directory `src/main/ezyquery` in your project.
 Create a sql file in the directory `src/main/ezyquery` an example below. The file name will be used as the generated
 class name.
 
-For better organization, consider placing your SQL files in a package structure that aligns with the package structure of your Java code.
+For better organization, consider placing your SQL files in a package structure that aligns with the package structure
+of your Java code.
 
 e.g `get-customer.sql` will be generated as `GetCustomer.java`
 
@@ -158,14 +160,15 @@ EzySql ezySql=EzySql.withDataSource(dataSource);
   EzySql ezySql=EzySql.withConnection(connection);
 ```
 
-If you are using spring boot, you can do this by creating a bean of type `EzySql` in your spring configuration. Then inject the bean
+If you are using spring boot, you can do this by creating a bean of type `EzySql` in your spring configuration. Then
+inject the bean
 into your code using the `@Autowired` annotation.
 
 ```java
 @Bean
 public EzySql ezyQuery(DataSource dataSource){
   return EzySql.withDataSource(dataSource);
-}
+  }
 ```
 
 ### 6. Use the generated code.
@@ -218,7 +221,8 @@ ezySql.from(GetCustomers.QUERY)
   .getQuery().print();
 ```
 
-The above will print the following query. It parses the expression and converts it to the supported Criteria API. Notice how the `customerName` is converted to `c.name` in the sql query.
+The above will print the following query. It parses the expression and converts it to the supported Criteria API. Notice
+how the `customerName` is converted to `c.name` in the sql query.
 
 ```sql
 SELECT 
@@ -244,11 +248,14 @@ ezySql.from(GetCustomers.QUERY)
 
 #### 6.5 Named Parameters
 
-You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some parts of the query are not necessarily dynamic e.g if you have an sql query that has derived tables that need named params.
+You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some
+parts of the query are not necessarily dynamic e.g if you have an sql query that has derived tables that need named
+params.
 
 Name parameters are supported in the where clause, join conditions and order by clauses.
 
 Given the following sql query.
+
 ```sql
 -- file: get-customers.sql
 SELECT
@@ -291,36 +298,38 @@ LIMIT 50 OFFSET 0
 PARAMS:[GOLD, 100, 10]
 ```
 
-You can see that the `GOLD` param has been added to the list of params. 
+You can see that the `GOLD` param has been added to the list of params.
 
 #### 6.6 Specifying a custom result mapper
 
-You can specify a custom mapper to control how you want the result to returned from the database. E.g Instead of returning a list of pojos you can return a list of maps.
+You can specify a custom mapper to control how you want the result to returned from the database. E.g Instead of
+returning a list of pojos you can return a list of maps.
 Here is an example.
 
 We already have a built in mapper that converts the result to a map. You can use it as follows.
+
 ```groovy
     ezySql.from(QueryWithParams.QUERY)
-    .mapTo(Mappers.toMap())
-    .list();
+        .mapTo(Mappers.toMap())
+        .list();
 ```
 
 For illustration purposes we will create a custom mapper that converts the result to a map. See code below.
 
 ```groovy
     ezySql.from(QueryWithParams.QUERY)
-    .mapTo((rowIndex, columns, rs) -> {
-        Map<String,Object> map = new HashMap<>();
-        for (ColumnInfo column : columns) {
-            map.put(column.getLabel(), rs.getObject(column.getLabel()));
-        }
-        return map;
-    })
-    .list();
+        .mapTo((rowIndex, columns, rs) -> {
+            Map<String, Object> map = new HashMap<>();
+            for (ColumnInfo column : columns) {
+                map.put(column.getLabel(), rs.getObject(column.getLabel()));
+            }
+            return map;
+        })
+        .list();
 
 // or you can use the Mappers.toObject helper method.
-    ezySql.from(GetOrders.QUERY)
-        .mapTo(Mappers.toObject(HashMap::new,(column, result, o) ->result.put(column.getLabel(),o) ))
+ezySql.from(GetOrders.QUERY)
+        .mapTo(Mappers.toObject(HashMap::new, (column, result, o) -> result.put(column.getLabel(), o)))
         .list();
 
 ```
@@ -412,6 +421,53 @@ The supported data types are:
 - `bigint`
 - `byte`
 - `object`
+
+If these types are not enough for you, you can add your own custom types by specifying custom type mappings in
+the `ezy-query.properties` file.
+
+In the root of the ezy-query source directory, create a file called `ezy-query.properties` and add the following.
+
+```properties
+# file: ezy-query.properties
+#add your custom type mappings here
+#the format is type.<type>=<java type>
+#e.g
+type.customtype=java.time.LocalDate
+type.vector=java.util.Vector
+```
+
+Then in your sql file you can use the custom type as follows.
+
+```sql
+-- file: get-customer.sql
+SELECT
+   c.id as customerId_customtype, -- specify the custom type
+   c.name as customerName_string,
+   c.score as customerTags_vector, -- specify the custom vector type
+....
+```
+
+The generated pojo will have the following fields.
+
+```java
+    //.... code ommited for brevity
+private LocalDate customerId;
+private String customerName;
+private Vector customerTags;
+  ...
+```
+
+##### 6.10.1 Overriding default type mappings e.g for newer JDBC drivers.
+
+Some JDBC drivers may return types that are not supported by default. e.g newer mysql drivers
+return `java.time.LocalDate` or `java.util.LocalTime` for `date` and `time` types respectively. You can override the
+default mappings by specifying your own custom mappings.
+
+    ```properties
+    # file: ezy-query.properties
+    type.date=java.time.LocalDate
+    type.time=java.time.LocalTime
+    ```
 
 #### 6.11 Optionally select fields to be returned.
 

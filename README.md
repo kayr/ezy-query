@@ -463,11 +463,11 @@ Some JDBC drivers may return types that are not supported by default. e.g newer 
 return `java.time.LocalDate` or `java.util.LocalTime` for `date` and `time` types respectively. You can override the
 default mappings by specifying your own custom mappings.
 
-    ```properties
-    # file: ezy-query.properties
-    type.date=java.time.LocalDate
-    type.time=java.time.LocalTime
-    ```
+```properties
+# file: ezy-query.properties
+type.date=java.time.LocalDate
+type.time=java.time.LocalTime
+```
 
 #### 6.11 Optionally select fields to be returned.
 

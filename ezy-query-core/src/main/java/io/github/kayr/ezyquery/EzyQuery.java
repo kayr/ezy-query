@@ -1,4 +1,3 @@
-/* (C)2022 */
 package io.github.kayr.ezyquery;
 
 import io.github.kayr.ezyquery.api.EzyCriteria;
@@ -8,16 +7,15 @@ import io.github.kayr.ezyquery.parser.SqlParts;
 import java.util.List;
 import java.util.Optional;
 
-public interface EzyQuery<T> {
-
+public interface EzyQuery {
   QueryAndParams query(EzyCriteria params);
 
   List<Field<?>> fields();
 
   SqlParts schema();
 
-  default Class<T> resultClass() {
-    return null;
+  default Optional<SqlParts> preQuery() {
+    return Optional.empty();
   }
 
   default Optional<SqlParts> whereClause() {

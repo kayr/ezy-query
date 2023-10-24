@@ -49,25 +49,24 @@ public class EzySql {
     return withProvider(ConnectionProvider.of(connection));
   }
 
-  private <T> List<T> list(
-      EzyQuery<?> query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
+  private <T> List<T> list(EzyQuery query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
     return zql.rows(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
   }
 
   private <T> Optional<T> mayBeOne(
-      EzyQuery<?> query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
+      EzyQuery query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
     T one = zql.firstRow(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 
-  private <T> T one(EzyQuery<?> query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
+  private <T> T one(EzyQuery query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
     return mayBeOne(query, params, resultMapper)
         .orElseThrow(() -> new NoSuchElementException("No result found"));
   }
 
-  private <T> Long count(EzyQuery<T> query, EzyCriteria criteria) {
+  private <T> Long count(EzyQuery query, EzyCriteria criteria) {
     Object one =
         zql.one(Object.class, query.query(criteria).getSql(), query.query(criteria).getParams());
     if (one == null) {
@@ -77,27 +76,27 @@ public class EzySql {
   }
 
   private <R> R query(
-      EzyQuery<?> sql, EzyCriteria criteria, ThrowingFunction<ResultSet, R> rsConsumer) {
+      EzyQuery sql, EzyCriteria criteria, ThrowingFunction<ResultSet, R> rsConsumer) {
     QueryAndParams queryAndParams = sql.query(criteria);
     return zql.query(queryAndParams.getSql(), queryAndParams.getParams(), rsConsumer);
   }
 
-  public <T> CriteriaBuilder<T> from(EzyQuery<T> q) {
+  public <T> CriteriaBuilder<T> from(EzyQueryWithResult<T> q) {
     return new CriteriaBuilder<>(q, this);
   }
 
   public static class CriteriaBuilder<T> {
-    private final EzyQuery<?> query;
+    private final EzyQuery query;
     private final EzySql ezySql;
     private final EzyCriteria criteria;
     private final Mappers.RowMapper<T> resultsMapper;
 
-    public CriteriaBuilder(EzyQuery<T> query, EzySql ezySql) {
+    public CriteriaBuilder(EzyQueryWithResult<T> query, EzySql ezySql) {
       this(query, ezySql, EzyCriteria.selectAll(), Mappers.toClass(query.resultClass()));
     }
 
     public CriteriaBuilder(
-        EzyQuery<?> query, EzySql ezySql, EzyCriteria criteria, Mappers.RowMapper<T> mapper) {
+        EzyQuery query, EzySql ezySql, EzyCriteria criteria, Mappers.RowMapper<T> mapper) {
       this.query = query;
       this.ezySql = ezySql;
       this.criteria = criteria;

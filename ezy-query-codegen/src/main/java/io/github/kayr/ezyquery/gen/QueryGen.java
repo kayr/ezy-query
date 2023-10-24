@@ -2,7 +2,7 @@
 package io.github.kayr.ezyquery.gen;
 
 import com.squareup.javapoet.*;
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.NamedParam;
@@ -196,7 +196,7 @@ public class QueryGen {
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(sql)
             .addSuperinterface(
-                ParameterizedTypeName.get(ClassName.get(EzyQuery.class), resultClassName))
+                ParameterizedTypeName.get(ClassName.get(EzyQueryWithResult.class), resultClassName))
             .addFields(fConstants)
             .addField(fSchema)
             .addField(fFields)

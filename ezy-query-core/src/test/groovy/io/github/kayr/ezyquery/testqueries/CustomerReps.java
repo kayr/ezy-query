@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.testqueries;
 
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
@@ -17,7 +17,7 @@ import java.util.List;
  * = c.salesRepEmployeeNumber
  */
 // @Generated(value = "io.github.kayr.ezyquery.gen.QueryGen", date = "2022-11-05T17:10:56.978")
-public class CustomerReps implements EzyQuery<CustomerReps.Result> {
+public class CustomerReps implements EzyQueryWithResult<CustomerReps.Result> {
   public static Field<Object> FIELD_CUSTOMER_NAME =
       Field.of("c.customerName", "customerName", Object.class);
 

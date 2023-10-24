@@ -124,7 +124,7 @@ public class SqlBuilder {
     return field;
   }
 
-  QueryAndParams build(EzyQuery<?> query) {
+  QueryAndParams build(EzyQuery query) {
 
     QueryAndParams queryBuilder = new QueryAndParams("SELECT \n");
 
@@ -174,7 +174,7 @@ public class SqlBuilder {
     return queryBuilder;
   }
 
-  public static QueryAndParams buildSql(EzyQuery<?> query, EzyCriteria criteria) {
+  public static QueryAndParams buildSql(EzyQuery query, EzyCriteria criteria) {
     return SqlBuilder.with(query.fields(), criteria).build(query);
   }
 }

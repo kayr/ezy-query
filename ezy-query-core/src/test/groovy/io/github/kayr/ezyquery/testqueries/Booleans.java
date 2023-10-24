@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.testqueries;
 
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
@@ -14,7 +14,7 @@ import java.util.Optional;
  * -- (True or True) and False select officeCode as "code", true or true as a , false as b from
  * offices
  */
-public class Booleans implements EzyQuery<Booleans.Result> {
+public class Booleans implements EzyQueryWithResult<Booleans.Result> {
   public static Field<Object> CODE = Field.of("officeCode", "code", Object.class);
 
   public static Field<Object> A =

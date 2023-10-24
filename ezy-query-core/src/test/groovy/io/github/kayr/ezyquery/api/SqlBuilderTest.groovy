@@ -1,10 +1,10 @@
 package io.github.kayr.ezyquery.api
 
 import io.github.kayr.ezyquery.EzyQueryWithResult
-import io.github.kayr.ezyquery.api.*
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
 import io.github.kayr.ezyquery.parser.SqlParts
+import io.github.kayr.ezyquery.testqueries.QueryWithCTEBasic
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -548,6 +548,37 @@ class SqlBuilderTest extends Specification {
                 'LIMIT 50 OFFSET 0'
 
         params == ['NAME VALUE', 10, 15, 20, 'NAME VALUE', 10, 15, 20, 'RK']
+    }
+
+    def 'test building a query with a CTE'() {
+        def query = new QueryWithCTEBasic()
+
+        when:
+        def sql = SqlBuilder.buildSql(query, EzyCriteria.selectAll()
+                .setParam(QueryWithCTEBasic.Params.JOB_TITLE, "Sales Rep"));
+
+
+        then:
+        sql.sql == '''WITH "SalesRepInfo" AS (
+    SELECT
+        "e"."employeeNumber",
+        "e"."firstName" AS "salesRepName",
+        "o"."country" AS "salesRepCountry"
+    FROM
+        "Employees" "e"
+    JOIN "Offices" "o" ON "e"."officeCode" = "o"."officeCode"
+    WHERE "e"."jobTitle" = ?)
+SELECT 
+  "c"."customerNumber" as "customerNumber", 
+  "c"."customerName" as "customerName", 
+  "s"."salesRepName" as "salesRepName", 
+  "s"."salesRepCountry" as "salesRepCountry"
+FROM Customers c
+JOIN "SalesRepInfo" "s" ON "c"."salesRepEmployeeNumber" = "s"."employeeNumber"
+WHERE (1 = 1)
+LIMIT 50 OFFSET 0'''
+
+        sql.params == ['Sales Rep']
     }
 
 

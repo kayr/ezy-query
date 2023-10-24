@@ -29,8 +29,8 @@ public class SqlBuilder {
     }
   }
 
-  public static SqlBuilder with(List<Field<?>> fields, EzyCriteria filterParams) {
-    return new SqlBuilder(fields, filterParams);
+  public static SqlBuilder with(EzyQuery ezyQuery, EzyCriteria filterParams) {
+    return new SqlBuilder(ezyQuery.fields(), filterParams);
   }
 
   public String selectStmt() {
@@ -126,7 +126,14 @@ public class SqlBuilder {
 
   QueryAndParams build(EzyQuery query) {
 
-    QueryAndParams queryBuilder = new QueryAndParams("SELECT \n");
+    QueryAndParams queryBuilder = new QueryAndParams("");
+
+    Optional<SqlParts> preQuery = query.preQuery();
+    if (preQuery.isPresent()) {
+      queryBuilder = queryBuilder.append(preQuery.get().getQuery(ezyCriteria.getParamValues()));
+    }
+
+    queryBuilder = queryBuilder.newLine().append("SELECT \n");
 
     String s = selectStmt();
 
@@ -175,6 +182,6 @@ public class SqlBuilder {
   }
 
   public static QueryAndParams buildSql(EzyQuery query, EzyCriteria criteria) {
-    return SqlBuilder.with(query.fields(), criteria).build(query);
+    return SqlBuilder.with(query, criteria).build(query);
   }
 }

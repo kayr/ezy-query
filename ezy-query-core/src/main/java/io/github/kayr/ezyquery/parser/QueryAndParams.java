@@ -31,6 +31,13 @@ public class QueryAndParams {
     return this;
   }
 
+  public QueryAndParams newLine() {
+    if (!sql.endsWith("\n")) {
+      sql += "\n";
+    }
+    return this;
+  }
+
   public QueryAndParams append(String sql) {
     return of(this.sql + sql, params);
   }

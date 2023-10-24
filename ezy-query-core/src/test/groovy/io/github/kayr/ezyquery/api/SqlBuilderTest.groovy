@@ -1,6 +1,6 @@
-package io.github.kayr.ezyquery
+package io.github.kayr.ezyquery.api
 
-
+import io.github.kayr.ezyquery.EzyQueryWithResult
 import io.github.kayr.ezyquery.api.*
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
@@ -12,7 +12,7 @@ class SqlBuilderTest extends Specification {
 
     def fields = [name, age, office, maxAge]
 
-    def ezyQuery = new EzyQuery() {
+    def ezyQuery = new EzyQueryWithResult() {
         @Override
         QueryAndParams query(EzyCriteria params) {
             return null
@@ -297,7 +297,7 @@ class SqlBuilderTest extends Specification {
 
     def "test builds select query with default where clause"() {
 
-        EzyQuery ezyQueryWithWhere = queryWithWhereClause()
+        EzyQueryWithResult ezyQueryWithWhere = queryWithWhereClause()
 
 
         def criteria = EzyCriteria.select('name', 'age')
@@ -323,7 +323,7 @@ class SqlBuilderTest extends Specification {
 
     def "test builds select query with default where clause does not add extra parenthesis"() {
 
-        EzyQuery ezyQueryWithWhere = queryWithWhereClause()
+        EzyQueryWithResult ezyQueryWithWhere = queryWithWhereClause()
 
 
         def criteria = EzyCriteria.select('name', 'age')
@@ -348,8 +348,8 @@ class SqlBuilderTest extends Specification {
 
     }
 
-    private EzyQuery queryWithWhereClause() {
-        def ezyQueryWithWhere = new EzyQuery() {
+    private EzyQueryWithResult queryWithWhereClause() {
+        def ezyQueryWithWhere = new EzyQueryWithResult() {
             @Override
             QueryAndParams query(EzyCriteria params) {
                 return null
@@ -551,7 +551,7 @@ class SqlBuilderTest extends Specification {
     }
 
 
-    static abstract class EzyQueryAdapter implements EzyQuery {
+    static abstract class EzyQueryAdapter implements EzyQueryWithResult {
         @Override
         QueryAndParams query(EzyCriteria params) {
             return null

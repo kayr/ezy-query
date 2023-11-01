@@ -17,7 +17,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
 
-    implementation 'com.github.jsqlparser:jsqlparser:4.4'
+    implementation 'com.github.jsqlparser:jsqlparser:4.7'
 
     // Testing
     testImplementation 'org.codehaus.groovy:groovy:3.0.9'

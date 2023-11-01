@@ -130,7 +130,6 @@ class SqlPartsTest extends Specification {
     }
 
 
-
     Iterable createIterable(List itesm) {
         return new Iterable() {
             @Override

@@ -9,6 +9,7 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.parser.SubQueryParser;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,17 +60,17 @@ public class QueryGen {
 
     Select select = (Select) statement;
 
-    if (!(select.getSelectBody() instanceof PlainSelect)) {
+    if (!(select instanceof PlainSelect)) {
       throw new IllegalArgumentException("Only SELECT statements are supported");
     }
 
-    PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
+    PlainSelect plainSelect = select.getPlainSelect();
     List<EzyQueryFieldSpec> fieldList = extractFields(plainSelect);
 
     return buildCode(fieldList, plainSelect);
   }
 
-  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) {
+  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) throws JSQLParserException {
 
     List<FieldSpec> fConstants = fieldConstants(fieldList);
 
@@ -359,7 +360,7 @@ public class QueryGen {
   }
 
   /** schema field */
-  private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) {
+  private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) throws JSQLParserException {
     List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
 
     StringBuilder sb = new StringBuilder();
@@ -379,6 +380,13 @@ public class QueryGen {
     }
 
     String finalFromClause = sb.toString();
+
+    //todo: extract the nested queries
+    List<SubQueryParser.SubQuery> parse = new SubQueryParser(finalFromClause).parse();
+
+    new QueryGen(packageName, className, parse.get(0).getSqlString(), config)
+      .javaCode()
+      .toString();
 
     SqlParts sqlParts = SqlParts.of(finalFromClause);
 
@@ -448,12 +456,10 @@ public class QueryGen {
 
   private List<EzyQueryFieldSpec> extractFields(PlainSelect plainSelect) {
 
-    return plainSelect.getSelectItems().stream()
-        .map(selectItem -> toField((SelectExpressionItem) selectItem))
-        .collect(Collectors.toList());
+    return plainSelect.getSelectItems().stream().map(this::toField).collect(Collectors.toList());
   }
 
-  private EzyQueryFieldSpec toField(SelectExpressionItem selectItem) {
+  private EzyQueryFieldSpec toField(SelectItem<?> selectItem) {
     String alias =
         Objects.requireNonNull(
                 selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")

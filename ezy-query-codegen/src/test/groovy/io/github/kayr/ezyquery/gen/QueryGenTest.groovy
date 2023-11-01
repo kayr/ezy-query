@@ -115,6 +115,17 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
+
+    def 'test can read nested queries'() {
+        def data = load('nested-select')
+        when:
+        def generated = generateCode(data.v1, data.v3)
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
     private void copyToClipboard(String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
         TimeUnit.SECONDS.sleep(5)

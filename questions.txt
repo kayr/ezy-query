@@ -1,0 +1,45 @@
+Ezy query with results may not be be necessary any more
+
+
+// current api
+    ezy.from(QUERY)
+        .where(a.gt(1).and(a.lt(10)))
+        .setParam("a", 1)
+        .setParam("b", 2)
+        .limit(10)
+        .list();
+
+
+// propose new api 1
+
+    ezy.from(QUERY)
+        .where(QUERY.employee(a.gt(1).and(a.lt(10))))
+        .where(QUERY.jobs(a.gt(1).and(a.lt(10))))
+        .where(a.gt(1).and(a.lt(10)))
+        .setParam("a", 1)
+        .setParam("b", 2)
+        .limit(10)
+        .list();
+
+ // propose new api 2
+
+    ezy.from(QUERY)
+        .where(EmployeeReport.SUBQ.employee(a.gt(1).and(a.lt(10))))
+        .where(EmployeeReport.SUBQ.jobs(a.gt(1).and(a.lt(10))))
+        .where(a.gt(1).and(a.lt(10)))
+        .setParam("a", 1)
+        .setParam("b", 2)
+        .limit(10)
+        .list();
+
+
+// propose new api 3
+
+    ezy.from(QUERY)
+        .where("employee", a.gt(1).and(a.lt(10)))
+        .where("jobs", a.gt(1).and(a.lt(10)))
+        .where(a.gt(1).and(a.lt(10)))
+        .setParam("a", 1)
+        .setParam("b", 2)
+        .limit(10)
+        .list();

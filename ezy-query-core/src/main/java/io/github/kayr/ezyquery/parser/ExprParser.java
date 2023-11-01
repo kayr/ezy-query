@@ -198,7 +198,7 @@ public class ExprParser {
         InExpression.class,
         exp -> {
           EzyExpr left = toEzyExpr(exp.getLeftExpression());
-          List<EzyExpr> right = toExprList(exp.getRightItemsList());
+          List<EzyExpr> right = toExprList(exp.getLeftExpression());
 
           if (right == null) {
             throw new EzyParseException("Invalid IN expression");
@@ -221,10 +221,10 @@ public class ExprParser {
     return new BinaryExpr(left, right, plus);
   }
 
-  public List<EzyExpr> toExprList(ItemsList itemsList) {
+  public List<EzyExpr> toExprList(Expression expression) {
 
-    if (itemsList instanceof ExpressionList) {
-      List<Expression> expressions = ((ExpressionList) itemsList).getExpressions();
+    if (expression instanceof ExpressionList) {
+      ExpressionList<?> expressions = (ExpressionList<?>) expression;
 
       return expressions.stream().map(this::toEzyExpr).collect(Collectors.toList());
     }

@@ -1,5 +1,7 @@
 package io.github.kayr.ezyquery.parser;
 
+import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.NamedParamValue;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
@@ -44,11 +46,29 @@ public class SqlParts {
         return name;
       }
     }
+
+    class SubQuery implements IPart {
+      private String name;
+      private EzyQuery query;
+
+      public String toString() {
+        throw new UnsupportedOperationException(
+            "NotImplemented:SubQuery cannot be converted to String");
+      }
+
+      @Override
+      public String asString() {
+        throw new UnsupportedOperationException(
+            "NotImplemented: make SubQuery cannot be converted to String");
+      }
+    }
   }
 
   private List<IPart> parts;
   private Map<String, IPart.Param> paramParts = new HashMap<>();
+  private Map<String, IPart.SubQuery> subQueries = new HashMap<>();
   private Map<String, Object> paramValues = new HashMap<>();
+  private Map<String, EzyCriteria> criteria = new HashMap<>();
 
   public static SqlParts of(IPart... parts) {
     return new SqlParts(Arrays.asList(parts));
@@ -76,9 +96,12 @@ public class SqlParts {
 
   public SqlParts(List<IPart> parts) {
     this.parts = Elf.copyList(parts);
+
     for (IPart part : parts) {
       if (part instanceof IPart.Param) {
         paramParts.put(((IPart.Param) part).name, (IPart.Param) part);
+      } else if (part instanceof IPart.SubQuery) {
+        subQueries.put(((IPart.SubQuery) part).name, (IPart.SubQuery) part);
       }
     }
   }
@@ -88,6 +111,13 @@ public class SqlParts {
       throw new IllegalArgumentException("Param [" + paramName + "] does not exist");
     }
     return withParamValues(Elf.put(paramValues, paramName, value));
+  }
+
+  public SqlParts setCriteria(String subQueryName, EzyCriteria criteria) {
+    if (!subQueries.containsKey(subQueryName)) {
+      throw new IllegalArgumentException("SubQuery [" + subQueryName + "] does not exist");
+    }
+    return withCriteria(Elf.put(this.criteria, subQueryName, criteria));
   }
 
   public SqlParts withParams(List<NamedParamValue> values) {
@@ -125,6 +155,8 @@ public class SqlParts {
         sb.append(((IPart.Text) part).sql);
       } else if (part instanceof IPart.Param) {
         sb.append(":").append(((IPart.Param) part).name);
+      } else if (part instanceof IPart.SubQuery) {
+        sb.append("SubQuery");
       }
     }
     return sb.toString();
@@ -139,6 +171,12 @@ public class SqlParts {
     String sql = String.join(",", Collections.nCopies(actualValue.size(), "?"));
 
     return leftQuery.append(QueryAndParams.of(sql, actualValue));
+  }
+
+  private String buildSql(IPart.SubQuery subQuery) {
+    throw new UnsupportedOperationException("NotImplemented: buildSql");
+    //    SqlBuilder.buildSql(subQuery.query, criteria);
+
   }
 
   static List<Object> convertToValueParam(Object value) {

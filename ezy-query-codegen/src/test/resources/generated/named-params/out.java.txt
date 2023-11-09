@@ -1,6 +1,6 @@
 package mypackage.sql;
 
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.NamedParam;
@@ -32,7 +32,7 @@ import javax.annotation.processing.Generated;
     value = "io.github.kayr.ezyquery.gen.QueryGen",
     date = "0000-00-00 00:00:00"
 )
-public class MyQuery implements EzyQuery<MyQuery.Result> {
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   public static final Field<Object> NAME = Field.of("a.name", "name", Object.class,Field.ExpressionType.COLUMN);
 
   public static final Field<Object> PROD_NAME = Field.of("b.product_name", "prodName", Object.class,Field.ExpressionType.COLUMN);

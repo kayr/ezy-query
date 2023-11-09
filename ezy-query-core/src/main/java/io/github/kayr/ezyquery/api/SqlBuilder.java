@@ -130,10 +130,11 @@ public class SqlBuilder {
 
     Optional<SqlParts> preQuery = query.preQuery();
     if (preQuery.isPresent()) {
-      queryBuilder = queryBuilder.append(preQuery.get().getQuery(ezyCriteria.getParamValues()));
+      queryBuilder =
+          queryBuilder.append(preQuery.get().getQuery(ezyCriteria.getParamValues())).newLine();
     }
 
-    queryBuilder = queryBuilder.newLine().append("SELECT \n");
+    queryBuilder = queryBuilder.append("SELECT \n");
 
     String s = selectStmt();
 

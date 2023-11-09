@@ -198,7 +198,7 @@ public class ExprParser {
         InExpression.class,
         exp -> {
           EzyExpr left = toEzyExpr(exp.getLeftExpression());
-          List<EzyExpr> right = toExprList(exp.getLeftExpression());
+          List<EzyExpr> right = toExprList(exp.getRightExpression());
 
           if (right == null) {
             throw new EzyParseException("Invalid IN expression");
@@ -229,7 +229,7 @@ public class ExprParser {
       return expressions.stream().map(this::toEzyExpr).collect(Collectors.toList());
     }
 
-    throw new EzyParseException("unsupported in expression detected");
+    throw new EzyParseException("unsupported in expression detected: " + expression);
   }
 
   <T extends Expression> void register(Class<T> clazz, Function<T, EzyExpr> function) {

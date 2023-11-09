@@ -1,6 +1,6 @@
 package mypackage.sql;
 
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
@@ -30,7 +30,7 @@ import javax.annotation.processing.Generated;
     value = "io.github.kayr.ezyquery.gen.QueryGen",
     date = "0000-00-00 00:00:00"
 )
-public class MyQuery implements EzyQuery<MyQuery.Result> {
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   public static final Field<BigDecimal> F1 = Field.of("maq.f1", "f1", BigDecimal.class,Field.ExpressionType.COLUMN);
 
   public static final Field<String> F2 = Field.of("maq.f2", "f2", String.class,Field.ExpressionType.COLUMN);

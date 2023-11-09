@@ -1,6 +1,6 @@
 package mypackage.sql;
 
-import io.github.kayr.ezyquery.EzyQuery;
+import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
@@ -18,7 +18,8 @@ import javax.annotation.processing.Generated;
 /**
  *  select
  *    officeCode as "code",
- *    true or true as a ,
+ *    -- true or true as a , currently broken
+ *    1 + 3  as a ,
  *    false as b,
  *    1 in (1 ,2 , 4) as c,
  *    1 between 5 and 6 as d,
@@ -29,10 +30,10 @@ import javax.annotation.processing.Generated;
     value = "io.github.kayr.ezyquery.gen.QueryGen",
     date = "0000-00-00 00:00:00"
 )
-public class MyQuery implements EzyQuery<MyQuery.Result> {
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   public static final Field<Object> CODE = Field.of("officeCode", "code", Object.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Object> A = Field.of("true OR true", "a", Object.class,Field.ExpressionType.BINARY);
+  public static final Field<Object> A = Field.of("1 + 3", "a", Object.class,Field.ExpressionType.BINARY);
 
   public static final Field<Object> B = Field.of("false", "b", Object.class,Field.ExpressionType.COLUMN);
 

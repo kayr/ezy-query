@@ -9,7 +9,6 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
-import io.github.kayr.ezyquery.parser.SubQueryParser;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +69,7 @@ public class QueryGen {
     return buildCode(fieldList, plainSelect);
   }
 
-  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) throws JSQLParserException {
+  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) {
 
     List<FieldSpec> fConstants = fieldConstants(fieldList);
 
@@ -360,7 +359,7 @@ public class QueryGen {
   }
 
   /** schema field */
-  private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) throws JSQLParserException {
+  private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) {
     List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
 
     StringBuilder sb = new StringBuilder();
@@ -380,13 +379,6 @@ public class QueryGen {
     }
 
     String finalFromClause = sb.toString();
-
-    //todo: extract the nested queries
-    List<SubQueryParser.SubQuery> parse = new SubQueryParser(finalFromClause).parse();
-
-    new QueryGen(packageName, className, parse.get(0).getSqlString(), config)
-      .javaCode()
-      .toString();
 
     SqlParts sqlParts = SqlParts.of(finalFromClause);
 

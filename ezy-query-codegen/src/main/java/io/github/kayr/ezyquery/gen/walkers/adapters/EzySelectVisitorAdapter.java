@@ -2,7 +2,7 @@ package io.github.kayr.ezyquery.gen.walkers.adapters;
 
 import net.sf.jsqlparser.statement.select.*;
 
-public class EzySelectVisitor implements SelectVisitor {
+public class EzySelectVisitorAdapter implements SelectVisitor {
 
   @Override
   public void visit(ParenthesedSelect select) {

@@ -22,6 +22,6 @@ public class DynamicQueriesFinder {
 
   public static Map<String, WalkContext.SelectExpr> lookup(String statement)
       throws JSQLParserException {
-    return DynamicQueriesFinder.of(CCJSqlParserUtil.parse(statement)).lookup();
+    return DynamicQueriesFinder.lookup(CCJSqlParserUtil.parse(statement));
   }
 }

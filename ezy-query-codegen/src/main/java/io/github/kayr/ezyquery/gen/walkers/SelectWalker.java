@@ -1,12 +1,12 @@
 package io.github.kayr.ezyquery.gen.walkers;
 
-import io.github.kayr.ezyquery.gen.walkers.adapters.EzySelectVisitor;
+import io.github.kayr.ezyquery.gen.walkers.adapters.EzySelectVisitorAdapter;
 import java.util.List;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.statement.select.*;
 
 @lombok.AllArgsConstructor(staticName = "of")
-public class SelectWalker extends EzySelectVisitor {
+public class SelectWalker extends EzySelectVisitorAdapter {
 
   WalkContext context;
 

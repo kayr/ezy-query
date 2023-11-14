@@ -77,7 +77,7 @@ public class WalkContext {
       return;
     }
 
-    String queryName = name.substring(EZY_MARKER.length());
+    String queryName = name; // .substring(EZY_MARKER.length());
     dynamicSelects.put(queryName, currentSelect);
   }
 

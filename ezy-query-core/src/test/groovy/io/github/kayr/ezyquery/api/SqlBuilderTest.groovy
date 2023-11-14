@@ -4,9 +4,12 @@ import io.github.kayr.ezyquery.EzyQueryWithResult
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.parser.QueryAndParams
 import io.github.kayr.ezyquery.parser.SqlParts
+import io.github.kayr.ezyquery.testqueries.EmployeeCustomerSummary
 import io.github.kayr.ezyquery.testqueries.QueryWithCTEBasic
 import spock.lang.Shared
 import spock.lang.Specification
+
+import static io.github.kayr.ezyquery.testqueries.EmployeeCustomerSummary.CUSTOMER_SUMMARY
 
 class SqlBuilderTest extends Specification {
 
@@ -579,6 +582,38 @@ WHERE (1 = 1)
 LIMIT 50 OFFSET 0'''
 
         sql.params == ['Sales Rep']
+    }
+
+    def 'test building query with dynamic inner query'() {
+        def query = EmployeeCustomerSummary.QUERY
+
+
+
+        def criteria = EzyCriteria.selectAll()
+                .setCriteria(CUSTOMER_SUMMARY, CUSTOMER_SUMMARY.SALES_REP_EMPLOYEE_NUMBER.eq(12) & CUSTOMER_SUMMARY.TOTAL_CUSTOMERS.gt(10))
+        .where(query.OFFICE_CODE.in('1', '2', '3'))
+
+        when:
+        def sql = SqlBuilder.buildSql(query, criteria)
+
+
+        then:
+        sql.sql == '''SELECT 
+  e.employeeNumber as "employeeNumber", 
+  e.firstName as "firstName", 
+  o.officeCode as "officeCode", 
+  o.country as "country", 
+  o.addressLine1 as "addressLine1", 
+  c.totalCustomers as "totalCustomers"
+FROM (SELECT salesRepEmployeeNumber, COUNT(*) AS totalCustomers FROM customers WHERE (salesRepEmployeeNumber = ? AND some_function() > ?) GROUP BY salesRepEmployeeNumber) AS c
+JOIN employees e ON c.salesRepEmployeeNumber = e.employeeNumber
+JOIN offices o ON e.officeCode = o.officeCode
+WHERE o.officeCode IN (?, ?, ?)
+LIMIT 50 OFFSET 0'''
+
+        sql.params == [12, 10, '1', '2', '3']
+
+
     }
 
 

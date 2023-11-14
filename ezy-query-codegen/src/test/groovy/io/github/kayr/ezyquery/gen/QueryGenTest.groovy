@@ -1,5 +1,7 @@
 package io.github.kayr.ezyquery.gen
 
+import groovy.transform.NamedParam
+import groovy.transform.NamedVariant
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -21,8 +23,10 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
-    private String generateCode(String sql, Properties config = new Properties()) {
-        new NoTimeQueryGen("mypackage.sql", "MyQuery", sql,config).javaCode().toString().trim()
+
+    @NamedVariant
+    private String generateCode(String sql, Properties config = new Properties(), String className = "MyQuery") {
+        new NoTimeQueryGen("mypackage.sql", className, sql, config).javaCode().toString().trim()
     }
 
     def "no joins test"() {
@@ -123,6 +127,22 @@ class QueryGenTest extends Specification {
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
+        println generated
+
+        then:
+        generated == expected
+    }
+
+    @Ignore("not implemented nested classes")
+    def 'test simple nested query'() {
+        //still work in progress
+        def data = load('employee-customer-summary')
+        when:
+        def generated = generateCode(data.v1, data.v3)
+        def expected = data.v2.trim()
+
+        println generated
+
 
         then:
         generated == expected

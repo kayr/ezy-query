@@ -84,6 +84,10 @@ public class EzyCriteria {
         .build();
   }
 
+  public EzyCriteria setCriteria(CriteriaName criteria, ICond cond) {
+    return setParam(criteria.getName(), cond);
+  }
+
   // endregion
 
   // region Read only

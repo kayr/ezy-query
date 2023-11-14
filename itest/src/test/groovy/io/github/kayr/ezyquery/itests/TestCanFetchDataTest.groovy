@@ -1,14 +1,14 @@
 package io.github.kayr.ezyquery.itests
 
-
 import io.github.kayr.ezyquery.EzySql
-import io.github.kayr.ezyquery.api.EzyCriteria
 import io.github.kayr.ezyquery.api.Sort
 import prod.ProdQuery1
 import prod.QueryWithParams
 import spock.lang.Specification
 import test.QueryWithDaultOrderBy
 import test.TestQuery1
+
+import static test.DerivedTableQuery.*
 
 class TestCanFetchDataTest extends Specification {
 
@@ -42,9 +42,23 @@ class TestCanFetchDataTest extends Specification {
 
         ]
 
+        def orders = [
+                [orderNumber: '1', customerNumber: '1', item: 'item1', quantity: 1, price: 100],
+                [orderNumber: '2', customerNumber: '1', item: 'item2', quantity: 2, price: 200],
+                [orderNumber: '3', customerNumber: '1', item: 'item3', quantity: 3, price: 300],
+                [orderNumber: '4', customerNumber: '2', item: 'item4', quantity: 4, price: 400],
+                [orderNumber: '5', customerNumber: '2', item: 'item5', quantity: 5, price: 500],
+                [orderNumber: '6', customerNumber: '3', item: 'item6', quantity: 6, price: 600],
+                [orderNumber: '7', customerNumber: '3', item: 'item7', quantity: 7, price: 700],
+                [orderNumber: '8', customerNumber: '4', item: 'item8', quantity: 8, price: 800],
+                [orderNumber: '9', customerNumber: '4', item: 'item9', quantity: 9, price: 900],
+                [orderNumber: '10', customerNumber: '5', item: 'item10', quantity: 10, price: 1000],
+        ]
+
         db.intoDb(offices, "offices")
         db.intoDb(employees, "employees")
         db.intoDb(customers, "customers")
+        db.intoDb(orders, "orders")
 
         ez = EzySql.withDataSource(db.ds)
     }
@@ -60,7 +74,6 @@ class TestCanFetchDataTest extends Specification {
         def criteria = ez.from(TestQuery1.QUERY)
                 .orderBy(Sort.by(TestQuery1.OFFICE_CODE, Sort.DIR.ASC))
                 .limit(3)
-
 
 
         when:
@@ -99,14 +112,12 @@ class TestCanFetchDataTest extends Specification {
         count == 1
     }
 
-    def 'test can retries data with named param'(){
+    def 'test can retries data with named param'() {
         given:
         def c = ez.from(QueryWithParams.QUERY)
-        .setParam(QueryWithParams.Params.FIRST_NAME,["Kay"])
+                .setParam(QueryWithParams.Params.FIRST_NAME, ["Kay"])
 
         c.query.print()
-
-
 
 
         when:
@@ -124,8 +135,6 @@ class TestCanFetchDataTest extends Specification {
                 .where(ProdQuery1.ADDRESS_LINE.eq("Kampala"))
 
 
-
-
         when:
         def list = criteria.list()
         def count = criteria.count()
@@ -139,7 +148,7 @@ class TestCanFetchDataTest extends Specification {
     def 'test query with default order by'() {
         given:
         def criteria = ez.from(QueryWithDaultOrderBy.QUERY)
-        .select(QueryWithDaultOrderBy.OFFICE_CODE)
+                .select(QueryWithDaultOrderBy.OFFICE_CODE)
 
         when:
         def list = criteria.list()
@@ -148,6 +157,23 @@ class TestCanFetchDataTest extends Specification {
 
         then:
         list*.officeCode == ['1', '2', '3', '4'].reverse()
+
+    }
+
+    def "test derived table"() {
+
+        when:
+        def list = ez.from(QUERY)
+                .setCriteria(CUSTOMERS, CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(Params.CUSTOMER_IDS, ["1", "2", "3", "4", "5"])
+                .list()
+        then:
+        list.size() == 3
+        list*.customerName == ["John", "John", "Daniel"]
+        list*.item == ["item4", "item5", "item10"]
+        list*.price == [400, 500, 1000]
+        list*.quantity == [4, 5, 10]
+
 
     }
 }

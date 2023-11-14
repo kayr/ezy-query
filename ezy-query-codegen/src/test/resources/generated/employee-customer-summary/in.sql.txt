@@ -1,0 +1,15 @@
+SELECT
+    e.employeeNumber as "employeeNumber",
+    e.firstName as "firstName",
+    o.officeCode as "officeCode",
+    o.country as "country",
+    o.addressLine1 as "addressLine1",
+    c.totalCustomers as "totalCustomers"
+FROM (
+    SELECT salesRepEmployeeNumber as salesRepEmployeeNumber, some_function() AS totalCustomers
+    FROM customers
+    WHERE :_ezy_customerSummary
+    GROUP BY salesRepEmployeeNumber
+) AS c
+JOIN employees e ON c.salesRepEmployeeNumber = e.employeeNumber
+JOIN offices o ON e.officeCode = o.officeCode;

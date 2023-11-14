@@ -1,7 +1,12 @@
 package io.github.kayr.ezyquery.parser;
 
-import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedCriteriaParam;
+import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.NamedParamValue;
+import io.github.kayr.ezyquery.api.cnd.Cnd;
+import io.github.kayr.ezyquery.api.cnd.Conds;
+import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,8 +54,7 @@ public class SqlParts {
 
   private List<IPart> parts;
   private Map<String, IPart.Param> paramParts = new HashMap<>();
-  private Map<String, Object> paramValues = new HashMap<>();
-  private Map<String, EzyCriteria> criteria = new HashMap<>();
+  private Map<String, NamedParamValue> paramValues = new HashMap<>();
 
   public static SqlParts of(IPart... parts) {
     return new SqlParts(Arrays.asList(parts));
@@ -90,13 +94,13 @@ public class SqlParts {
     if (!paramParts.containsKey(paramName)) {
       throw new IllegalArgumentException("Param [" + paramName + "] does not exist");
     }
-    return withParamValues(Elf.put(paramValues, paramName, value));
+    return withParamValues(Elf.put(paramValues, paramName, NamedParamValue.of(paramName, value)));
   }
 
   public SqlParts withParams(List<NamedParamValue> values) {
-    Map<String, Object> newValues = new HashMap<>(paramValues);
+    Map<String, NamedParamValue> newValues = new HashMap<>(paramValues);
     for (NamedParamValue value : values) {
-      newValues.put(value.getParam().getName(), value.getValue());
+      newValues.put(value.getParam().getName(), value);
     }
     return withParamValues(newValues);
   }
@@ -138,10 +142,31 @@ public class SqlParts {
 
     if (!containsKey) throw new IllegalStateException("Param [" + part.name + "] is not set");
 
-    List<Object> actualValue = convertToValueParam(paramValues.get(part.name));
+    NamedParamValue namedParamValue = this.paramValues.get(part.name);
+    Object paramValue = namedParamValue.getValue();
+    NamedParam param = namedParamValue.getParam();
+
+    if (param instanceof NamedCriteriaParam) {
+      Elf.assertTrue(paramValue instanceof ICond, "Param [" + part.name + "] is not a condition");
+      //noinspection DataFlowIssue
+      return leftQuery.append(toQuery((ICond) paramValue, (NamedCriteriaParam) param));
+    }
+
+    List<Object> actualValue = convertToValueParam(paramValue);
     String sql = String.join(",", Collections.nCopies(actualValue.size(), "?"));
 
     return leftQuery.append(QueryAndParams.of(sql, actualValue));
+  }
+
+  private static QueryAndParams toQuery(ICond cond, NamedCriteriaParam param) {
+    List<Field<?>> fields = param.getFields();
+
+    ICond finalCond = cond;
+    if (!(cond instanceof Conds)) {
+      finalCond = Cnd.andAll(cond);
+    }
+
+    return EzySqlTranspiler.transpile(fields, finalCond.asExpr());
   }
 
   static List<Object> convertToValueParam(Object value) {

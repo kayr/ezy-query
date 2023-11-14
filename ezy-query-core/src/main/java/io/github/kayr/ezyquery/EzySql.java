@@ -1,9 +1,6 @@
 package io.github.kayr.ezyquery;
 
-import io.github.kayr.ezyquery.api.EzyCriteria;
-import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.NamedParam;
-import io.github.kayr.ezyquery.api.Sort;
+import io.github.kayr.ezyquery.api.*;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
@@ -119,6 +116,10 @@ public class EzySql {
 
     public CriteriaBuilder<T> setParam(NamedParam param, Object value) {
       return withCriteria(criteria.setParam(param, value));
+    }
+
+    public CriteriaBuilder<T> setCriteria(CriteriaName param, ICond cond) {
+      return withCriteria(criteria.setCriteria(param, cond));
     }
 
     public CriteriaBuilder<T> offset(@NonNull Integer offset) {

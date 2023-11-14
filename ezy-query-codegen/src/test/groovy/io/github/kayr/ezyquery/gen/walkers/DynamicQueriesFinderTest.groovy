@@ -46,7 +46,7 @@ class DynamicQueriesFinderTest extends Specification {
 
         then:
         lookup.size() == 1
-        lookup.get("condition1").expr == "SELECT id AS id, name AS name FROM table2 WHERE :_ezy_condition1"
+        lookup.get("_ezy_condition1").expr == "SELECT id AS id, name AS name FROM table2 WHERE :_ezy_condition1"
 
     }
 
@@ -107,9 +107,9 @@ class DynamicQueriesFinderTest extends Specification {
 
         then:
         result.size() == 3
-        result.get("level1").expr.contains("SELECT dtl2.title, a.name AS authorName, p.name AS publisherName, dtl2.sales_amount FROM (")
-        result.get("level2").expr.contains("SELECT b.title, b.author_id, b.publisher_id, dtl1.sales_amount FROM books b JOIN (")
-        result.get("level3").expr.contains("SELECT book_id, sales_amount FROM sales WHERE :_ezy_level3")
+        result.get("_ezy_level1").expr.contains("SELECT dtl2.title, a.name AS authorName, p.name AS publisherName, dtl2.sales_amount FROM (")
+        result.get("_ezy_level2").expr.contains("SELECT b.title, b.author_id, b.publisher_id, dtl1.sales_amount FROM books b JOIN (")
+        result.get("_ezy_level3").expr.contains("SELECT book_id, sales_amount FROM sales WHERE :_ezy_level3")
 
 
     }

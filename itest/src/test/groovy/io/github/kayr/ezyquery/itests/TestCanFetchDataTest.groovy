@@ -2,12 +2,9 @@ package io.github.kayr.ezyquery.itests
 
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
-import prod.ProdQuery1
 import prod.QueryWithParams
 import spock.lang.Specification
 import test.DerivedTableQuery
-import test.QueryWithDaultOrderBy
-import test.TestQuery1
 
 import static prod.ProdQuery1.PROD_QUERY1
 import static prod.QueryWithParams.QUERY_WITH_PARAMS

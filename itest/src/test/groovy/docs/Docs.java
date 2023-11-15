@@ -21,8 +21,6 @@ public class Docs {
 
     EzySql ezySql = EzySql.withDataSource(dataSource);
 
-    var query = ezySql.from(GET_CUSTOMERS);
-
     // to get a count of the results -> this generates a select count(*) query
     // assert query.count() > 0;
 
@@ -91,6 +89,7 @@ public class Docs {
     // custom mappers
     ezySql
         .from(GET_ORDERS)
+        .setParam(GetOrders.PARAMS.MEMBERSHIP, "GOLD")
         .mapTo(
             Mappers.toObject(HashMap::new, (column, result, o) -> result.put(column.getLabel(), o)))
         .list();

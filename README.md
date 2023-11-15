@@ -29,7 +29,7 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 
 ## Features
 
-1. Flexible Query fluent API e.g   `where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))`.
+1. Flexible Query fluent API e.g   `where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))`.
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
    Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
    parameter. The query is parsed and converted to a parameterized sql query.
@@ -39,7 +39,7 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 6. Automatic mapping of sql result to java pojo.
 7. The same query is used to count and list data. Which makes building pagination easy and prevents the need to write
    two queries.
-8. Sort by any field in the query. e.g `orderBy(CUSTOMER_NAME.asc())`.
+8. Sort by any field in the query. e.g `orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc())`.
 9. You can sort using a string expression. e.g `customerName asc, customerEmail desc`.
 10. Gradle plugin to generate the java code from your sql files.
 
@@ -76,20 +76,25 @@ Query using the Java fluent API.
 
 ```java
 //full query
-ezySql.from(GetCustomers.QUERY)
-  .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
-  .orderBy(CUSTOMER_NAME.asc(),CUSTOMER_EMAIL.desc())
-  .limit(10).offset(20);
+    ezySql
+        .from(GET_CUSTOMERS)
+        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
+        .where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
+        .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(), GET_CUSTOMERS.CUSTOMER_EMAIL.desc())
+        .limit(10)
+        .offset(20);
 ```
 
 Query using String expressions.
 
 ```java
-ezySql.from(GetCustomers.QUERY)
-  .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
-  .orderBy("customerName asc, customerEmail desc")
-  .limit(10).offset(20)
-
+    ezySql
+        .from(GET_CUSTOMERS)
+        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
+        .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
+        .orderBy("customerName asc, customerEmail desc")
+        .limit(10)
+        .offset(20);
 ```
 
 ## Setup
@@ -181,7 +186,7 @@ then return the result in a pojo.
 private EzySql ezySql;
 
 public void getCustomers(){
-  var query=ezySql.from(GetCustomers.QUERY)
+  var query=ezySql.from(GET_CUSTOMERS)
 
 
   assert result.count()>1;
@@ -195,8 +200,8 @@ public void getCustomers(){
 ```java
 import static docs.GetCustomers.*;
 
- ezySql.from(GetCustomers.QUERY)
-   .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
+ ezySql.from(GET_CUSTOMERS)
+   .where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
    .list();
 ```
 
@@ -205,18 +210,18 @@ import static docs.GetCustomers.*;
 ```java
 import static docs.GetCustomers.*;
   
-ezySql.from(GetCustomers.QUERY)
+ezySql.from(GET_CUSTOMERS)
   .where(
   Cnd.and(
-  CUSTOMER_NAME.eq("John"),
-  CUSTOMER_EMAIL.isNotNull())
+    GET_CUSTOMERS.CUSTOMER_NAME.eq("John"),
+    GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull())
   ).list();
 ```
 
 #### 6.3. Filtering using the Ezy-Query String Expressions
 
 ```java
- ezySql.from(GetCustomers.QUERY)
+ ezySql.from(GET_CUSTOMERS)
   .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
   .getQuery().print();
 ```
@@ -242,7 +247,7 @@ Sometimes you may need to use native sql. This is supported by the `Cnd.sql` met
 concatenation and use the `?` placeholder instead.
 
 ```java
-ezySql.from(GetCustomers.QUERY)
+ezySql.from(GET_CUSTOMERS)
   .where(Cnd.sql("c.name = ? and c.created_at > now()","John")) //use the ? placeholder to avoid sql injection
 ```
 
@@ -339,28 +344,28 @@ ezySql.from(GetOrders.QUERY)
 Sort using fields
 
 ```java
- ezySql.from(GetCustomers.QUERY)
-  .orderBy(CUSTOMER_NAME.asc(),CUSTOMER_EMAIL.desc())
+ ezySql.from(GET_CUSTOMERS)
+  .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(),GET_CUSTOMERS.CUSTOMER_EMAIL.desc())
 ```
 
 Sort using strings expression
 
 ```java
-ezySql.from(GetCustomers.QUERY)
+ezySql.from(GET_CUSTOMERS)
   .orderBy("customerName asc, customerEmail desc")
 ```
 
 Sort using Sort Object
 
 ```java
-ezySql.from(GetCustomers.QUERY)
+ezySql.from(GET_CUSTOMERS)
   .orderBy(Sort.by("customerName",Sort.DIR.ASC))
 ```
 
 #### 6.8. Pagination
 
 ```java
- ezySql.from(GetCustomers.QUERY)
+ ezySql.from(GET_CUSTOMERS)
   .limit(10).offset(20)
 ```
 
@@ -472,8 +477,8 @@ type.time=java.time.LocalTime
 #### 6.11 Optionally select fields to be returned.
 
 ```java
-ezySql.from(GetCustomers.QUERY)
-  .select(CUSTOMER_NAME,CUSTOMER_EMAIL)
+ezySql.from(GET_CUSTOMERS)
+  .select(GET_CUSTOMERS.CUSTOMER_NAME,GET_CUSTOMERS.CUSTOMER_EMAIL)
 ```
 
 ### 7.0 Using on older versions of Gradle.

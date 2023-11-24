@@ -118,7 +118,7 @@ public class EzySql {
       return withCriteria(criteria.setParam(param, value));
     }
 
-    public CriteriaBuilder<T> setCriteria(CriteriaName param, ICond cond) {
+    public CriteriaBuilder<T> setCriteria(CriteriaHolder param, ICond cond) {
       return withCriteria(criteria.setCriteria(param, cond));
     }
 

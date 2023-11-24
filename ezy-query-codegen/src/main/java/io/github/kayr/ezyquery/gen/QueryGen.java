@@ -77,7 +77,12 @@ public class QueryGen {
 
     ClassName thisClassName = ClassName.get(packageName, className);
     FieldSpec fSingleton =
-        FieldSpec.builder(thisClassName, "QUERY", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        FieldSpec.builder(
+                thisClassName,
+                StringCaseUtil.toScreamingSnakeCase(className),
+                Modifier.PUBLIC,
+                Modifier.STATIC,
+                Modifier.FINAL)
             .initializer("new $T()", thisClassName)
             .build();
 
@@ -218,11 +223,19 @@ public class QueryGen {
                                     NamedParam.class,
                                     StringCaseUtil.toScreamingSnakeCase(name),
                                     Modifier.PUBLIC,
-                                    Modifier.STATIC,
                                     Modifier.FINAL)
                                 .initializer("$T.of($S)", NamedParam.class, name)
                                 .build())
                     .collect(Collectors.toList()))
+            .build();
+
+    /*
+    Add PARAMS static field
+     */
+    ClassName typeParams = ClassName.get(packageName, className, paramsClass.name);
+    FieldSpec fParams =
+        FieldSpec.builder(typeParams, "PARAMS", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+            .initializer("new $T()", typeParams)
             .build();
 
     /*
@@ -232,6 +245,9 @@ public class QueryGen {
 
     /*
     build the static final NestedQuery objects
+    ....
+    public static final NestedQuery CUSTOMERS = new NestedQuery();
+    ....
      */
     List<FieldSpec> fNestedQueryFields =
         nestedQueryClasses.stream()
@@ -242,12 +258,35 @@ public class QueryGen {
                           type,
                           StringCaseUtil.toScreamingSnakeCase(nestedQueryClass.name),
                           Modifier.PUBLIC,
-                          Modifier.STATIC,
                           Modifier.FINAL)
                       .initializer("new $T()", type)
                       .build();
                 })
             .collect(Collectors.toList());
+
+    /*
+    Wrap the nested query fields in an inner class. We wrap them to avoid name clashes
+    public static final class Criteria{
+        public static final NestedQuery CUSTOMERS = new NestedQuery();
+        ....
+    }
+     */
+    TypeSpec nestedQueryFieldsClass =
+        TypeSpec.classBuilder("Criteria")
+            .addModifiers(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
+            .addFields(fNestedQueryFields)
+            .build();
+
+    /*
+    Create a field for the Criteria class
+    public static final Criteria CRITERIA = new Criteria();
+     */
+    ClassName typeCriteria = ClassName.get(packageName, className, nestedQueryFieldsClass.name);
+    FieldSpec fCriteria =
+        FieldSpec.builder(
+                typeCriteria, "CRITERIA", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+            .initializer("new $T()", typeCriteria)
+            .build();
 
     ClassName generatedAnnotation = resolveGeneratedAnnotation();
 
@@ -258,7 +297,6 @@ public class QueryGen {
             .addSuperinterface(
                 ParameterizedTypeName.get(ClassName.get(EzyQueryWithResult.class), resultClassName))
             .addFields(fConstants)
-            .addFields(fNestedQueryFields)
             .addField(fSchema)
             .addField(fFields)
             .addField(fSingleton)
@@ -277,7 +315,15 @@ public class QueryGen {
             .addMethod(resultClassMethod)
             .addType(resultClass);
 
-    if (!params.isEmpty()) finalClassBuilder.addType(paramsClass);
+    if (!params.isEmpty()) {
+      finalClassBuilder.addType(paramsClass);
+      finalClassBuilder.addField(fParams);
+    }
+
+    if (!nestedQueryClasses.isEmpty()) {
+      finalClassBuilder.addType(nestedQueryFieldsClass);
+      finalClassBuilder.addField(fCriteria);
+    }
 
     nestedQueryClasses.forEach(finalClassBuilder::addType);
 
@@ -329,7 +375,7 @@ public class QueryGen {
       TypeSpec ty =
           TypeSpec.classBuilder(StringCaseUtil.toPascalCase(className))
               .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-              .addSuperinterface(CriteriaName.class)
+              .addSuperinterface(CriteriaHolder.class)
               .addFields(classFields)
               .addField(fFields)
               .addMethod(mConstructor)
@@ -450,7 +496,7 @@ public class QueryGen {
   /** Constructor() method */
   private MethodSpec methodConstructor() {
     return MethodSpec.constructorBuilder()
-        .addModifiers(Modifier.PUBLIC)
+        .addModifiers(Modifier.PRIVATE)
         .addStatement("init()")
         .build();
   }
@@ -533,7 +579,7 @@ public class QueryGen {
   private List<FieldSpec> fieldConstants(List<EzyQueryFieldSpec> fieldList) {
     // Constant fields
     return fieldList.stream()
-        .map(f -> createField(f, Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC))
+        .map(f -> createField(f, Modifier.PUBLIC, Modifier.FINAL))
         .collect(Collectors.toList());
   }
 

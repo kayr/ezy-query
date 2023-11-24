@@ -176,7 +176,7 @@ public class EmployeeCustomerSummary implements EzyQueryWithResult<EmployeeCusto
     public static final NamedParam _EZY_CUSTOMER_SUMMARY = NamedParam.of("_ezy_customerSummary");
   }
 
-  public static class CustomerSummary implements CriteriaName {
+  public static class CustomerSummary implements CriteriaHolder {
 
     public final Field<Object> SALES_REP_EMPLOYEE_NUMBER =
         Field.of(

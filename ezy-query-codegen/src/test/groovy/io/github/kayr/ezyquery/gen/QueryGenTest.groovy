@@ -1,12 +1,13 @@
 package io.github.kayr.ezyquery.gen
 
-import groovy.transform.NamedParam
+
 import groovy.transform.NamedVariant
 import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.awt.*
 import java.awt.datatransfer.StringSelection
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 class QueryGenTest extends Specification {
@@ -36,6 +37,7 @@ class QueryGenTest extends Specification {
 
         when:
         def generated = generateCode(data.v1)
+
         def expected = data.v2.trim()
 
         then:
@@ -121,28 +123,21 @@ class QueryGenTest extends Specification {
     }
 
 
-    @Ignore("not implemented nested classes")
     def 'test can read nested queries'() {
         def data = load('nested-select')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
-        println generated
 
         then:
         generated == expected
     }
 
-    @Ignore("not implemented nested classes")
     def 'test simple nested query'() {
-        //still work in progress
         def data = load('employee-customer-summary')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
-
-        println generated
-
 
         then:
         generated == expected
@@ -151,6 +146,15 @@ class QueryGenTest extends Specification {
     private void copyToClipboard(String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
         TimeUnit.SECONDS.sleep(5)
+    }
+
+    private void overWriteFile(String path, String content) {
+        def resourcesFolder = "src/test/resources"
+
+        def java = Paths.get(resourcesFolder,"/generated/$path/out.java.txt")
+        println("Overwriting file: ${java.toAbsolutePath()}")
+        java.toFile().write(content)
+
     }
 
 

@@ -1,7 +1,9 @@
 package docs;
 
-import static docs.GetCustomers.CUSTOMER_EMAIL;
-import static docs.GetCustomers.CUSTOMER_NAME;
+import static docs.GetCustomers.*;
+import static docs.GetOrders.GET_ORDERS;
+import static prod.QueryWithParams.QUERY_WITH_PARAMS;
+import static test.DerivedTableQuery.DERIVED_TABLE_QUERY;
 
 import io.github.kayr.ezyquery.EzySql;
 import io.github.kayr.ezyquery.api.Sort;
@@ -11,7 +13,6 @@ import io.github.kayr.ezyquery.sql.Mappers;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
-import prod.QueryWithParams;
 
 public class Docs {
 
@@ -20,7 +21,7 @@ public class Docs {
 
     EzySql ezySql = EzySql.withDataSource(dataSource);
 
-    var query = ezySql.from(GetCustomers.QUERY);
+    var query = ezySql.from(GET_CUSTOMERS);
 
     // to get a count of the results -> this generates a select count(*) query
     // assert query.count() > 0;
@@ -29,29 +30,32 @@ public class Docs {
     // assert query.list().size() > 0;
 
     // filter by name
-    ezySql.from(GetCustomers.QUERY).where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()));
+    ezySql
+        .from(DERIVED_TABLE_QUERY)
+        .where(
+            GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()));
 
     // filter with condition api
     ezySql
-        .from(GetCustomers.QUERY)
-        .where(Cnd.and(CUSTOMER_NAME.eq("John"), CUSTOMER_EMAIL.isNotNull()));
+        .from(GET_CUSTOMERS)
+        .where(
+            Cnd.and(
+                GET_CUSTOMERS.CUSTOMER_NAME.eq("John"), GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()));
 
     // filter with ezy-query expression
-    ezySql.from(GetCustomers.QUERY).where(Cnd.sql("c.name = ? and c.created_at > now()", "John"));
+    ezySql.from(GET_CUSTOMERS).where(Cnd.sql("c.name = ? and c.created_at > now()", "John"));
 
     // sorting
-    ezySql.from(GetCustomers.QUERY).orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc());
+    ezySql
+        .from(GET_CUSTOMERS)
+        .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(), GET_CUSTOMERS.CUSTOMER_EMAIL.desc());
+
+    // sort with string
+    ezySql.from(GET_CUSTOMERS).orderBy("customerName asc, customerEmail desc").getQuery().print();
 
     // sort with string
     ezySql
-        .from(GetCustomers.QUERY)
-        .orderBy("customerName asc, customerEmail desc")
-        .getQuery()
-        .print();
-
-    // sort with string
-    ezySql
-        .from(GetCustomers.QUERY)
+        .from(GET_CUSTOMERS)
         .orderBy(Sort.by("customerName", Sort.DIR.ASC))
         .limit(10)
         .offset(20)
@@ -60,17 +64,17 @@ public class Docs {
 
     // full query
     ezySql
-        .from(GetCustomers.QUERY)
-        .select(CUSTOMER_NAME, CUSTOMER_EMAIL)
-        .where(CUSTOMER_NAME.eq("John").and(CUSTOMER_EMAIL.isNotNull()))
-        .orderBy(CUSTOMER_NAME.asc(), CUSTOMER_EMAIL.desc())
+        .from(GET_CUSTOMERS)
+        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
+        .where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
+        .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(), GET_CUSTOMERS.CUSTOMER_EMAIL.desc())
         .limit(10)
         .offset(20);
 
     // full query with ezy-query expression
     ezySql
-        .from(GetCustomers.QUERY)
-        .select(CUSTOMER_NAME, CUSTOMER_EMAIL)
+        .from(GET_CUSTOMERS)
+        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
         .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
         .orderBy("customerName asc, customerEmail desc")
         .limit(10)
@@ -78,21 +82,21 @@ public class Docs {
 
     // named params
     ezySql
-        .from(GetOrders.QUERY)
-        .where(GetOrders.PRICE.gt(100).and(GetOrders.QUANTITY.lt(10)))
-        .setParam(GetOrders.Params.MEMBERSHIP, "GOLD")
+        .from(GET_ORDERS)
+        .where(GET_ORDERS.PRICE.gt(100).and(GET_ORDERS.QUANTITY.lt(10)))
+        .setParam(GetOrders.PARAMS.MEMBERSHIP, "GOLD")
         .getQuery()
         .print();
 
     // custom mappers
     ezySql
-        .from(GetOrders.QUERY)
+        .from(GET_ORDERS)
         .mapTo(
             Mappers.toObject(HashMap::new, (column, result, o) -> result.put(column.getLabel(), o)))
         .list();
 
     ezySql
-        .from(QueryWithParams.QUERY)
+        .from(QUERY_WITH_PARAMS)
         .mapTo(
             (rowIndex, columns, rs) -> {
               Map<String, Object> map = new HashMap<>();

@@ -56,33 +56,33 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
-  public static final Field<BigInteger> ID = Field.of("td.id", "id", BigInteger.class,Field.ExpressionType.COLUMN);
+  public static final MyQuery MY_QUERY = new MyQuery();
 
-  public static final Field<Long> LONGVAL = Field.of("td.long_", "longval", Long.class,Field.ExpressionType.COLUMN);
+  public final Field<BigInteger> ID = Field.of("td.id", "id", BigInteger.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Integer> INTVAL = Field.of("td.int_", "intval", Integer.class,Field.ExpressionType.COLUMN);
+  public final Field<Long> LONGVAL = Field.of("td.long_", "longval", Long.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Float> FLOATVAL = Field.of("tr.float_", "floatval", Float.class,Field.ExpressionType.COLUMN);
+  public final Field<Integer> INTVAL = Field.of("td.int_", "intval", Integer.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
+  public final Field<Float> FLOATVAL = Field.of("tr.float_", "floatval", Float.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<String> STRINGVAL = Field.of("mtw.string_", "stringval", String.class,Field.ExpressionType.COLUMN);
+  public final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Boolean> BOOLEANVAL = Field.of("mtw.boolean_", "booleanval", Boolean.class,Field.ExpressionType.COLUMN);
+  public final Field<String> STRINGVAL = Field.of("mtw.string_", "stringval", String.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Date> DATEVAL = Field.of("tr.date_", "dateval", Date.class,Field.ExpressionType.COLUMN);
+  public final Field<Boolean> BOOLEANVAL = Field.of("mtw.boolean_", "booleanval", Boolean.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Timestamp> TIMEVAL = Field.of("tr.time", "timeval", Timestamp.class,Field.ExpressionType.COLUMN);
+  public final Field<Date> DATEVAL = Field.of("tr.date_", "dateval", Date.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<BigInteger> BIGINTVAL = Field.of("tr.bigint_", "bigintval", BigInteger.class,Field.ExpressionType.COLUMN);
+  public final Field<Timestamp> TIMEVAL = Field.of("tr.time", "timeval", Timestamp.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<BigDecimal> BIGDECIMALVAL = Field.of("tr.bigdecimal_", "bigdecimalval", BigDecimal.class,Field.ExpressionType.COLUMN);
+  public final Field<BigInteger> BIGINTVAL = Field.of("tr.bigint_", "bigintval", BigInteger.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Byte> BLOBVAL = Field.of("tr.blob_", "blobval", Byte.class,Field.ExpressionType.COLUMN);
+  public final Field<BigDecimal> BIGDECIMALVAL = Field.of("tr.bigdecimal_", "bigdecimalval", BigDecimal.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Object> OBJECTVAL = Field.of("tr.object_", "objectval", Object.class,Field.ExpressionType.COLUMN);
+  public final Field<Byte> BLOBVAL = Field.of("tr.blob_", "blobval", Byte.class,Field.ExpressionType.COLUMN);
 
-  public static final MyQuery QUERY = new MyQuery();
+  public final Field<Object> OBJECTVAL = Field.of("tr.object_", "objectval", Object.class,Field.ExpressionType.COLUMN);
 
   private final SqlParts schema = SqlParts.of(
       SqlParts.textPart("m_wallet maw\n"
@@ -93,7 +93,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
-  public MyQuery() {
+  private MyQuery() {
     init();
   }
 

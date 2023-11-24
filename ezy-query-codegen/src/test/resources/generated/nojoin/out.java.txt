@@ -27,11 +27,11 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
-  public static final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
+  public static final MyQuery MY_QUERY = new MyQuery();
 
-  public static final Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
+  public final Field<Double> DOUBLEVAL = Field.of("maw.double_", "doubleval", Double.class,Field.ExpressionType.COLUMN);
 
-  public static final MyQuery QUERY = new MyQuery();
+  public final Field<Double> DOUBLEVAL2 = Field.of("maw.double_", "doubleval2", Double.class,Field.ExpressionType.COLUMN);
 
   private final SqlParts schema = SqlParts.of(
       SqlParts.textPart("m_wallet maw")
@@ -39,7 +39,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
-  public MyQuery() {
+  private MyQuery() {
     init();
   }
 

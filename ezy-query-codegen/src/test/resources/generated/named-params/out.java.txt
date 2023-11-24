@@ -33,11 +33,13 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
-  public static final Field<Object> NAME = Field.of("a.name", "name", Object.class,Field.ExpressionType.COLUMN);
+  public static final MyQuery MY_QUERY = new MyQuery();
 
-  public static final Field<Object> PROD_NAME = Field.of("b.product_name", "prodName", Object.class,Field.ExpressionType.COLUMN);
+  public static final Params PARAMS = new Params();
 
-  public static final MyQuery QUERY = new MyQuery();
+  public final Field<Object> NAME = Field.of("a.name", "name", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> PROD_NAME = Field.of("b.product_name", "prodName", Object.class,Field.ExpressionType.COLUMN);
 
   private final SqlParts schema = SqlParts.of(
       SqlParts.textPart("users AS a\n"
@@ -48,7 +50,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
-  public MyQuery() {
+  private MyQuery() {
     init();
   }
 
@@ -122,12 +124,12 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   }
 
   public static class Params {
-    public static final NamedParam JOIN_IDS = NamedParam.of("joinIds");
+    public final NamedParam JOIN_IDS = NamedParam.of("joinIds");
 
-    public static final NamedParam USER_ID = NamedParam.of("userID");
+    public final NamedParam USER_ID = NamedParam.of("userID");
 
-    public static final NamedParam ORDER_ID = NamedParam.of("orderID");
+    public final NamedParam ORDER_ID = NamedParam.of("orderID");
 
-    public static final NamedParam ORDER_BY_COLUMN = NamedParam.of("orderByColumn");
+    public final NamedParam ORDER_BY_COLUMN = NamedParam.of("orderByColumn");
   }
 }

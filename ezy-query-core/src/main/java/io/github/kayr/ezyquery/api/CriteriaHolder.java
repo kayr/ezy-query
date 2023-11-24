@@ -1,5 +1,5 @@
 package io.github.kayr.ezyquery.api;
 
-public interface CriteriaName {
+public interface CriteriaHolder {
   NamedParam getName();
 }

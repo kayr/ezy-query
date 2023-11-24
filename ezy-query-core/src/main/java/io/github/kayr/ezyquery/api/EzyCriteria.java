@@ -84,7 +84,7 @@ public class EzyCriteria {
         .build();
   }
 
-  public EzyCriteria setCriteria(CriteriaName criteria, ICond cond) {
+  public EzyCriteria setCriteria(CriteriaHolder criteria, ICond cond) {
     return setParam(criteria.getName(), cond);
   }
 

@@ -5,10 +5,14 @@ import io.github.kayr.ezyquery.api.Sort
 import prod.ProdQuery1
 import prod.QueryWithParams
 import spock.lang.Specification
+import test.DerivedTableQuery
 import test.QueryWithDaultOrderBy
 import test.TestQuery1
 
-import static test.DerivedTableQuery.*
+import static prod.ProdQuery1.PROD_QUERY1
+import static prod.QueryWithParams.QUERY_WITH_PARAMS
+import static test.QueryWithDaultOrderBy.QUERY_WITH_DAULT_ORDER_BY
+import static test.TestQuery1.TEST_QUERY1
 
 class TestCanFetchDataTest extends Specification {
 
@@ -71,8 +75,8 @@ class TestCanFetchDataTest extends Specification {
         given:
 
 
-        def criteria = ez.from(TestQuery1.QUERY)
-                .orderBy(Sort.by(TestQuery1.OFFICE_CODE, Sort.DIR.ASC))
+        def criteria = ez.from(TEST_QUERY1)
+                .orderBy(Sort.by(TEST_QUERY1.OFFICE_CODE, Sort.DIR.ASC))
                 .limit(3)
 
 
@@ -98,8 +102,8 @@ class TestCanFetchDataTest extends Specification {
 
     def 'test that can fetch data with fields correctly set'() {
         given:
-        def criteria = ez.from(TestQuery1.QUERY)
-                .where(TestQuery1.OFFICE_CODE.eq("1"))
+        def criteria = ez.from(TEST_QUERY1)
+                .where(TEST_QUERY1.OFFICE_CODE.eq("1"))
 
         when:
         def r = criteria.one()
@@ -114,8 +118,8 @@ class TestCanFetchDataTest extends Specification {
 
     def 'test can retries data with named param'() {
         given:
-        def c = ez.from(QueryWithParams.QUERY)
-                .setParam(QueryWithParams.Params.FIRST_NAME, ["Kay"])
+        def c = ez.from(QUERY_WITH_PARAMS)
+                .setParam(QueryWithParams.PARAMS.FIRST_NAME, ["Kay"])
 
         c.query.print()
 
@@ -127,12 +131,13 @@ class TestCanFetchDataTest extends Specification {
         then:
         r.addressLine == "Kampala"
         r.country == "UG"
+        count == 1
     }
 
     def 'test that prod query is compiled and usable'() {
         given:
-        def criteria = ez.from(ProdQuery1.QUERY)
-                .where(ProdQuery1.ADDRESS_LINE.eq("Kampala"))
+        def criteria = ez.from(PROD_QUERY1)
+                .where(PROD_QUERY1.ADDRESS_LINE.eq("Kampala"))
 
 
         when:
@@ -147,8 +152,8 @@ class TestCanFetchDataTest extends Specification {
 
     def 'test query with default order by'() {
         given:
-        def criteria = ez.from(QueryWithDaultOrderBy.QUERY)
-                .select(QueryWithDaultOrderBy.OFFICE_CODE)
+        def criteria = ez.from(QUERY_WITH_DAULT_ORDER_BY)
+                .select(QUERY_WITH_DAULT_ORDER_BY.OFFICE_CODE)
 
         when:
         def list = criteria.list()
@@ -157,15 +162,20 @@ class TestCanFetchDataTest extends Specification {
 
         then:
         list*.officeCode == ['1', '2', '3', '4'].reverse()
+        count == 4
 
     }
 
     def "test derived table"() {
 
+        def p = DerivedTableQuery.PARAMS
+        def c = DerivedTableQuery.CRITERIA
+        def t = DerivedTableQuery.DERIVED_TABLE_QUERY
+
         when:
-        def list = ez.from(QUERY)
-                .setCriteria(CUSTOMERS, CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
-                .setParam(Params.CUSTOMER_IDS, ["1", "2", "3", "4", "5"])
+        def list = ez.from(t)
+                .setCriteria(c.CUSTOMERS, c.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(p.CUSTOMER_IDS, ["1", "2", "3", "4", "5"])
                 .list()
         then:
         list.size() == 3

@@ -31,15 +31,15 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
-  public static final Field<BigDecimal> F1 = Field.of("maq.f1", "f1", BigDecimal.class,Field.ExpressionType.COLUMN);
+  public static final MyQuery MY_QUERY = new MyQuery();
 
-  public static final Field<String> F2 = Field.of("maq.f2", "f2", String.class,Field.ExpressionType.COLUMN);
+  public final Field<BigDecimal> F1 = Field.of("maq.f1", "f1", BigDecimal.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Vector> F3 = Field.of("maq.f3", "f3", Vector.class,Field.ExpressionType.COLUMN);
+  public final Field<String> F2 = Field.of("maq.f2", "f2", String.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<LocalDate> F4 = Field.of("maq.f4", "f4", LocalDate.class,Field.ExpressionType.COLUMN);
+  public final Field<Vector> F3 = Field.of("maq.f3", "f3", Vector.class,Field.ExpressionType.COLUMN);
 
-  public static final MyQuery QUERY = new MyQuery();
+  public final Field<LocalDate> F4 = Field.of("maq.f4", "f4", LocalDate.class,Field.ExpressionType.COLUMN);
 
   private final SqlParts schema = SqlParts.of(
       SqlParts.textPart("m_wallet maw")
@@ -47,7 +47,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
-  public MyQuery() {
+  private MyQuery() {
     init();
   }
 

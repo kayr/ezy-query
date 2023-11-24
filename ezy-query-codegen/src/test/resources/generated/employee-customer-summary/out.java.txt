@@ -1,8 +1,10 @@
 package mypackage.sql;
 
 import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.CriteriaHolder;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedCriteriaParam;
 import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
@@ -25,7 +27,7 @@ import javax.annotation.processing.Generated;
  *     o.addressLine1 as "addressLine1",
  *     c.totalCustomers as "totalCustomers"
  * FROM (
- *     SELECT salesRepEmployeeNumber, COUNT(*) AS totalCustomers
+ *     SELECT salesRepEmployeeNumber as salesRepEmployeeNumber, some_function() AS totalCustomers
  *     FROM customers
  *     WHERE :_ezy_customerSummary
  *     GROUP BY salesRepEmployeeNumber
@@ -38,22 +40,26 @@ import javax.annotation.processing.Generated;
     date = "0000-00-00 00:00:00"
 )
 public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
-  public static final Field<Object> EMPLOYEE_NUMBER = Field.of("e.employeeNumber", "employeeNumber", Object.class,Field.ExpressionType.COLUMN);
+  public static final MyQuery MY_QUERY = new MyQuery();
 
-  public static final Field<Object> FIRST_NAME = Field.of("e.firstName", "firstName", Object.class,Field.ExpressionType.COLUMN);
+  public static final Params PARAMS = new Params();
 
-  public static final Field<Object> OFFICE_CODE = Field.of("o.officeCode", "officeCode", Object.class,Field.ExpressionType.COLUMN);
+  public static final Criteria CRITERIA = new Criteria();
 
-  public static final Field<Object> COUNTRY = Field.of("o.country", "country", Object.class,Field.ExpressionType.COLUMN);
+  public final Field<Object> EMPLOYEE_NUMBER = Field.of("e.employeeNumber", "employeeNumber", Object.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Object> ADDRESS_LINE1 = Field.of("o.addressLine1", "addressLine1", Object.class,Field.ExpressionType.COLUMN);
+  public final Field<Object> FIRST_NAME = Field.of("e.firstName", "firstName", Object.class,Field.ExpressionType.COLUMN);
 
-  public static final Field<Object> TOTAL_CUSTOMERS = Field.of("c.totalCustomers", "totalCustomers", Object.class,Field.ExpressionType.COLUMN);
+  public final Field<Object> OFFICE_CODE = Field.of("o.officeCode", "officeCode", Object.class,Field.ExpressionType.COLUMN);
 
-  public static final MyQuery QUERY = new MyQuery();
+  public final Field<Object> COUNTRY = Field.of("o.country", "country", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> ADDRESS_LINE1 = Field.of("o.addressLine1", "addressLine1", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> TOTAL_CUSTOMERS = Field.of("c.totalCustomers", "totalCustomers", Object.class,Field.ExpressionType.COLUMN);
 
   private final SqlParts schema = SqlParts.of(
-      SqlParts.textPart("(SELECT salesRepEmployeeNumber, COUNT(*) AS totalCustomers FROM customers WHERE "),
+      SqlParts.textPart("(SELECT salesRepEmployeeNumber AS salesRepEmployeeNumber, some_function() AS totalCustomers FROM customers WHERE "),
       SqlParts.paramPart("_ezy_customerSummary"),
       SqlParts.textPart(" GROUP BY salesRepEmployeeNumber) AS c\n"
           + "JOIN employees e ON c.salesRepEmployeeNumber = e.employeeNumber\n"
@@ -62,7 +68,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
 
   private final List<Field<?>> fields = new ArrayList<Field<?>>();
 
-  public MyQuery() {
+  private MyQuery() {
     init();
   }
 
@@ -155,6 +161,32 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   }
 
   public static class Params {
-    public static final NamedParam _EZY_CUSTOMER_SUMMARY = NamedParam.of("_ezy_customerSummary");
+    public final NamedParam EZY_CUSTOMER_SUMMARY = NamedParam.of("_ezy_customerSummary");
+  }
+
+  public static final class Criteria {
+    public final CustomerSummary CUSTOMER_SUMMARY = new CustomerSummary();
+  }
+
+  public static class CustomerSummary implements CriteriaHolder {
+    public final Field<Object> SALES_REP_EMPLOYEE_NUMBER = Field.of("salesRepEmployeeNumber", "salesRepEmployeeNumber", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> TOTAL_CUSTOMERS = Field.of("some_function()", "totalCustomers", Object.class,Field.ExpressionType.OTHER);
+
+    private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+    private CustomerSummary() {
+      init();
+    }
+
+    private void init() {
+      fields.add(SALES_REP_EMPLOYEE_NUMBER);
+      fields.add(TOTAL_CUSTOMERS);
+    }
+
+    @Override
+    public NamedCriteriaParam getName() {
+      return NamedCriteriaParam.of("_ezy_customerSummary", fields);
+    }
   }
 }

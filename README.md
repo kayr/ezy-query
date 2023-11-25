@@ -494,7 +494,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "io.github.kayr:ezy-query-codegen:0.0.7"
+        classpath "io.github.kayr:ezy-query-codegen:<version>" //see the latest above
     }
 }
 

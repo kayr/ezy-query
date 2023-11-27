@@ -9,6 +9,8 @@ class StringCaseUtilTest extends Specification {
         StringCaseUtil.toPascalCase(input) == expected
         where:
         input                      | expected
+        null                       | null
+        ""                         | ""
         "hello"                    | "Hello"
         "hello world"              | "HelloWorld"
         "hello-world"              | "HelloWorld"
@@ -26,6 +28,8 @@ class StringCaseUtilTest extends Specification {
         StringCaseUtil.toCamelCase(input) == expected
         where:
         input                | expected
+        null                 | null
+        ""                   | ""
         "hello"              | "hello"
         "hello world"        | "helloWorld"
         "hello-world"        | "helloWorld"
@@ -44,6 +48,8 @@ class StringCaseUtilTest extends Specification {
         StringCaseUtil.toSnakeCase(input) == expected
         where:
         input                | expected
+        null                 | null
+        ""                   | ""
         "hello"              | "hello"
         "hello world"        | "hello_world"
         "hello-world"        | "hello_world"

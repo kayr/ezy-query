@@ -21,7 +21,7 @@ public class FluentApiTest {
     ezySql
         .from(CustomerReps.Q)
         .where(CustomerReps.FIELD_CUSTOMER_NAME.eq("John"))
-        .limit(10, 20)
+        .limit(10, 20L)
         .count();
   }
 }

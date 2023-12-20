@@ -4,6 +4,7 @@ import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,8 +15,8 @@ public interface EzyQuery {
 
   SqlParts schema();
 
-  default Optional<SqlParts> preQuery() {
-    return Optional.empty();
+  default List<SqlParts> withClauses() {
+    return Collections.emptyList();
   }
 
   default Optional<SqlParts> whereClause() {

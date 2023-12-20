@@ -1,0 +1,154 @@
+package mypackage.sql;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import java.lang.Class;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ * WITH "SalesRepInfo" AS (
+ *     SELECT
+ *         "e"."employeeNumber",
+ *         "e"."firstName" AS "salesRepName",
+ *         "o"."country" AS "salesRepCountry"
+ *     FROM
+ *         "Employees" "e"
+ *     JOIN "Offices" "o" ON "e"."officeCode" = "o"."officeCode"
+ *     WHERE "e"."jobTitle" = :jobTitle
+ * )
+ * SELECT
+ *     "c"."customerNumber" as "customerNumber",
+ *     "c"."customerName" as "customerName",
+ *     "s"."salesRepName" as "salesRepName",
+ *     "s"."salesRepCountry" as "salesRepCountry"
+ * FROM
+ *     "Customers" "c"
+ * JOIN "SalesRepInfo" "s" ON "c"."salesRepEmployeeNumber" = "s"."employeeNumber";
+ *
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
+  public static final MyQuery MY_QUERY = new MyQuery();
+
+  public static final Params PARAMS = new Params();
+
+  public final Field<Object> CUSTOMER_NUMBER = Field.of("\"c\".\"customerNumber\"", "customerNumber", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> CUSTOMER_NAME = Field.of("\"c\".\"customerName\"", "customerName", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> SALES_REP_NAME = Field.of("\"s\".\"salesRepName\"", "salesRepName", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> SALES_REP_COUNTRY = Field.of("\"s\".\"salesRepCountry\"", "salesRepCountry", Object.class,Field.ExpressionType.COLUMN);
+
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("\"Customers\" \"c\"\n"
+          + "JOIN \"SalesRepInfo\" \"s\" ON \"c\".\"salesRepEmployeeNumber\" = \"s\".\"employeeNumber\"")
+  );
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  private MyQuery() {
+    init();
+  }
+
+  private void init() {
+    fields.add(CUSTOMER_NUMBER);
+    fields.add(CUSTOMER_NAME);
+    fields.add(SALES_REP_NAME);
+    fields.add(SALES_REP_COUNTRY);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public SqlParts schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<SqlParts> whereClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<SqlParts> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+    return Result.class;
+  }
+
+  public List<SqlParts> withClauses() {
+    SqlParts salesRepInfo = SqlParts.of(
+        SqlParts.textPart("\"SalesRepInfo\" AS (SELECT \"e\".\"employeeNumber\", \"e\".\"firstName\" AS \"salesRepName\", \"o\".\"country\" AS \"salesRepCountry\" FROM \"Employees\" \"e\" JOIN \"Offices\" \"o\" ON \"e\".\"officeCode\" = \"o\".\"officeCode\" WHERE \"e\".\"jobTitle\" = "),
+        SqlParts.paramPart("jobTitle"),
+        SqlParts.textPart(")")
+    );
+    List<SqlParts> withClauses = new ArrayList<>();
+    withClauses.add(salesRepInfo);
+    return withClauses;
+  }
+
+  public static class Result {
+    private Object customerNumber;
+
+    private Object customerName;
+
+    private Object salesRepName;
+
+    private Object salesRepCountry;
+
+    public Object getCustomerNumber() {
+      return customerNumber;
+    }
+
+    public Object getCustomerName() {
+      return customerName;
+    }
+
+    public Object getSalesRepName() {
+      return salesRepName;
+    }
+
+    public Object getSalesRepCountry() {
+      return salesRepCountry;
+    }
+
+    @Override
+    public String toString() {
+      return "MyQuery.Result{"
+      + "customerNumber = " + customerNumber
+      + ", customerName = " + customerName
+      + ", salesRepName = " + salesRepName
+      + ", salesRepCountry = " + salesRepCountry
+       + "}";
+    }
+  }
+
+  public static class Params {
+    public final NamedParam JOB_TITLE = NamedParam.of("jobTitle");
+  }
+}

@@ -9,7 +9,6 @@ import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /*
 WITH "SalesRepInfo" AS (
@@ -58,11 +57,11 @@ public class QueryWithCTEBasic implements EzyQuery {
   }
 
   @Override
-  public Optional<SqlParts> preQuery() {
-    return Optional.of(
+  public List<SqlParts> withClauses() {
+    return Arrays.asList(
         SqlParts.of(
             SqlParts.textPart(
-                "WITH \"SalesRepInfo\" AS (\n"
+                "\"SalesRepInfo\" AS (\n"
                     + "    SELECT\n"
                     + "        \"e\".\"employeeNumber\",\n"
                     + "        \"e\".\"firstName\" AS \"salesRepName\",\n"
@@ -72,7 +71,8 @@ public class QueryWithCTEBasic implements EzyQuery {
                     + "    JOIN \"Offices\" \"o\" ON \"e\".\"officeCode\" = \"o\".\"officeCode\"\n"
                     + "    WHERE \"e\".\"jobTitle\" = "),
             SqlParts.paramPart("jobTitle"),
-            SqlParts.textPart(")")));
+            SqlParts.textPart(")")),
+        SqlParts.of(SqlParts.textPart("dummy AS (SELECT 1)")));
   }
 
   @Override

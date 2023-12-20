@@ -27,6 +27,8 @@ import net.sf.jsqlparser.statement.select.*;
 
 public class QueryGen {
 
+  public static final ParameterizedTypeName OPTIONAL_SQL_PARTS =
+      ParameterizedTypeName.get(Optional.class, SqlParts.class);
   private final String sql;
   private final String className;
   private final String packageName;
@@ -94,6 +96,9 @@ public class QueryGen {
 
     TypeSpec resultClass = resultClass(fieldList);
     ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
+
+    List<WithItem> withItemsList = plainSelect.getWithItemsList();
+    Pair<MethodSpec, List<SqlParts>> withMethod = buildWithMethod(withItemsList);
 
     /* main query method
     public QueryAndParams query(EzyCriteria criteria) {
@@ -166,7 +171,7 @@ public class QueryGen {
         MethodSpec.methodBuilder("whereClause")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
-            .returns(ParameterizedTypeName.get(Optional.class, SqlParts.class))
+            .returns(OPTIONAL_SQL_PARTS)
             .addStatement(whereStatement)
             .build();
 
@@ -186,7 +191,7 @@ public class QueryGen {
         MethodSpec.methodBuilder("orderByClause")
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(Override.class)
-            .returns(ParameterizedTypeName.get(Optional.class, SqlParts.class))
+            .returns(OPTIONAL_SQL_PARTS)
             .addStatement(orderByStatement)
             .build();
 
@@ -194,6 +199,9 @@ public class QueryGen {
 
     List<SqlParts.IPart.Param> params =
         Elf.combine(
+                withMethod.getTwo().stream()
+                    .flatMap(p -> p.getParts().stream())
+                    .collect(Collectors.toList()),
                 fSchemaAndParts.getTwo().getParts(),
                 whereParts.map(SqlParts::getParts).orElse(Collections.emptyList()),
                 orderByElements.map(SqlParts::getParts).orElse(Collections.emptyList()))
@@ -325,11 +333,53 @@ public class QueryGen {
       finalClassBuilder.addField(fCriteria);
     }
 
+    if (!Elf.isEmpty(withItemsList)) {
+      finalClassBuilder.addMethod(withMethod.getOne());
+    }
+
     nestedQueryClasses.forEach(finalClassBuilder::addType);
 
     TypeSpec finalClazz = finalClassBuilder.build();
 
     return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  private Pair<MethodSpec, List<SqlParts>> buildWithMethod(List<WithItem> withItems) {
+
+    if (Elf.isEmpty(withItems)) {
+      return Pair.of(null, Collections.emptyList());
+    }
+
+    MethodSpec.Builder mWith =
+        MethodSpec.methodBuilder("withClauses")
+            .addModifiers(Modifier.PUBLIC)
+            .returns(ParameterizedTypeName.get(List.class, SqlParts.class));
+
+    List<String> withClauseNames = new ArrayList<>();
+    List<SqlParts> withClauseParts = new ArrayList<>();
+
+    for (WithItem withItem : withItems) {
+      String name = StringCaseUtil.toCamelCase(unquote(withItem.getAlias().getName()));
+      withClauseNames.add(name);
+
+      String withClause = withItem.toString();
+      SqlParts sqlParts = SqlParts.of(withClause);
+      withClauseParts.add(sqlParts);
+
+      CodeBlock.Builder withCodeBlock = buildSqlParts(sqlParts);
+
+      mWith.addCode("SqlParts $L = ", name).addCode(withCodeBlock.build()).addCode(";\n");
+    }
+
+    mWith.addStatement(
+        "$T<$T> withClauses = new $T<>()", List.class, SqlParts.class, ArrayList.class);
+    for (String withClauseName : withClauseNames) {
+      mWith.addStatement("withClauses.add($L)", withClauseName);
+    }
+
+    mWith.addStatement("return withClauses");
+
+    return Pair.of(mWith.build(), withClauseParts);
   }
 
   private List<TypeSpec> buildNestedQueryClasses(PlainSelect plainSelect) {

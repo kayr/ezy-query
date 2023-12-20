@@ -19,7 +19,7 @@ public class EzyCriteria {
 
   @Builder.Default private List<Sort> sorts = new ArrayList<>();
 
-  @Builder.Default private Integer offset = 0;
+  @Builder.Default private Long offset = 0L;
   @Builder.Default private Integer limit = 50;
 
   @Builder.Default private boolean count = false;
@@ -49,7 +49,7 @@ public class EzyCriteria {
     return toBuilder().conditions(Elf.addAll(this.conditions, conds)).build();
   }
 
-  public EzyCriteria offset(@lombok.NonNull Integer offset) {
+  public EzyCriteria offset(@lombok.NonNull Long offset) {
     return toBuilder().offset(offset).build();
   }
 
@@ -57,7 +57,7 @@ public class EzyCriteria {
     return toBuilder().limit(limit).build();
   }
 
-  public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Integer offset) {
+  public EzyCriteria limit(@lombok.NonNull Integer limit, @lombok.NonNull Long offset) {
     return toBuilder().limit(limit).offset(offset).build();
   }
 

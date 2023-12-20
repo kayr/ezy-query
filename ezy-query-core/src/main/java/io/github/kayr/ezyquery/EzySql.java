@@ -122,7 +122,7 @@ public class EzySql {
       return withCriteria(criteria.setCriteria(param, cond));
     }
 
-    public CriteriaBuilder<T> offset(@NonNull Integer offset) {
+    public CriteriaBuilder<T> offset(long offset) {
       return withCriteria(criteria.offset(offset));
     }
 
@@ -130,7 +130,7 @@ public class EzySql {
       return withCriteria(criteria.limit(limit));
     }
 
-    public CriteriaBuilder<T> limit(@NonNull Integer limit, @NonNull Integer offset) {
+    public CriteriaBuilder<T> limit(@NonNull Integer limit, @NonNull Long offset) {
       return withCriteria(criteria.limit(limit, offset));
     }
 

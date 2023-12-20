@@ -21,10 +21,12 @@ public class SelectWalker extends EzySelectVisitorAdapter {
   public void visit(PlainSelect plainSelect) {
     context.startedSelect(plainSelect);
 
-    // visit where clause
-    Expression where = plainSelect.getWhere();
-    if (where != null) {
-      where.accept(context.getExpressionWalker());
+    // visit the with items
+    List<WithItem> withItems = plainSelect.getWithItemsList();
+    if (withItems != null) {
+      for (WithItem withItem : withItems) {
+        withItem.accept(this);
+      }
     }
 
     // visit from clause
@@ -41,6 +43,12 @@ public class SelectWalker extends EzySelectVisitorAdapter {
       }
     }
 
+    // visit where clause
+    Expression where = plainSelect.getWhere();
+    if (where != null) {
+      where.accept(context.getExpressionWalker());
+    }
+
     context.endedSelect(plainSelect);
   }
 
@@ -51,6 +59,7 @@ public class SelectWalker extends EzySelectVisitorAdapter {
 
   @Override
   public void visit(WithItem withItem) {
+    withItem.getSelect().accept(this);
     // continue
   }
 

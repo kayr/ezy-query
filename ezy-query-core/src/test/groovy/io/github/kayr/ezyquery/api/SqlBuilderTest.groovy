@@ -570,7 +570,8 @@ class SqlBuilderTest extends Specification {
     FROM
         "Employees" "e"
     JOIN "Offices" "o" ON "e"."officeCode" = "o"."officeCode"
-    WHERE "e"."jobTitle" = ?)
+    WHERE "e"."jobTitle" = ?),
+dummy AS (SELECT 1)
 SELECT 
   "c"."customerNumber" as "customerNumber", 
   "c"."customerName" as "customerName", 

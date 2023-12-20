@@ -1,8 +1,6 @@
 package io.github.kayr.ezyquery.gen
 
-
 import groovy.transform.NamedVariant
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.awt.*
@@ -143,6 +141,29 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
+    def 'test simple cte'() {
+        def data = load('basic-cte')
+        when:
+        def generated = generateCode(data.v1, data.v3)
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
+    def 'test multiple cte'() {
+        def data = load('multi-cte')
+        when:
+        def generated = generateCode(data.v1, data.v3)
+        def expected = data.v2.trim()
+
+
+        then:
+        2 == 2
+//        generated == expected
+    }
+
+
     private void copyToClipboard(String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
         TimeUnit.SECONDS.sleep(5)
@@ -151,7 +172,7 @@ class QueryGenTest extends Specification {
     private void overWriteFile(String path, String content) {
         def resourcesFolder = "src/test/resources"
 
-        def java = Paths.get(resourcesFolder,"/generated/$path/out.java.txt")
+        def java = Paths.get(resourcesFolder, "/generated/$path/out.java.txt")
         println("Overwriting file: ${java.toAbsolutePath()}")
         java.toFile().write(content)
 

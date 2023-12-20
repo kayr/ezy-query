@@ -1,0 +1,282 @@
+package mypackage.sql;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.CriteriaHolder;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedCriteriaParam;
+import io.github.kayr.ezyquery.api.NamedParam;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import java.lang.Class;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ * WITH dtl1 AS (
+ *     SELECT
+ *         book_id AS bookId,
+ *         sales_amount AS salesAmount
+ *     FROM sales
+ *     WHERE :_ezy_book_sales
+ * ),
+ * dtl2 AS (
+ *     SELECT
+ *         b.title AS title,
+ *         b.author_id AS authorId,
+ *         b.publisher_id AS publisherId,
+ *         dtl1.sales_amount as salesAmount
+ *     FROM books b
+ *     JOIN dtl1 ON b.book_id = dtl1.book_id
+ *     WHERE :_ezy_book_author_sales
+ * ),
+ * dtl3 AS (
+ *     SELECT
+ *         dtl2.title as title,
+ *         a.name AS authorName,
+ *         p.name AS publisherName,
+ *         dtl2.sales_amount AS salesAmount
+ *     FROM dtl2
+ *     JOIN authors a ON dtl2.author_id = a.author_id
+ *     JOIN publishers p ON dtl2.publisher_id = p.publisher_id
+ *     WHERE :_ezy_book_publisher_names_sales
+ * )
+ * SELECT
+ *     dtl3.title AS bookTitle,
+ *     dtl3.authorName AS author,
+ *     dtl3.publisherName AS publisher,
+ *     dtl3.salesAmount AS sales
+ * FROM dtl3
+ * WHERE dtl3.salesAmount > 500
+ * ORDER BY dtl3.salesAmount DESC;
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
+  public static final MyQuery MY_QUERY = new MyQuery();
+
+  public static final Params PARAMS = new Params();
+
+  public static final Criteria CRITERIA = new Criteria();
+
+  public final Field<Object> BOOK_TITLE = Field.of("dtl3.title", "bookTitle", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> AUTHOR = Field.of("dtl3.authorName", "author", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> PUBLISHER = Field.of("dtl3.publisherName", "publisher", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> SALES = Field.of("dtl3.salesAmount", "sales", Object.class,Field.ExpressionType.COLUMN);
+
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("dtl3")
+  );
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  private MyQuery() {
+    init();
+  }
+
+  private void init() {
+    fields.add(BOOK_TITLE);
+    fields.add(AUTHOR);
+    fields.add(PUBLISHER);
+    fields.add(SALES);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public SqlParts schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<SqlParts> whereClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("dtl3.salesAmount > 500")
+          ));
+  }
+
+  @Override
+  public Optional<SqlParts> orderByClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("dtl3.salesAmount DESC")
+          ));
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+    return Result.class;
+  }
+
+  public List<SqlParts> withClauses() {
+    SqlParts dtl1 = SqlParts.of(
+        SqlParts.textPart("dtl1 AS (SELECT book_id AS bookId, sales_amount AS salesAmount FROM sales WHERE "),
+        SqlParts.paramPart("_ezy_book_sales"),
+        SqlParts.textPart(")")
+    );
+    SqlParts dtl2 = SqlParts.of(
+        SqlParts.textPart("dtl2 AS (SELECT b.title AS title, b.author_id AS authorId, b.publisher_id AS publisherId, dtl1.sales_amount AS salesAmount FROM books b JOIN dtl1 ON b.book_id = dtl1.book_id WHERE "),
+        SqlParts.paramPart("_ezy_book_author_sales"),
+        SqlParts.textPart(")")
+    );
+    SqlParts dtl3 = SqlParts.of(
+        SqlParts.textPart("dtl3 AS (SELECT dtl2.title AS title, a.name AS authorName, p.name AS publisherName, dtl2.sales_amount AS salesAmount FROM dtl2 JOIN authors a ON dtl2.author_id = a.author_id JOIN publishers p ON dtl2.publisher_id = p.publisher_id WHERE "),
+        SqlParts.paramPart("_ezy_book_publisher_names_sales"),
+        SqlParts.textPart(")")
+    );
+    List<SqlParts> withClauses = new ArrayList<>();
+    withClauses.add(dtl1);
+    withClauses.add(dtl2);
+    withClauses.add(dtl3);
+    return withClauses;
+  }
+
+  public static class Result {
+    private Object bookTitle;
+
+    private Object author;
+
+    private Object publisher;
+
+    private Object sales;
+
+    public Object getBookTitle() {
+      return bookTitle;
+    }
+
+    public Object getAuthor() {
+      return author;
+    }
+
+    public Object getPublisher() {
+      return publisher;
+    }
+
+    public Object getSales() {
+      return sales;
+    }
+
+    @Override
+    public String toString() {
+      return "MyQuery.Result{"
+      + "bookTitle = " + bookTitle
+      + ", author = " + author
+      + ", publisher = " + publisher
+      + ", sales = " + sales
+       + "}";
+    }
+  }
+
+  public static class Params {
+    public final NamedParam EZY_BOOK_SALES = NamedParam.of("_ezy_book_sales");
+
+    public final NamedParam EZY_BOOK_AUTHOR_SALES = NamedParam.of("_ezy_book_author_sales");
+
+    public final NamedParam EZY_BOOK_PUBLISHER_NAMES_SALES = NamedParam.of("_ezy_book_publisher_names_sales");
+  }
+
+  public static final class Criteria {
+    public final BookPublisherNamesSales BOOK_PUBLISHER_NAMES_SALES = new BookPublisherNamesSales();
+
+    public final BookAuthorSales BOOK_AUTHOR_SALES = new BookAuthorSales();
+
+    public final BookSales BOOK_SALES = new BookSales();
+  }
+
+  public static class BookPublisherNamesSales implements CriteriaHolder {
+    public final Field<Object> TITLE = Field.of("dtl2.title", "title", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> AUTHOR_NAME = Field.of("a.name", "authorName", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> PUBLISHER_NAME = Field.of("p.name", "publisherName", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> SALES_AMOUNT = Field.of("dtl2.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+    private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+    private BookPublisherNamesSales() {
+      init();
+    }
+
+    private void init() {
+      fields.add(TITLE);
+      fields.add(AUTHOR_NAME);
+      fields.add(PUBLISHER_NAME);
+      fields.add(SALES_AMOUNT);
+    }
+
+    @Override
+    public NamedCriteriaParam getName() {
+      return NamedCriteriaParam.of("_ezy_book_publisher_names_sales", fields);
+    }
+  }
+
+  public static class BookAuthorSales implements CriteriaHolder {
+    public final Field<Object> TITLE = Field.of("b.title", "title", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> AUTHOR_ID = Field.of("b.author_id", "authorId", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> PUBLISHER_ID = Field.of("b.publisher_id", "publisherId", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> SALES_AMOUNT = Field.of("dtl1.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+    private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+    private BookAuthorSales() {
+      init();
+    }
+
+    private void init() {
+      fields.add(TITLE);
+      fields.add(AUTHOR_ID);
+      fields.add(PUBLISHER_ID);
+      fields.add(SALES_AMOUNT);
+    }
+
+    @Override
+    public NamedCriteriaParam getName() {
+      return NamedCriteriaParam.of("_ezy_book_author_sales", fields);
+    }
+  }
+
+  public static class BookSales implements CriteriaHolder {
+    public final Field<Object> BOOK_ID = Field.of("book_id", "bookId", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> SALES_AMOUNT = Field.of("sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+    private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+    private BookSales() {
+      init();
+    }
+
+    private void init() {
+      fields.add(BOOK_ID);
+      fields.add(SALES_AMOUNT);
+    }
+
+    @Override
+    public NamedCriteriaParam getName() {
+      return NamedCriteriaParam.of("_ezy_book_sales", fields);
+    }
+  }
+}

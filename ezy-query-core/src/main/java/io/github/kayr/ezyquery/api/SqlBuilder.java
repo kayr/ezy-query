@@ -8,10 +8,7 @@ import io.github.kayr.ezyquery.parser.EzySqlTranspiler;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.util.Elf;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SqlBuilder {
@@ -128,10 +125,17 @@ public class SqlBuilder {
 
     QueryAndParams queryBuilder = new QueryAndParams("");
 
-    Optional<SqlParts> preQuery = query.preQuery();
-    if (preQuery.isPresent()) {
-      queryBuilder =
-          queryBuilder.append(preQuery.get().getQuery(ezyCriteria.getParamValues())).newLine();
+    List<SqlParts> preQuery = query.withClauses();
+    if (!Elf.isEmpty(preQuery)) {
+      queryBuilder = queryBuilder.append("WITH ");
+      for (Iterator<SqlParts> iterator = preQuery.iterator(); iterator.hasNext(); ) {
+        SqlParts sqlParts = iterator.next();
+        queryBuilder =
+            queryBuilder
+                .append(sqlParts.getQuery(ezyCriteria.getParamValues()))
+                .append(iterator.hasNext(), ",")
+                .newLine();
+      }
     }
 
     queryBuilder = queryBuilder.append("SELECT \n");

@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.Sort
 import prod.QueryWithParams
 import spock.lang.Specification
 import test.DerivedTableQuery
+import test.DerivedTableQueryCte
 
 import static prod.ProdQuery1.PROD_QUERY1
 import static prod.QueryWithParams.QUERY_WITH_PARAMS
@@ -168,6 +169,27 @@ class TestCanFetchDataTest extends Specification {
         def p = DerivedTableQuery.PARAMS
         def c = DerivedTableQuery.CRITERIA
         def t = DerivedTableQuery.DERIVED_TABLE_QUERY
+
+        when:
+        def list = ez.from(t)
+                .setCriteria(c.CUSTOMERS, c.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(p.CUSTOMER_IDS, ["1", "2", "3", "4", "5"])
+                .list()
+        then:
+        list.size() == 3
+        list*.customerName == ["John", "John", "Daniel"]
+        list*.item == ["item4", "item5", "item10"]
+        list*.price == [400, 500, 1000]
+        list*.quantity == [4, 5, 10]
+
+
+    }
+
+    def "test derived table with cte"() {
+
+        def p = DerivedTableQueryCte.PARAMS
+        def c = DerivedTableQueryCte.CRITERIA
+        def t = DerivedTableQueryCte.DERIVED_TABLE_QUERY_CTE
 
         when:
         def list = ez.from(t)

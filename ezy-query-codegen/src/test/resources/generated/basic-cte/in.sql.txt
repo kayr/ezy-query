@@ -1,0 +1,19 @@
+WITH "SalesRepInfo" AS (
+    SELECT
+        "e"."employeeNumber",
+        "e"."firstName" AS "salesRepName",
+        "o"."country" AS "salesRepCountry"
+    FROM
+        "Employees" "e"
+    JOIN "Offices" "o" ON "e"."officeCode" = "o"."officeCode"
+    WHERE "e"."jobTitle" = :jobTitle
+)
+SELECT
+    "c"."customerNumber" as "customerNumber",
+    "c"."customerName" as "customerName",
+    "s"."salesRepName" as "salesRepName",
+    "s"."salesRepCountry" as "salesRepCountry"
+FROM
+    "Customers" "c"
+JOIN "SalesRepInfo" "s" ON "c"."salesRepEmployeeNumber" = "s"."employeeNumber";
+

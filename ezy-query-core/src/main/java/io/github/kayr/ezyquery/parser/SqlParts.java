@@ -122,7 +122,11 @@ public class SqlParts {
   }
 
   public List<IPart> getParts() {
-    return Elf.copyList(parts);
+    return Collections.unmodifiableList(parts);
+  }
+
+  public boolean isEmpty() {
+    return parts.isEmpty();
   }
 
   String getRawSql() {
@@ -167,6 +171,22 @@ public class SqlParts {
     }
 
     return EzySqlTranspiler.transpile(fields, finalCond.asExpr());
+  }
+
+  public String toString() {
+    return getRawSql();
+  }
+
+  public static SqlParts merge(List<SqlParts> parts) {
+    List<IPart> allParts = new ArrayList<>();
+    Map<String, NamedParamValue> allParamValues = new HashMap<>();
+
+    for (SqlParts part : parts) {
+      allParts.addAll(part.parts);
+      allParamValues.putAll(part.paramValues);
+    }
+
+    return SqlParts.of(allParts).withParamValues(allParamValues);
   }
 
   static List<Object> convertToValueParam(Object value) {

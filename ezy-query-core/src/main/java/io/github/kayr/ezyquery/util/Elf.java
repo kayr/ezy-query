@@ -26,6 +26,11 @@ public class Elf {
     return result;
   }
 
+  public static <T> List<T> flatten(List<List<T>> lists) {
+    if (lists == null) return null;
+    return lists.stream().flatMap(Collection::stream).collect(Collectors.toList());
+  }
+
   public static <T> List<T> addFirst(List<T> items, T left) {
     List<T> result = new ArrayList<>(items);
     result.add(0, left);

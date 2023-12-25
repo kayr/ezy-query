@@ -5,6 +5,24 @@ import spock.lang.Specification
 import java.nio.file.Paths
 
 class ElfTest extends Specification {
+
+
+    def "test flatten method"() {
+
+        when:
+        def result = Elf.flatten(input)
+
+        then:
+        result == expected
+
+        where:
+        input                    | expected
+        null                     | null
+        []                       | []
+        [[], [], []]             | []
+        [[1], [2, 3], [4, 5, 6]] | [1, 2, 3, 4, 5, 6]
+    }
+
     def "ResolveOutputPath"() {
 
         expect:

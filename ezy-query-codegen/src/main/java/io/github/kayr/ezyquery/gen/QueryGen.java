@@ -1,6 +1,8 @@
 /* (C)2022 */
 package io.github.kayr.ezyquery.gen;
 
+import static io.github.kayr.ezyquery.gen.CodeElf.*;
+
 import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.*;
@@ -18,6 +20,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -75,228 +78,37 @@ public class QueryGen {
     List<FieldSpec> fConstants = fieldConstants(fieldList);
 
     Pair<FieldSpec, SqlParts> fSchemaAndParts = fieldSchema(plainSelect);
-    FieldSpec fSchema = fSchemaAndParts.getOne();
-
-    ClassName thisClassName = ClassName.get(packageName, className);
-    FieldSpec fSingleton =
-        FieldSpec.builder(
-                thisClassName,
-                StringCaseUtil.toScreamingSnakeCase(className),
-                Modifier.PUBLIC,
-                Modifier.STATIC,
-                Modifier.FINAL)
-            .initializer("new $T()", thisClassName)
-            .build();
 
     FieldSpec fFields = fieldAllFields();
-
-    MethodSpec mConstructor = methodConstructor();
-
-    MethodSpec mInit = methodInit(fConstants, fFields);
 
     TypeSpec resultClass = resultClass(fieldList);
     ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
 
     List<WithItem> withItemsList = plainSelect.getWithItemsList();
-    Pair<MethodSpec, List<SqlParts>> withMethod = buildWithMethod(withItemsList);
+    Pair<MethodSpec, List<SqlParts>> withMethodAndParts = buildWithMethod(withItemsList);
 
-    /* main query method
-    public QueryAndParams query(EzyCriteria criteria) {
-        return SqlBuilder.buildSql(this, criteria);
-    }*/
-    MethodSpec queryMethod =
-        MethodSpec.methodBuilder("query")
-            .addModifiers(Modifier.PUBLIC)
-            .addParameter(EzyCriteria.class, "criteria")
-            .addStatement("return $T.buildSql(this, criteria)", SqlBuilder.class)
-            .returns(QueryAndParams.class)
-            .build();
+    SqlParts whereParts = toSqlPart(plainSelect.getWhere());
 
-    /*result class override method
-    @Override
-    public Class<Result> resultClass() {
-        return Result.class;
-    }
-     */
-    MethodSpec resultClassMethod =
-        MethodSpec.methodBuilder("resultClass")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(ParameterizedTypeName.get(ClassName.get(Class.class), resultClassName))
-            .addStatement("return $T.class", resultClassName)
-            .build();
-
-    /* fields override method
-    @Override
-    public List<Field<?>> fields() {
-        return this.fields;
-    }
-    */
-    MethodSpec fieldsMethod =
-        MethodSpec.methodBuilder("fields")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(typeListOfFields())
-            .addStatement("return this.fields")
-            .build();
-
-    /* schema override method
-    @Override
-    public SqlParts schema() {
-        return this.schema;
-    }
-     */
-    MethodSpec schemaMethod =
-        MethodSpec.methodBuilder("schema")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(SqlParts.class)
-            .addStatement("return this.schema")
-            .build();
-
-    Optional<SqlParts> whereParts =
-        Optional.ofNullable(plainSelect.getWhere()).map(Object::toString).map(SqlParts::of);
-    CodeBlock whereStatement = toReturnSqlPartReturnStatement(whereParts.orElse(null));
-    /* where override method
-    @Override
-    public Optional<SqlParts> whereClause() {
-        return Optional.of(
-            SqlParts.of(
-                SqlParts.textPart("c.membership = "),
-                SqlParts.paramPart("membership")
-            ));
-    }
-     */
-    MethodSpec whereMethod =
-        MethodSpec.methodBuilder("whereClause")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(OPTIONAL_SQL_PARTS)
-            .addStatement(whereStatement)
-            .build();
-
-    /* orderBy override method
-    @Override
-    public Optional<SqlParts> orderByClause() {
-        return Optional.of(
-            SqlParts.of(
-                SqlParts.textPart("c.membership ")
-            ));
-    }
-    */
-    Optional<SqlParts> orderByElements =
-        toOrderByStatement(plainSelect.getOrderByElements()).map(SqlParts::of);
-    CodeBlock orderByStatement = toReturnSqlPartReturnStatement(orderByElements.orElse(null));
-    MethodSpec orderByMethod =
-        MethodSpec.methodBuilder("orderByClause")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(OPTIONAL_SQL_PARTS)
-            .addStatement(orderByStatement)
-            .build();
+    SqlParts orderByElements =
+        toOrderByStatement(plainSelect.getOrderByElements())
+            .map(SqlParts::of)
+            .orElseGet(SqlParts::empty);
 
     // the params
 
     List<SqlParts.IPart.Param> params =
-        Elf.combine(
-                withMethod.getTwo().stream()
-                    .flatMap(p -> p.getParts().stream())
-                    .collect(Collectors.toList()),
-                fSchemaAndParts.getTwo().getParts(),
-                whereParts.map(SqlParts::getParts).orElse(Collections.emptyList()),
-                orderByElements.map(SqlParts::getParts).orElse(Collections.emptyList()))
-            .stream()
-            .filter(isParamPart())
-            .map(p -> (SqlParts.IPart.Param) p)
-            .collect(Collectors.toList());
+        collectAllParams(
+            SqlParts.merge(withMethodAndParts.getTwo()).getParts(),
+            fSchemaAndParts.getTwo().getParts(),
+            whereParts.getParts(),
+            orderByElements.getParts());
 
-    /*
-    //build a class to contain the params as static final fields
-    class Params{
-        ....
-        public static final NamedParam FIRST_NAME = NamedParam.of("firstName");
-        ....
-    }
-     */
-    TypeSpec paramsClass =
-        TypeSpec.classBuilder("Params")
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addFields(
-                params.stream()
-                    .map(SqlParts.IPart.Param::asString)
-                    .distinct()
-                    .map(
-                        name ->
-                            FieldSpec.builder(
-                                    NamedParam.class,
-                                    StringCaseUtil.toScreamingSnakeCase(name),
-                                    Modifier.PUBLIC,
-                                    Modifier.FINAL)
-                                .initializer("$T.of($S)", NamedParam.class, name)
-                                .build())
-                    .collect(Collectors.toList()))
-            .build();
+    TypeSpec paramsClass = createParamsClass(params);
 
-    /*
-    Add PARAMS static field
-     */
-    ClassName typeParams = ClassName.get(packageName, className, paramsClass.name);
-    FieldSpec fParams =
-        FieldSpec.builder(typeParams, "PARAMS", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-            .initializer("new $T()", typeParams)
-            .build();
-
-    /*
-     build inner classes to hold fields of nested queries
-    */
     List<TypeSpec> nestedQueryClasses = buildNestedQueryClasses(plainSelect);
 
-    /*
-    build the static final NestedQuery objects
-    ....
-    public static final NestedQuery CUSTOMERS = new NestedQuery();
-    ....
-     */
-    List<FieldSpec> fNestedQueryFields =
-        nestedQueryClasses.stream()
-            .map(
-                nestedQueryClass -> {
-                  ClassName type = ClassName.get(packageName, className, nestedQueryClass.name);
-                  return FieldSpec.builder(
-                          type,
-                          StringCaseUtil.toScreamingSnakeCase(nestedQueryClass.name),
-                          Modifier.PUBLIC,
-                          Modifier.FINAL)
-                      .initializer("new $T()", type)
-                      .build();
-                })
-            .collect(Collectors.toList());
-
-    /*
-    Wrap the nested query fields in an inner class. We wrap them to avoid name clashes
-    public static final class Criteria{
-        public static final NestedQuery CUSTOMERS = new NestedQuery();
-        ....
-    }
-     */
-    TypeSpec nestedQueryFieldsClass =
-        TypeSpec.classBuilder("Criteria")
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
-            .addFields(fNestedQueryFields)
-            .build();
-
-    /*
-    Create a field for the Criteria class
-    public static final Criteria CRITERIA = new Criteria();
-     */
-    ClassName typeCriteria = ClassName.get(packageName, className, nestedQueryFieldsClass.name);
-    FieldSpec fCriteria =
-        FieldSpec.builder(
-                typeCriteria, "CRITERIA", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-            .initializer("new $T()", typeCriteria)
-            .build();
-
-    ClassName generatedAnnotation = resolveGeneratedAnnotation();
+    TypeSpec criteriaWrapperClass =
+        createCriteriaWrapperClass(fieldsForNestedQueries(nestedQueryClasses));
 
     TypeSpec.Builder finalClassBuilder =
         TypeSpec.classBuilder(className)
@@ -305,43 +117,203 @@ public class QueryGen {
             .addSuperinterface(
                 ParameterizedTypeName.get(ClassName.get(EzyQueryWithResult.class), resultClassName))
             .addFields(fConstants)
-            .addField(fSchema)
+            .addField(fSchemaAndParts.getOne())
             .addField(fFields)
-            .addField(fSingleton)
-            .addMethod(mConstructor)
-            .addMethod(mInit)
-            .addMethod(queryMethod)
-            .addMethod(schemaMethod)
-            .addMethod(whereMethod)
-            .addMethod(orderByMethod)
+            .addField(fieldMainSingleton(ClassName.get(packageName, className)))
+            .addMethod(methodConstructor())
+            .addMethod(methodInit(fConstants, fFields))
+            .addMethod(methodQueryMethod())
+            .addMethod(methodSchema())
+            .addMethod(methodWhereClause(whereParts))
+            .addMethod(methodOrderByClause(orderByElements))
             .addAnnotation(
-                AnnotationSpec.builder(generatedAnnotation)
+                AnnotationSpec.builder(resolveGeneratedAnnotation())
                     .addMember("value", "$S", QueryGen.class.getName())
                     .addMember("date", "$S", timeStamp())
                     .build())
-            .addMethod(fieldsMethod)
-            .addMethod(resultClassMethod)
+            .addMethod(methodFields())
+            .addMethod(methodResultClass(resultClassName))
             .addType(resultClass);
 
     if (!params.isEmpty()) {
       finalClassBuilder.addType(paramsClass);
-      finalClassBuilder.addField(fParams);
+      finalClassBuilder.addField(createStaticField(paramsClass, "PARAMS"));
     }
 
     if (!nestedQueryClasses.isEmpty()) {
-      finalClassBuilder.addType(nestedQueryFieldsClass);
-      finalClassBuilder.addField(fCriteria);
+      finalClassBuilder.addType(criteriaWrapperClass);
+      finalClassBuilder.addField(createStaticField(criteriaWrapperClass, "CRITERIA"));
     }
 
     if (!Elf.isEmpty(withItemsList)) {
-      finalClassBuilder.addMethod(withMethod.getOne());
+      finalClassBuilder.addMethod(withMethodAndParts.getOne());
     }
 
-    nestedQueryClasses.forEach(finalClassBuilder::addType);
+    for (TypeSpec nestedQueryClass : nestedQueryClasses) {
+      finalClassBuilder.addType(nestedQueryClass);
+    }
 
     TypeSpec finalClazz = finalClassBuilder.build();
 
     return JavaFile.builder(packageName, finalClazz).build();
+  }
+
+  private List<FieldSpec> fieldsForNestedQueries(List<TypeSpec> nestedQueryClasses) {
+    /*
+    build the static final NestedQuery objects
+    ....
+    public static final NestedQuery CUSTOMERS = new NestedQuery();
+    ....
+     */
+    return nestedQueryClasses.stream()
+        .map(
+            nestedQueryClass -> {
+              ClassName type = ClassName.get(packageName, className, nestedQueryClass.name);
+              return FieldSpec.builder(
+                      type,
+                      StringCaseUtil.toScreamingSnakeCase(nestedQueryClass.name),
+                      Modifier.PUBLIC,
+                      Modifier.FINAL)
+                  .initializer("new $T()", type)
+                  .build();
+            })
+        .collect(Collectors.toList());
+  }
+
+  private static TypeSpec createCriteriaWrapperClass(List<FieldSpec> fNestedQueryFields) {
+    return TypeSpec.classBuilder("Criteria")
+        .addModifiers(Modifier.PUBLIC, Modifier.FINAL, Modifier.STATIC)
+        .addFields(fNestedQueryFields)
+        .build();
+  }
+
+  private FieldSpec createStaticField(TypeSpec paramsClass, String fieldName) {
+
+    ClassName typeParams = ClassName.get(packageName, className, paramsClass.name);
+    return FieldSpec.builder(
+            typeParams, fieldName, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        .initializer("new $T()", typeParams)
+        .build();
+  }
+
+  private static TypeSpec createParamsClass(List<SqlParts.IPart.Param> params) {
+    /*
+    //build a class to contain the params as static final fields
+    class Params{
+        ....
+        public static final NamedParam FIRST_NAME = NamedParam.of("firstName");
+        ....
+    }
+     */
+    return TypeSpec.classBuilder("Params")
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+        .addFields(
+            params.stream()
+                .map(SqlParts.IPart.Param::asString)
+                .distinct()
+                .map(
+                    name ->
+                        FieldSpec.builder(
+                                NamedParam.class,
+                                StringCaseUtil.toScreamingSnakeCase(name),
+                                Modifier.PUBLIC,
+                                Modifier.FINAL)
+                            .initializer("$T.of($S)", NamedParam.class, name)
+                            .build())
+                .collect(Collectors.toList()))
+        .build();
+  }
+
+  @SafeVarargs
+  private static List<SqlParts.IPart.Param> collectAllParams(List<SqlParts.IPart>... parts) {
+
+    return Elf.combine(parts).stream()
+        .filter(isParamPart())
+        .map(p -> (SqlParts.IPart.Param) p)
+        .collect(Collectors.toList());
+  }
+
+  private static MethodSpec methodOrderByClause(SqlParts orderByParts) {
+    /* orderBy override method
+    @Override
+    public Optional<SqlParts> orderByClause() {
+        return Optional.of(
+            SqlParts.of(
+                SqlParts.textPart("c.membership ")));
+    }
+    */
+
+    MethodSpec.Builder method = publicMethod("orderByClause", OPTIONAL_SQL_PARTS, Override.class);
+    if (orderByParts.isEmpty()) {
+
+      return method.addStatement("return Optional.empty()").build();
+    }
+
+    return method.addStatement(toReturnSqlPartReturnStatement(orderByParts)).build();
+  }
+
+  private static MethodSpec methodWhereClause(SqlParts whereParts) {
+    /* where override method
+    @Override
+    public Optional<SqlParts> whereClause() {
+        return Optional.of(
+            SqlParts.of(
+                SqlParts.textPart("c.membership = "),
+                SqlParts.paramPart("membership")));
+    }
+     */
+    MethodSpec.Builder method = publicMethod("whereClause", OPTIONAL_SQL_PARTS, Override.class);
+    if (whereParts.isEmpty()) {
+      return method.addStatement("return Optional.empty()").build();
+    }
+
+    return method.addStatement(toReturnSqlPartReturnStatement(whereParts)).build();
+  }
+
+  private SqlParts toSqlPart(Object sql) {
+    if (sql == null) return SqlParts.empty();
+    return SqlParts.of(sql.toString());
+  }
+
+  private static MethodSpec methodSchema() {
+    return publicMethod("schema", SqlParts.class, Override.class)
+        .addStatement("return this.schema")
+        .build();
+  }
+
+  private static MethodSpec methodFields() {
+    return publicMethod("fields", typeListOfFields(), Override.class)
+        .addStatement("return this.fields")
+        .build();
+  }
+
+  private static MethodSpec methodResultClass(ClassName resultClassName) {
+
+    return publicMethod(
+            "resultClass",
+            ParameterizedTypeName.get(ClassName.get(Class.class), resultClassName),
+            Override.class)
+        .addStatement("return $T.class", resultClassName)
+        .build();
+  }
+
+  private static MethodSpec methodQueryMethod() {
+
+    return publicMethod("query", QueryAndParams.class)
+        .addParameter(EzyCriteria.class, "criteria")
+        .addStatement("return $T.buildSql(this, criteria)", SqlBuilder.class)
+        .build();
+  }
+
+  private FieldSpec fieldMainSingleton(ClassName thisClassName) {
+    return FieldSpec.builder(
+            thisClassName,
+            StringCaseUtil.toScreamingSnakeCase(className),
+            Modifier.PUBLIC,
+            Modifier.STATIC,
+            Modifier.FINAL)
+        .initializer("new $T()", thisClassName)
+        .build();
   }
 
   private Pair<MethodSpec, List<SqlParts>> buildWithMethod(List<WithItem> withItems) {
@@ -351,9 +323,7 @@ public class QueryGen {
     }
 
     MethodSpec.Builder mWith =
-        MethodSpec.methodBuilder("withClauses")
-            .addModifiers(Modifier.PUBLIC)
-            .returns(ParameterizedTypeName.get(List.class, SqlParts.class));
+        publicMethod("withClauses", ParameterizedTypeName.get(List.class, SqlParts.class));
 
     List<String> withClauseNames = new ArrayList<>();
     List<SqlParts> withClauseParts = new ArrayList<>();
@@ -415,10 +385,7 @@ public class QueryGen {
       }
        */
       MethodSpec mGetName =
-          MethodSpec.methodBuilder("getName")
-              .addModifiers(Modifier.PUBLIC)
-              .addAnnotation(Override.class)
-              .returns(NamedCriteriaParam.class)
+          publicMethod("getName", NamedCriteriaParam.class, Override.class)
               .addStatement("return $T.of($S, fields)", NamedCriteriaParam.class, paramName)
               .build();
 
@@ -478,7 +445,7 @@ public class QueryGen {
     return generatedAnnotation;
   }
 
-  private CodeBlock.Builder toStringMethodBody(List<EzyQueryFieldSpec> fieldList) {
+  private CodeBlock toStringMethodBody(List<EzyQueryFieldSpec> fieldList) {
     CodeBlock.Builder toStringMethodBody =
         CodeBlock.builder().add("return \"$L.Result{\"\n", className);
 
@@ -493,7 +460,7 @@ public class QueryGen {
     }
 
     toStringMethodBody.addStatement(" + $S", "}");
-    return toStringMethodBody;
+    return toStringMethodBody.build();
   }
 
   private TypeSpec resultClass(List<EzyQueryFieldSpec> fieldList) {
@@ -506,22 +473,17 @@ public class QueryGen {
 
     // add getters
     for (EzyQueryFieldSpec f : fieldList) {
+
       resultClassBuilder.addMethod(
-          MethodSpec.methodBuilder(toGetterName(f.getAlias()))
-              .addModifiers(Modifier.PUBLIC)
-              .returns(f.getDataType())
+          publicMethod(toGetterName(f.getAlias()), f.getDataType())
               .addStatement("return $L", f.getAlias())
               .build());
     }
 
     // to string methods
-    CodeBlock.Builder toStringMethodBody = toStringMethodBody(fieldList);
     MethodSpec toStringMethod =
-        MethodSpec.methodBuilder("toString")
-            .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(Override.class)
-            .returns(String.class)
-            .addCode(toStringMethodBody.build())
+        publicMethod("toString", String.class, Override.class)
+            .addCode(toStringMethodBody(fieldList))
             .build();
 
     resultClassBuilder.addMethod(toStringMethod);
@@ -535,8 +497,7 @@ public class QueryGen {
 
   /** Init() method */
   private MethodSpec methodInit(List<FieldSpec> fConstants, FieldSpec fFields) {
-    MethodSpec.Builder initBuilder =
-        MethodSpec.methodBuilder("init").addModifiers(Modifier.PRIVATE);
+    MethodSpec.Builder initBuilder = method(modifiers(Modifier.PRIVATE), "init", TypeName.VOID);
     for (FieldSpec field : fConstants) {
       initBuilder.addStatement("$N.add($N)", fFields, field);
     }
@@ -545,8 +506,7 @@ public class QueryGen {
 
   /** Constructor() method */
   private MethodSpec methodConstructor() {
-    return MethodSpec.constructorBuilder()
-        .addModifiers(Modifier.PRIVATE)
+    return method(modifiers(Modifier.PRIVATE), "<init>", TypeName.VOID)
         .addStatement("init()")
         .build();
   }
@@ -659,16 +619,11 @@ public class QueryGen {
   }
 
   private EzyQueryFieldSpec toField(SelectItem<?> selectItem) {
-    String alias =
-        Objects.requireNonNull(
-                selectItem.getAlias(), "Alias if required for filed [" + selectItem + "]")
-            .getName();
-    alias = unquote(alias);
 
-    String[] parts = alias.contains("_") ? alias.split("_") : new String[] {alias, "object"};
+    Pair<String, String> pair = parseNameAndType(selectItem.getAlias());
 
-    String aliasName = parts[0];
-    String typeName = parts[1];
+    String aliasName = pair.getOne();
+    String typeName = pair.getTwo();
 
     TypeName type = resolveType(typeName);
 
@@ -684,6 +639,16 @@ public class QueryGen {
     }
 
     return EzyQueryFieldSpec.of(sqlField, aliasName, type, Field.ExpressionType.OTHER);
+  }
+
+  private Pair<String, String> parseNameAndType(Alias sqlAlias) {
+    String alias =
+        Objects.requireNonNull(sqlAlias, "Alias if required for filed [" + sqlAlias + "]")
+            .getName();
+    alias = unquote(alias);
+
+    String[] parts = alias.contains("_") ? alias.split("_") : new String[] {alias, "object"};
+      return Pair.of(parts[0], parts[1]);
   }
 
   TypeName resolveType(String type) {

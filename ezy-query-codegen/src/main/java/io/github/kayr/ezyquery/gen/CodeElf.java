@@ -9,8 +9,7 @@ import javax.lang.model.element.Modifier;
 
 public class CodeElf {
 
-  private CodeElf() {
-  }
+  private CodeElf() {}
 
   public static MethodSpec.Builder publicMethod(
       String name, Class<?> method, Class<?>... annotations) {

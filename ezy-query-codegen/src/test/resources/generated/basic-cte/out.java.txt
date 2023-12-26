@@ -102,12 +102,12 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   }
 
   public List<SqlParts> withClauses() {
+    List<SqlParts> withClauses = new ArrayList<>();
     SqlParts salesRepInfo = SqlParts.of(
         SqlParts.textPart("\"SalesRepInfo\" AS (SELECT \"e\".\"employeeNumber\", \"e\".\"firstName\" AS \"salesRepName\", \"o\".\"country\" AS \"salesRepCountry\" FROM \"Employees\" \"e\" JOIN \"Offices\" \"o\" ON \"e\".\"officeCode\" = \"o\".\"officeCode\" WHERE \"e\".\"jobTitle\" = "),
         SqlParts.paramPart("jobTitle"),
         SqlParts.textPart(")")
     );
-    List<SqlParts> withClauses = new ArrayList<>();
     withClauses.add(salesRepInfo);
     return withClauses;
   }

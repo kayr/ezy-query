@@ -1,11 +1,16 @@
 package io.github.kayr.ezyquery.gen;
 
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeName;
+import static io.github.kayr.ezyquery.gen.StringCaseUtil.toScreamingSnakeCase;
+
+import com.squareup.javapoet.*;
+import io.github.kayr.ezyquery.api.Field;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 
 public class CodeElf {
+
+  private CodeElf() {
+  }
 
   public static MethodSpec.Builder publicMethod(
       String name, Class<?> method, Class<?>... annotations) {
@@ -43,5 +48,27 @@ public class CodeElf {
     for (Class<?> annotation : annotations) {
       method.addAnnotation(annotation);
     }
+  }
+
+  static FieldSpec createField(EzyQueryFieldSpec f, Modifier... modifiers) {
+    return FieldSpec.builder(
+            paramType(Field.class, f.getDataType()), toScreamingSnakeCase(f.getAlias()), modifiers)
+        .initializer(
+            "$T.of($S, $S, $T.class,$T.$L)",
+            Field.class,
+            f.getSqlField(),
+            f.getAlias(),
+            f.getDataType(),
+            Field.ExpressionType.class,
+            f.getExpressionType().name())
+        .build();
+  }
+
+  public static ParameterizedTypeName paramType(Class<?> clazz, TypeName dataType) {
+    return ParameterizedTypeName.get(ClassName.get(clazz), dataType);
+  }
+
+  public static ParameterizedTypeName paramType(Class<?> clazz, Class<?> dataType) {
+    return ParameterizedTypeName.get(ClassName.get(clazz), ClassName.get(dataType));
   }
 }

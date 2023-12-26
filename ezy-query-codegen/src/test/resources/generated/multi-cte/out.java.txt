@@ -128,24 +128,24 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
   }
 
   public List<SqlParts> withClauses() {
+    List<SqlParts> withClauses = new ArrayList<>();
     SqlParts dtl1 = SqlParts.of(
         SqlParts.textPart("dtl1 AS (SELECT book_id AS bookId, sales_amount AS salesAmount FROM sales WHERE "),
         SqlParts.paramPart("_ezy_book_sales"),
         SqlParts.textPart(")")
     );
+    withClauses.add(dtl1);
     SqlParts dtl2 = SqlParts.of(
         SqlParts.textPart("dtl2 AS (SELECT b.title AS title, b.author_id AS authorId, b.publisher_id AS publisherId, dtl1.sales_amount AS salesAmount FROM books b JOIN dtl1 ON b.book_id = dtl1.book_id WHERE "),
         SqlParts.paramPart("_ezy_book_author_sales"),
         SqlParts.textPart(")")
     );
+    withClauses.add(dtl2);
     SqlParts dtl3 = SqlParts.of(
         SqlParts.textPart("dtl3 AS (SELECT dtl2.title AS title, a.name AS authorName, p.name AS publisherName, dtl2.sales_amount AS salesAmount FROM dtl2 JOIN authors a ON dtl2.author_id = a.author_id JOIN publishers p ON dtl2.publisher_id = p.publisher_id WHERE "),
         SqlParts.paramPart("_ezy_book_publisher_names_sales"),
         SqlParts.textPart(")")
     );
-    List<SqlParts> withClauses = new ArrayList<>();
-    withClauses.add(dtl1);
-    withClauses.add(dtl2);
     withClauses.add(dtl3);
     return withClauses;
   }

@@ -159,8 +159,7 @@ class QueryGenTest extends Specification {
 
 
         then:
-        2 == 2
-//        generated == expected
+        generated == expected
     }
 
 

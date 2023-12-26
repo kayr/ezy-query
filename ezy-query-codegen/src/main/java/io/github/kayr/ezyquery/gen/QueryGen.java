@@ -2,6 +2,9 @@
 package io.github.kayr.ezyquery.gen;
 
 import static io.github.kayr.ezyquery.gen.CodeElf.*;
+import static io.github.kayr.ezyquery.gen.StringCaseUtil.toCamelCase;
+import static io.github.kayr.ezyquery.gen.StringCaseUtil.toScreamingSnakeCase;
+import static java.util.Objects.requireNonNull;
 
 import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.EzyQueryWithResult;
@@ -30,8 +33,6 @@ import net.sf.jsqlparser.statement.select.*;
 
 public class QueryGen {
 
-  public static final ParameterizedTypeName OPTIONAL_SQL_PARTS =
-      ParameterizedTypeName.get(Optional.class, SqlParts.class);
   private final String sql;
   private final String className;
   private final String packageName;
@@ -89,10 +90,7 @@ public class QueryGen {
 
     SqlParts whereParts = toSqlPart(plainSelect.getWhere());
 
-    SqlParts orderByElements =
-        toOrderByStatement(plainSelect.getOrderByElements())
-            .map(SqlParts::of)
-            .orElseGet(SqlParts::empty);
+    SqlParts orderByElements = extractOrderByElems(plainSelect);
 
     // the params
 
@@ -114,8 +112,7 @@ public class QueryGen {
         TypeSpec.classBuilder(className)
             .addModifiers(Modifier.PUBLIC)
             .addJavadoc(sql)
-            .addSuperinterface(
-                ParameterizedTypeName.get(ClassName.get(EzyQueryWithResult.class), resultClassName))
+            .addSuperinterface(paramType(EzyQueryWithResult.class, resultClassName))
             .addFields(fConstants)
             .addField(fSchemaAndParts.getOne())
             .addField(fFields)
@@ -158,6 +155,12 @@ public class QueryGen {
     return JavaFile.builder(packageName, finalClazz).build();
   }
 
+  private static SqlParts extractOrderByElems(PlainSelect plainSelect) {
+    return toOrderByStatement(plainSelect.getOrderByElements())
+        .map(SqlParts::of)
+        .orElseGet(SqlParts::empty);
+  }
+
   private List<FieldSpec> fieldsForNestedQueries(List<TypeSpec> nestedQueryClasses) {
     /*
     build the static final NestedQuery objects
@@ -171,7 +174,7 @@ public class QueryGen {
               ClassName type = ClassName.get(packageName, className, nestedQueryClass.name);
               return FieldSpec.builder(
                       type,
-                      StringCaseUtil.toScreamingSnakeCase(nestedQueryClass.name),
+                      toScreamingSnakeCase(nestedQueryClass.name),
                       Modifier.PUBLIC,
                       Modifier.FINAL)
                   .initializer("new $T()", type)
@@ -215,7 +218,7 @@ public class QueryGen {
                     name ->
                         FieldSpec.builder(
                                 NamedParam.class,
-                                StringCaseUtil.toScreamingSnakeCase(name),
+                                toScreamingSnakeCase(name),
                                 Modifier.PUBLIC,
                                 Modifier.FINAL)
                             .initializer("$T.of($S)", NamedParam.class, name)
@@ -243,9 +246,9 @@ public class QueryGen {
     }
     */
 
-    MethodSpec.Builder method = publicMethod("orderByClause", OPTIONAL_SQL_PARTS, Override.class);
+    MethodSpec.Builder method =
+        publicMethod("orderByClause", paramType(Optional.class, SqlParts.class), Override.class);
     if (orderByParts.isEmpty()) {
-
       return method.addStatement("return Optional.empty()").build();
     }
 
@@ -262,7 +265,8 @@ public class QueryGen {
                 SqlParts.paramPart("membership")));
     }
      */
-    MethodSpec.Builder method = publicMethod("whereClause", OPTIONAL_SQL_PARTS, Override.class);
+    MethodSpec.Builder method =
+        publicMethod("whereClause", paramType(Optional.class, SqlParts.class), Override.class);
     if (whereParts.isEmpty()) {
       return method.addStatement("return Optional.empty()").build();
     }
@@ -289,10 +293,7 @@ public class QueryGen {
 
   private static MethodSpec methodResultClass(ClassName resultClassName) {
 
-    return publicMethod(
-            "resultClass",
-            ParameterizedTypeName.get(ClassName.get(Class.class), resultClassName),
-            Override.class)
+    return publicMethod("resultClass", paramType(Class.class, resultClassName), Override.class)
         .addStatement("return $T.class", resultClassName)
         .build();
   }
@@ -308,7 +309,7 @@ public class QueryGen {
   private FieldSpec fieldMainSingleton(ClassName thisClassName) {
     return FieldSpec.builder(
             thisClassName,
-            StringCaseUtil.toScreamingSnakeCase(className),
+            toScreamingSnakeCase(className),
             Modifier.PUBLIC,
             Modifier.STATIC,
             Modifier.FINAL)
@@ -322,15 +323,15 @@ public class QueryGen {
       return Pair.of(null, Collections.emptyList());
     }
 
-    MethodSpec.Builder mWith =
-        publicMethod("withClauses", ParameterizedTypeName.get(List.class, SqlParts.class));
+    MethodSpec.Builder mWith = publicMethod("withClauses", paramType(List.class, SqlParts.class));
 
-    List<String> withClauseNames = new ArrayList<>();
+    mWith.addStatement(
+        "$T<$T> withClauses = new $T<>()", List.class, SqlParts.class, ArrayList.class);
+
     List<SqlParts> withClauseParts = new ArrayList<>();
 
     for (WithItem withItem : withItems) {
-      String name = StringCaseUtil.toCamelCase(unquote(withItem.getAlias().getName()));
-      withClauseNames.add(name);
+      String name = toCamelCase(unquote(withItem.getAlias().getName()));
 
       String withClause = withItem.toString();
       SqlParts sqlParts = SqlParts.of(withClause);
@@ -339,12 +340,7 @@ public class QueryGen {
       CodeBlock.Builder withCodeBlock = buildSqlParts(sqlParts);
 
       mWith.addCode("SqlParts $L = ", name).addCode(withCodeBlock.build()).addCode(";\n");
-    }
-
-    mWith.addStatement(
-        "$T<$T> withClauses = new $T<>()", List.class, SqlParts.class, ArrayList.class);
-    for (String withClauseName : withClauseNames) {
-      mWith.addStatement("withClauses.add($L)", withClauseName);
+      mWith.addStatement("withClauses.add($L)", name);
     }
 
     mWith.addStatement("return withClauses");
@@ -367,37 +363,22 @@ public class QueryGen {
       WalkContext.SelectExpr selectExpr = entry.getValue();
       List<EzyQueryFieldSpec> fields = extractFields(selectExpr.getSelect().getPlainSelect());
 
-      List<FieldSpec> classFields =
+      List<FieldSpec> allFields =
           fields.stream()
-              .map(f -> createField(f, Modifier.PUBLIC, Modifier.FINAL))
+              .map(f1 -> createField(f1, Modifier.PUBLIC, Modifier.FINAL))
               .collect(Collectors.toList());
-
-      MethodSpec mConstructor = methodConstructor();
-
-      FieldSpec fFields = fieldAllFields();
-
-      MethodSpec mInit = methodInit(classFields, fFields);
-
-      /*
-       @Override
-      public NamedCriteriaParam getName() {
-        return NamedCriteriaParam.of("_ezy_customerSummary", fields);
-      }
-       */
-      MethodSpec mGetName =
-          publicMethod("getName", NamedCriteriaParam.class, Override.class)
-              .addStatement("return $T.of($S, fields)", NamedCriteriaParam.class, paramName)
-              .build();
-
       TypeSpec ty =
           TypeSpec.classBuilder(StringCaseUtil.toPascalCase(className))
               .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
               .addSuperinterface(CriteriaHolder.class)
-              .addFields(classFields)
-              .addField(fFields)
-              .addMethod(mConstructor)
-              .addMethod(mInit)
-              .addMethod(mGetName)
+              .addFields(allFields)
+              .addField(fieldAllFields())
+              .addMethod(methodConstructor())
+              .addMethod(methodInit(allFields, fieldAllFields()))
+              .addMethod(
+                  publicMethod("getName", NamedCriteriaParam.class, Override.class)
+                      .addStatement("return $T.of($S, fields)", NamedCriteriaParam.class, paramName)
+                      .build())
               .build();
 
       nestedQueryClasses.add(ty);
@@ -521,14 +502,9 @@ public class QueryGen {
         .build();
   }
 
+  /** List<Field<?>> */
   private static ParameterizedTypeName typeListOfFields() {
-    ParameterizedTypeName wildField = typeFieldWildCard();
-    return ParameterizedTypeName.get(ClassName.get(List.class), wildField);
-  }
-
-  private static ParameterizedTypeName typeFieldWildCard() {
-    WildcardTypeName wildcardTypeName = WildcardTypeName.subtypeOf(Object.class);
-    return ParameterizedTypeName.get(ClassName.get(Field.class), wildcardTypeName);
+    return paramType(List.class, paramType(Field.class, WildcardTypeName.subtypeOf(Object.class)));
   }
 
   /** schema field */
@@ -552,14 +528,11 @@ public class QueryGen {
     }
 
     String finalFromClause = sb.toString();
-
     SqlParts sqlParts = SqlParts.of(finalFromClause);
-
-    CodeBlock.Builder schema = buildSqlParts(sqlParts);
 
     FieldSpec schemaField =
         FieldSpec.builder(SqlParts.class, "schema", Modifier.PRIVATE, Modifier.FINAL)
-            .initializer(schema.build())
+            .initializer(buildSqlParts(sqlParts).build())
             .build();
     return Pair.of(schemaField, sqlParts);
   }
@@ -593,26 +566,6 @@ public class QueryGen {
         .collect(Collectors.toList());
   }
 
-  private FieldSpec createField(EzyQueryFieldSpec f, Modifier... modifiers) {
-    return FieldSpec.builder(
-            ParameterizedTypeName.get(ClassName.get(Field.class), f.getDataType()),
-            constantName(f.getAlias()),
-            modifiers)
-        .initializer(
-            "$T.of($S, $S, $T.class,$T.$L)",
-            Field.class,
-            f.getSqlField(),
-            f.getAlias(),
-            f.getDataType(),
-            Field.ExpressionType.class,
-            f.getExpressionType().name())
-        .build();
-  }
-
-  String constantName(String name) {
-    return StringCaseUtil.toScreamingSnakeCase(name);
-  }
-
   private List<EzyQueryFieldSpec> extractFields(PlainSelect plainSelect) {
 
     return plainSelect.getSelectItems().stream().map(this::toField).collect(Collectors.toList());
@@ -620,7 +573,10 @@ public class QueryGen {
 
   private EzyQueryFieldSpec toField(SelectItem<?> selectItem) {
 
-    Pair<String, String> pair = parseNameAndType(selectItem.getAlias());
+    Alias alias = selectItem.getAlias();
+    requireNonNull(alias, "Please provide an alias for field : " + selectItem);
+
+    Pair<String, String> pair = parseNameAndType(alias);
 
     String aliasName = pair.getOne();
     String typeName = pair.getTwo();
@@ -642,13 +598,10 @@ public class QueryGen {
   }
 
   private Pair<String, String> parseNameAndType(Alias sqlAlias) {
-    String alias =
-        Objects.requireNonNull(sqlAlias, "Alias if required for filed [" + sqlAlias + "]")
-            .getName();
-    alias = unquote(alias);
+    String alias = unquote(sqlAlias.getName());
 
     String[] parts = alias.contains("_") ? alias.split("_") : new String[] {alias, "object"};
-      return Pair.of(parts[0], parts[1]);
+    return Pair.of(parts[0], parts[1]);
   }
 
   TypeName resolveType(String type) {
@@ -676,15 +629,6 @@ public class QueryGen {
     TYPE_MAP.put("bigint", java.math.BigInteger.class);
     TYPE_MAP.put("byte", Byte.class);
     TYPE_MAP.put("object", Object.class);
-  }
-
-  @lombok.Getter
-  @lombok.AllArgsConstructor(staticName = "of")
-  static class EzyQueryFieldSpec {
-    private String sqlField;
-    private String alias;
-    private TypeName dataType;
-    private Field.ExpressionType expressionType;
   }
 
   String unquote(String s) {

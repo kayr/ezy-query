@@ -24,7 +24,7 @@ dependencies {
 
 }
 
-task writeVersion(type: Copy) {
+tasks.register('writeVersion', Copy) {
     from 'src/main/java/io/github/kayr/ezyquery/EzyQueryVersion.java.in'
     into 'src/main/java/io/github/kayr/ezyquery/'
     expand(version: project.version)

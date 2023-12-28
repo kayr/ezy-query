@@ -33,4 +33,9 @@ public class EzySelectVisitorAdapter implements SelectVisitor {
   public void visit(LateralSubSelect lateralSubSelect) {
     throw new UnsupportedOperationException("visit(LateralSubSelect)");
   }
+
+  @Override
+  public void visit(TableStatement tableStatement) {
+    throw new UnsupportedOperationException("visit(TableStatement)");
+  }
 }

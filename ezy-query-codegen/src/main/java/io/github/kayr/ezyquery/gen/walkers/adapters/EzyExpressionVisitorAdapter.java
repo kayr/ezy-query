@@ -12,7 +12,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
-public abstract class EzyExpressionVisitorAdapter implements ExpressionVisitor {
+public class EzyExpressionVisitorAdapter implements ExpressionVisitor {
   // region Not Implemented or Not Needed
 
   @Override
@@ -32,6 +32,9 @@ public abstract class EzyExpressionVisitorAdapter implements ExpressionVisitor {
 
   @Override
   public void visit(JdbcParameter jdbcParameter) {}
+
+  @Override
+  public void visit(JdbcNamedParameter jdbcNamedParameter) {}
 
   @Override
   public void visit(DoubleValue doubleValue) {}
@@ -119,6 +122,15 @@ public abstract class EzyExpressionVisitorAdapter implements ExpressionVisitor {
 
   @Override
   public void visit(NotEqualsTo notEqualsTo) {}
+
+  @Override
+  public void visit(DoubleAnd doubleAnd) {}
+
+  @Override
+  public void visit(Contains contains) {}
+
+  @Override
+  public void visit(ContainedBy containedBy) {}
 
   @Override
   public void visit(ParenthesedSelect selectBody) {}
@@ -278,6 +290,12 @@ public abstract class EzyExpressionVisitorAdapter implements ExpressionVisitor {
 
   @Override
   public void visit(RangeExpression rangeExpression) {}
+
+  @Override
+  public void visit(TSQLLeftJoin tsqlLeftJoin) {}
+
+  @Override
+  public void visit(TSQLRightJoin tsqlRightJoin) {}
 
   // endregion
 

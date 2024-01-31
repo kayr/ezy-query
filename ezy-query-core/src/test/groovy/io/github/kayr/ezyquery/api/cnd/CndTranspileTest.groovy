@@ -44,9 +44,13 @@ class CndTranspileTest extends Specification {
         Cnd.notLike("name", 'john')                          || ['name', 'john']         | 'name NOT LIKE john'       | '? NOT LIKE ?'
         Cnd.in("name", ['john'])                             || ['name', 'john']         | 'name in [john]'           | '? IN (?)'
         Cnd.in("name", [])                                   || []                       | "name in []"               | "1 = 0"
+        Cnd.in("name", "x1", "x2")                           || ['name', 'x1', 'x2']     | 'name in [x1, x2]'         | '? IN (?, ?)'
+        Cnd.in("name", "x1")                                 || ['name', 'x1']           | 'name in [x1]'             | '? IN (?)'
         Cnd.notIn("name", [])                                || []                       | "name not in []"           | "1 = 1"
         Cnd.notIn("name", ['john'])                          || ['name', 'john']         | 'name not in [john]'       | '? NOT IN (?)'
         Cnd.notIn("name", ['john', 'doe'])                   || ['name', 'john', 'doe']  | 'name not in [john, doe]'  | '? NOT IN (?, ?)'
+        Cnd.notIn("name", "x1")                              || ['name', 'x1']           | 'name not in [x1]'         | '? NOT IN (?)'
+        Cnd.notIn("name", "x1", "x2")                        || ['name', 'x1', 'x2']     | 'name not in [x1, x2]'     | '? NOT IN (?, ?)'
         Cnd.in("name", ['john', 'doe'])                      || ['name', 'john', 'doe']  | 'name in [john, doe]'      | '? IN (?, ?)'
         Cnd.isNull("name")                                   || ['name']                 | 'name is null'             | '? IS NULL'
         Cnd.isNotNull("name")                                || ['name']                 | 'name is not null'         | '? IS NOT NULL'

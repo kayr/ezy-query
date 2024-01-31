@@ -4,10 +4,7 @@ import io.github.kayr.ezyquery.ast.BinaryExpr;
 import io.github.kayr.ezyquery.ast.UnaryExpr;
 import io.github.kayr.ezyquery.util.ArrayElf;
 import io.github.kayr.ezyquery.util.Elf;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Cnd {
 
@@ -120,6 +117,22 @@ public class Cnd {
     return ExprCond.expr(expr);
   }
 
+  public static ICond fromMap(Map<String, ?> criteria) {
+    // convert to multi map
+    Map<String, List<?>> multiMap = new HashMap<>();
+    for (Map.Entry<String, ?> entry : criteria.entrySet()) {
+      String k = entry.getKey();
+      Object v = entry.getValue();
+      multiMap.put(k, Collections.singletonList(v));
+    }
+    return fromMvMap(multiMap);
+  }
+
+  /** From multi value map where each key can have multiple values */
+  public static ICond fromMvMap(Map<String, List<?>> criteria) {
+    return CndFromMap.create(criteria);
+  }
+
   public static ExprCond expr(String expr, Object arg0, Object... args) {
     expr = String.format(expr, ArrayElf.addFirst(args, arg0));
     return ExprCond.expr(expr);
@@ -143,8 +156,8 @@ public class Cnd {
   private static Optional<Conds> tryCombine(
       ICond left, ICond right, BinaryExpr.Op combineOperator) {
 
-    BinaryExpr.Op leftOp = booleanOperator(left);
-    BinaryExpr.Op otherOp = booleanOperator(right);
+    BinaryExpr.Op leftOp = extractBoolOperator(left);
+    BinaryExpr.Op otherOp = extractBoolOperator(right);
 
     if (left.isConds() && right.isConds() && leftOp == otherOp && combineOperator == leftOp) {
 
@@ -173,7 +186,7 @@ public class Cnd {
   }
 
   // todo create an interface
-  public static BinaryExpr.Op booleanOperator(ICond cond) {
+  public static BinaryExpr.Op extractBoolOperator(ICond cond) {
     if (cond.isConds()) return ((Conds) cond).getOperator();
     if (cond instanceof Cond) return ((Cond) cond).getOperator();
     return null;

@@ -23,9 +23,14 @@ public class CndFromMap {
     }
 
 
+    public static ICond create(Map<String, List<?>> map) {
+        return create().from(map);
+    }
+
     static CndFromMap create() {
         return new CndFromMap();
     }
+
 
     private static ICond createCond(
       String operator, List<?> operands, Function<Object, ICond> fnCreateCnd) {
@@ -178,6 +183,5 @@ public class CndFromMap {
             return Cnd.isNotNull(name);
         };
     }
-
 
 }

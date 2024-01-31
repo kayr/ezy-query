@@ -33,41 +33,43 @@ class CndTranspileTest extends Specification {
         actualSql == sql
 
         where:
-        cnd                                                  || params                   | exprString                 | sql
-        Cnd.eq("name", 'john')                               || ['name', 'john']         | 'name = john'              | '? = ?'
-        Cnd.neq("name", 'john')                              || ['name', 'john']         | 'name <> john'             | '? <> ?'
-        Cnd.gt("name", 'john')                               || ['name', 'john']         | 'name > john'              | '? > ?'
-        Cnd.gte("name", 'john')                              || ['name', 'john']         | 'name >= john'             | '? >= ?'
-        Cnd.lt("name", 'john')                               || ['name', 'john']         | 'name < john'              | '? < ?'
-        Cnd.lte("name", 'john')                              || ['name', 'john']         | 'name <= john'             | '? <= ?'
-        Cnd.like("name", 'john')                             || ['name', 'john']         | 'name LIKE john'           | '? LIKE ?'
-        Cnd.notLike("name", 'john')                          || ['name', 'john']         | 'name NOT LIKE john'       | '? NOT LIKE ?'
-        Cnd.in("name", ['john'])                             || ['name', 'john']         | 'name in [john]'           | '? IN (?)'
-        Cnd.in("name", [])                                   || []                       | "name in []"               | "1 = 0"
-        Cnd.in("name", "x1", "x2")                           || ['name', 'x1', 'x2']     | 'name in [x1, x2]'         | '? IN (?, ?)'
-        Cnd.in("name", "x1")                                 || ['name', 'x1']           | 'name in [x1]'             | '? IN (?)'
-        Cnd.notIn("name", [])                                || []                       | "name not in []"           | "1 = 1"
-        Cnd.notIn("name", ['john'])                          || ['name', 'john']         | 'name not in [john]'       | '? NOT IN (?)'
-        Cnd.notIn("name", ['john', 'doe'])                   || ['name', 'john', 'doe']  | 'name not in [john, doe]'  | '? NOT IN (?, ?)'
-        Cnd.notIn("name", "x1")                              || ['name', 'x1']           | 'name not in [x1]'         | '? NOT IN (?)'
-        Cnd.notIn("name", "x1", "x2")                        || ['name', 'x1', 'x2']     | 'name not in [x1, x2]'     | '? NOT IN (?, ?)'
-        Cnd.in("name", ['john', 'doe'])                      || ['name', 'john', 'doe']  | 'name in [john, doe]'      | '? IN (?, ?)'
-        Cnd.isNull("name")                                   || ['name']                 | 'name is null'             | '? IS NULL'
-        Cnd.isNotNull("name")                                || ['name']                 | 'name is not null'         | '? IS NOT NULL'
-        Cnd.val("name")                                      || ['name']                 | 'name'                     | '?'
-        Cnd.not(Cnd.eq("name", 'john'))                      || ['name', 'john']         | 'not(name = john)'         | 'NOT(? = ?)'
-        Cnd.andAll("true", Cnd.val("false"), Cnd.val("foo")) || ['true', 'false', 'foo'] | '(true AND false AND foo)' | '(? AND ? AND ?)'
-        Cnd.orAll(Cnd.val("true"), "false", "foo")           || ['true', 'false', 'foo'] | '(true OR false OR foo)'   | '(? OR ? OR ?)'
-        Cnd.trueCnd()                                        || [1, 1]                   | '1 = 1'                    | '? = ?'
-        Cnd.positive("10")                                   || ['10']                   | '+10'                      | '+?'
-        Cnd.negate("10")                                     || ['10']                   | '-10'                      | '-?'
-        Cnd.expr("'name' = 'john'")                          || ['name', 'john']         | "('name' = 'john')"        | "(? = ?)"
-        Cnd.expr("1 in (0)")                                 || [1, 0]                   | "1 in [0]"                 | "? IN (?)"
-        Cnd.expr("1 in (0) and 2 > 1")                       || [1, 0, 2, 1]             | "(1 in [0] AND 2 > 1)"     | "(? IN (?) AND ? > ?)"
-        Cnd.expr("name = 'john'")                            || ['john']                 | "(#name = 'john')"         | "(t.name = ?)"
-        Cnd.sql("some sql expression", "param1", "param2")   || ['param1', 'param2']     | "(some sql expression)"    | "(some sql expression)"
-        Cnd.sql("(some sql expression)", "param1", "param2") || ['param1', 'param2']     | "(some sql expression)"    | "(some sql expression)"
-        Cnd.sql("(some sql expression)")                     || []                       | "(some sql expression)"    | "(some sql expression)"
+        cnd                                                  || params                   | exprString                     | sql
+        Cnd.eq("name", 'john')                               || ['name', 'john']         | 'name = john'                  | '? = ?'
+        Cnd.neq("name", 'john')                              || ['name', 'john']         | 'name <> john'                 | '? <> ?'
+        Cnd.gt("name", 'john')                               || ['name', 'john']         | 'name > john'                  | '? > ?'
+        Cnd.gte("name", 'john')                              || ['name', 'john']         | 'name >= john'                 | '? >= ?'
+        Cnd.lt("name", 'john')                               || ['name', 'john']         | 'name < john'                  | '? < ?'
+        Cnd.lte("name", 'john')                              || ['name', 'john']         | 'name <= john'                 | '? <= ?'
+        Cnd.like("name", 'john')                             || ['name', 'john']         | 'name LIKE john'               | '? LIKE ?'
+        Cnd.notLike("name", 'john')                          || ['name', 'john']         | 'name NOT LIKE john'           | '? NOT LIKE ?'
+        Cnd.in("name", ['john'])                             || ['name', 'john']         | 'name in [john]'               | '? IN (?)'
+        Cnd.in("name", [])                                   || []                       | "name in []"                   | "1 = 0"
+        Cnd.in("name", "x1", "x2")                           || ['name', 'x1', 'x2']     | 'name in [x1, x2]'             | '? IN (?, ?)'
+        Cnd.in("name", "x1")                                 || ['name', 'x1']           | 'name in [x1]'                 | '? IN (?)'
+        Cnd.notIn("name", [])                                || []                       | "name not in []"               | "1 = 1"
+        Cnd.notIn("name", ['john'])                          || ['name', 'john']         | 'name not in [john]'           | '? NOT IN (?)'
+        Cnd.notIn("name", ['john', 'doe'])                   || ['name', 'john', 'doe']  | 'name not in [john, doe]'      | '? NOT IN (?, ?)'
+        Cnd.notIn("name", "x1")                              || ['name', 'x1']           | 'name not in [x1]'             | '? NOT IN (?)'
+        Cnd.notIn("name", "x1", "x2")                        || ['name', 'x1', 'x2']     | 'name not in [x1, x2]'         | '? NOT IN (?, ?)'
+        Cnd.in("name", ['john', 'doe'])                      || ['name', 'john', 'doe']  | 'name in [john, doe]'          | '? IN (?, ?)'
+        Cnd.isNull("name")                                   || ['name']                 | 'name is null'                 | '? IS NULL'
+        Cnd.isNotNull("name")                                || ['name']                 | 'name is not null'             | '? IS NOT NULL'
+        Cnd.val("name")                                      || ['name']                 | 'name'                         | '?'
+        Cnd.not(Cnd.eq("name", 'john'))                      || ['name', 'john']         | 'not(name = john)'             | 'NOT(? = ?)'
+        Cnd.andAll("true", Cnd.val("false"), Cnd.val("foo")) || ['true', 'false', 'foo'] | '(true AND false AND foo)'     | '(? AND ? AND ?)'
+        Cnd.orAll(Cnd.val("true"), "false", "foo")           || ['true', 'false', 'foo'] | '(true OR false OR foo)'       | '(? OR ? OR ?)'
+        Cnd.trueCnd()                                        || [1, 1]                   | '1 = 1'                        | '? = ?'
+        Cnd.positive("10")                                   || ['10']                   | '+10'                          | '+?'
+        Cnd.negate("10")                                     || ['10']                   | '-10'                          | '-?'
+        Cnd.expr("'name' = 'john'")                          || ['name', 'john']         | "('name' = 'john')"            | "(? = ?)"
+        Cnd.expr("1 in (0)")                                 || [1, 0]                   | "1 in [0]"                     | "? IN (?)"
+        Cnd.expr("1 in (0) and 2 > 1")                       || [1, 0, 2, 1]             | "(1 in [0] AND 2 > 1)"         | "(? IN (?) AND ? > ?)"
+        Cnd.expr("name = 'john'")                            || ['john']                 | "(#name = 'john')"             | "(t.name = ?)"
+        Cnd.sql("some sql expression", "param1", "param2")   || ['param1', 'param2']     | "(some sql expression)"        | "(some sql expression)"
+        Cnd.sql("(some sql expression)", "param1", "param2") || ['param1', 'param2']     | "(some sql expression)"        | "(some sql expression)"
+        Cnd.sql("(some sql expression)")                     || []                       | "(some sql expression)"        | "(some sql expression)"
+        Cnd.fromMvMap([name: ['John'], age: ['10']]) || ['John', '10'] | "(#name = John AND #age = 10)" | "(t.name = ? AND t.age = ?)"
+        Cnd.fromMap([name: 'John', age: '10'])               || ['John', '10']           | "(#name = John AND #age = 10)" | "(t.name = ? AND t.age = ?)"
     }
 
     def 'test combining multiple expressions'() {

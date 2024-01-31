@@ -68,7 +68,7 @@ class CndTranspileTest extends Specification {
         Cnd.sql("some sql expression", "param1", "param2")   || ['param1', 'param2']     | "(some sql expression)"        | "(some sql expression)"
         Cnd.sql("(some sql expression)", "param1", "param2") || ['param1', 'param2']     | "(some sql expression)"        | "(some sql expression)"
         Cnd.sql("(some sql expression)")                     || []                       | "(some sql expression)"        | "(some sql expression)"
-        Cnd.fromMvMap([name: ['John'], age: ['10']]) || ['John', '10'] | "(#name = John AND #age = 10)" | "(t.name = ? AND t.age = ?)"
+        Cnd.fromMvMap([name: ['John'], age: ['10']])         || ['John', '10']           | "(#name = John AND #age = 10)" | "(t.name = ? AND t.age = ?)"
         Cnd.fromMap([name: 'John', age: '10'])               || ['John', '10']           | "(#name = John AND #age = 10)" | "(t.name = ? AND t.age = ?)"
     }
 
@@ -165,6 +165,7 @@ class CndTranspileTest extends Specification {
         name.in('john', 'doe')               || ['john', 'doe'] | '#name in [john, doe]'           | 't.name IN (?, ?)'
         name.in('john')                      || ['john']        | '#name in [john]'                | 't.name IN (?)'
         name.notIn(['john', 'doe'])          || ['john', 'doe'] | '#name not in [john, doe]'       | 't.name NOT IN (?, ?)'
+        name.notIn('john', 'doe')            || ['john', 'doe'] | '#name not in [john, doe]'       | 't.name NOT IN (?, ?)'
         name.isNull()                        || []              | '#name is null'                  | 't.name IS NULL'
         name.isNotNull()                     || []              | '#name is not null'              | 't.name IS NOT NULL'
         name.between('john', 'doe')          || ['john', 'doe'] | '#name between john and doe'     | 't.name BETWEEN ? AND ?'

@@ -45,8 +45,12 @@ public interface IOperand {
     return Cnd.in(this, value, values);
   }
 
-  default Cond notIn(Object value) {
-    return Cnd.notIn(this, value);
+  default Cond notIn(Object value, Object... values) {
+    return Cnd.notIn(this, value, values);
+  }
+
+  default Cond notIn(Collection<?> values) {
+    return Cnd.notIn(this, values);
   }
 
   default Conds and(Object value) {

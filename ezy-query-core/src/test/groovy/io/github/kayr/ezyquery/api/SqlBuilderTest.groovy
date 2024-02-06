@@ -97,6 +97,37 @@ class SqlBuilderTest extends Specification {
 
     }
 
+    def "test build with filter API from map"() {
+
+        def criteria = EzyCriteria.fromMap([
+                "name"   : "ronald",
+                "age.gt" : 20,
+                "_sortby": "name",
+                "_limit" : "10",
+                "_offset": "2"
+        ])
+
+        when:
+
+        def query = SqlBuilder.buildSql(ezyQuery, criteria)
+
+
+        def expected = '''
+                    SELECT 
+                      t.name as "name", 
+                      t.age as "age", 
+                      t.office as "office", 
+                      t.maxAge as "maxAge"
+                    FROM my_table
+                    WHERE (t.name = ? AND t.age > ?)
+                    ORDER BY t.name ASC
+                    LIMIT 10 OFFSET 2'''.stripIndent().trim()
+        then:
+
+
+        query.sql == expected
+    }
+
     def "test build with a filter and API"() {
 
 
@@ -589,10 +620,9 @@ LIMIT 50 OFFSET 0'''
         def query = EmployeeCustomerSummary.QUERY
 
 
-
         def criteria = EzyCriteria.selectAll()
                 .setCriteria(CUSTOMER_SUMMARY, CUSTOMER_SUMMARY.SALES_REP_EMPLOYEE_NUMBER.eq(12) & CUSTOMER_SUMMARY.TOTAL_CUSTOMERS.gt(10))
-        .where(query.OFFICE_CODE.in('1', '2', '3'))
+                .where(query.OFFICE_CODE.in('1', '2', '3'))
 
         when:
         def sql = SqlBuilder.buildSql(query, criteria)

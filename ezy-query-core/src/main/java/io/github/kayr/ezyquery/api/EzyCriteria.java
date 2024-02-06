@@ -1,17 +1,22 @@
 package io.github.kayr.ezyquery.api;
 
+import static java.util.Collections.singletonList;
+
+import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.util.Elf;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import io.github.kayr.ezyquery.util.MapUtil;
+import java.util.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 
 @lombok.Getter
 @lombok.Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 public class EzyCriteria {
+
+  public static final String SORT_BY_MAP_PARAM = "_sortby";
+  public static final String OFFSET_PARAM = "_offset";
+  public static final String LIMIT_PARAM = "_limit";
 
   @Builder.Default private List<String> columns = new ArrayList<>();
   @Builder.Default private List<ICond> conditions = new ArrayList<>();
@@ -37,6 +42,53 @@ public class EzyCriteria {
 
   public static EzyCriteria selectCount() {
     return builder().count(true).build();
+  }
+
+  public static EzyCriteria fromMap(Map<String, ?> criteria) {
+    HashMap<String, List<?>> map = new HashMap<>();
+    for (Map.Entry<String, ?> entry : criteria.entrySet()) {
+      map.put(entry.getKey(), singletonList(entry.getValue()));
+    }
+    return fromMvMap(map);
+  }
+
+  public static EzyCriteria fromMvMap(Map<String, List<?>> criteria) {
+
+    List<Sort> sortByStr = extractSort(criteria);
+
+    Integer limit =
+        Optional.ofNullable(MapUtil.firstValue(criteria, LIMIT_PARAM))
+            .map(Object::toString)
+            .map(Integer::parseInt)
+            .orElse(50);
+
+    Long offset =
+        Optional.ofNullable(MapUtil.firstValue(criteria, OFFSET_PARAM))
+            .map(Object::toString)
+            .map(Long::parseLong)
+            .orElse(0L);
+
+    Map<String, List<?>> condOnlyMap =
+        Elf.remove(criteria, SORT_BY_MAP_PARAM, OFFSET_PARAM, LIMIT_PARAM);
+    List<ICond> conditions = singletonList(Cnd.fromMvMap(condOnlyMap));
+
+    return EzyCriteria.builder()
+        .conditions(conditions)
+        .limit(limit)
+        .offset(offset)
+        .sorts(sortByStr)
+        .build();
+  }
+
+  private static List<Sort> extractSort(Map<String, List<?>> criteria) {
+    Object firstValue = MapUtil.firstValue(criteria, SORT_BY_MAP_PARAM);
+    return Elf.safeMap(Elf.toString(firstValue), Sort::parse);
+  }
+
+  private static String first(Map<String, List<?>> criteria, String key) {
+    List<?> list = criteria.get(key);
+    if (Elf.isEmpty(list)) return null;
+    return list.get(0).toString();
   }
   // endregion
 

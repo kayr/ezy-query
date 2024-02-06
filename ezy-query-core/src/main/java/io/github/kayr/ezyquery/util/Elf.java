@@ -26,6 +26,19 @@ public class Elf {
     return result;
   }
 
+  public static <T, V> V safeMap(T value, ThrowingFunction<T, V> mapper) {
+    if (value == null) return null;
+    try {
+      return mapper.apply(value);
+    } catch (Exception e) {
+      throw new UnCaughtException(e);
+    }
+  }
+
+  public static String toString(Object value) {
+    return value == null ? null : value.toString();
+  }
+
   public static <T> List<T> flatten(List<List<T>> lists) {
     if (lists == null) return null;
     return lists.stream().flatMap(Collection::stream).collect(Collectors.toList());
@@ -143,6 +156,14 @@ public class Elf {
   public static <K, V> Map<K, V> put(Map<K, V> paramValues, K paramName, V value) {
     HashMap<K, V> map = new HashMap<>(paramValues);
     map.put(paramName, value);
+    return map;
+  }
+
+  public static <K, V> Map<K, V> remove(Map<K, V> paramValues, K... paramName) {
+    HashMap<K, V> map = new HashMap<>(paramValues);
+    for (K k : paramName) {
+      map.remove(k);
+    }
     return map;
   }
 

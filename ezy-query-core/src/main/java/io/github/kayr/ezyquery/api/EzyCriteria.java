@@ -92,11 +92,6 @@ public class EzyCriteria {
     return Elf.safeMap(Elf.toString(firstValue), Sort::parse);
   }
 
-  private static String first(Map<String, List<?>> criteria, String key) {
-    List<?> list = criteria.get(key);
-    if (Elf.isEmpty(list)) return null;
-    return list.get(0).toString();
-  }
   // endregion
 
   // region Builder methods

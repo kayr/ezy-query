@@ -202,13 +202,6 @@ class SqlBuilderTest extends Specification {
     }
 
     def "test build uses default offset"() {
-        def fields = [
-                name,
-                age,
-                office,
-                maxAge
-        ]
-
         def criteria = EzyCriteria.selectAll()
                 .limit(15)
 
@@ -363,7 +356,7 @@ class SqlBuilderTest extends Specification {
         def criteria = EzyCriteria.select('name', 'age')
                 .where(name.eq("RK").and(age.eq(1)))
                 .limit(15)
-                .orderBy('name');
+                .orderBy('name')
 
         when:
         def query = SqlBuilder.buildSql(ezyQueryWithWhere, criteria)
@@ -473,7 +466,7 @@ class SqlBuilderTest extends Specification {
         def criteria = EzyCriteria.select('name', 'age')
                 .where(name.eq("RK"))
                 .setParam(NamedParam.of("name"), "NAME VALUE")
-                .setParam(NamedParam.of("age"), [10, 15, 20]);
+                .setParam(NamedParam.of("age"), [10, 15, 20])
         when:
         def queryAndParams = SqlBuilder.buildSql(query, criteria)
         def generatedSql = queryAndParams.sql
@@ -589,7 +582,7 @@ class SqlBuilderTest extends Specification {
 
         when:
         def sql = SqlBuilder.buildSql(query, EzyCriteria.selectAll()
-                .setParam(QueryWithCTEBasic.Params.JOB_TITLE, "Sales Rep"));
+                .setParam(QueryWithCTEBasic.Params.JOB_TITLE, "Sales Rep"))
 
 
         then:

@@ -1,5 +1,7 @@
 # ezy-query
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.kayr/ezy-query-gradle-plugin/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/io.github.kayr/ezy-query-gradle-plugin)
+
 Add the following to your `build.gradle` file.
 
 ```groovy

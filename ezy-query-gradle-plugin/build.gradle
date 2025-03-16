@@ -20,3 +20,21 @@ dependencies {
 //    implementation gradleApi()
     implementation project(':ezy-query-codegen')
 }
+
+afterEvaluate {
+
+    tasks.named("publishMavenJavaPublicationToMavenCentralRepository") {
+        dependsOn tasks.named("signPluginMavenPublication")
+    }
+
+    tasks.named("publishMavenJavaPublicationToMavenRepository") {
+        dependsOn tasks.named("signPluginMavenPublication")
+    }
+    tasks.named("publishPluginMavenPublicationToMavenCentralRepository") {
+        dependsOn tasks.named("signMavenJavaPublication")
+    }
+
+    tasks.named("publishPluginMavenPublicationToMavenRepository") {
+        dependsOn tasks.named("signMavenJavaPublication")
+    }
+}

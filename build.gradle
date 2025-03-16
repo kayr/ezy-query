@@ -67,8 +67,21 @@ subprojects {
 
         }
 
-        tasks.named("publishMavenJavaPublicationToMavenRepository") {
-            dependsOn tasks.named("signMavenPublication")
+
+        if(project.name != 'ezy-query-gradle-plugin') {
+            tasks.named("publishMavenJavaPublicationToMavenRepository") {
+                dependsOn tasks.named("signMavenPublication")
+            }
+            tasks.named("publishMavenJavaPublicationToMavenCentralRepository") {
+                dependsOn tasks.named("signMavenPublication")
+            }
+            tasks.named("publishMavenPublicationToMavenRepository") {
+                dependsOn tasks.named("signMavenJavaPublication")
+            }
+
+            tasks.named("publishMavenPublicationToMavenCentralRepository") {
+                dependsOn tasks.named("signMavenJavaPublication")
+            }
         }
 
     }

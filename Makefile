@@ -2,7 +2,7 @@
 .PHONY: $(shell grep -E '^[a-zA-Z_-]+:.*?$$' Makefile | cut -d: -f1)
 
 publish: generate format
-	./gradlew clean build publish
+	./gradlew clean build publish --no-daemon
 
 close-release:
 	./gradlew closeAndReleaseRepository

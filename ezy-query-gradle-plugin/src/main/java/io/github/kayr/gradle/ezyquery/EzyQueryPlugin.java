@@ -15,10 +15,12 @@ public class EzyQueryPlugin implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
-
     // also apply the java plugin
     project.getPlugins().apply(JavaBasePlugin.class);
+    project.getPluginManager().withPlugin("java", p -> doApply(project));
+  }
 
+  private void doApply(Project project) {
     // add ezyquery dependency version
     project
         .getDependencies()

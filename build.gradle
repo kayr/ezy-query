@@ -66,5 +66,10 @@ subprojects {
             }
 
         }
+
+        tasks.named("publishMavenJavaPublicationToMavenRepository") {
+            dependsOn tasks.named("signMavenPublication")
+        }
+
     }
 }

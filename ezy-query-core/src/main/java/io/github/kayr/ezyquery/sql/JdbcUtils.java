@@ -84,6 +84,14 @@ public class JdbcUtils {
     }
   }
 
+  public static PreparedStatement preparedStatementWithKeys(Connection connection, String sql) {
+    try {
+      return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error creating prepared statement with keys", e);
+    }
+  }
+
   public static Integer executeUpdate(PreparedStatement statement) {
     try {
       return statement.executeUpdate();
@@ -97,6 +105,29 @@ public class JdbcUtils {
       return statement.executeQuery();
     } catch (SQLException e) {
       throw new UnCaughtException("Error executing query", e);
+    }
+  }
+
+  public static Object getSingleGeneratedKey(ResultSet generatedKeys) {
+    try {
+      if (generatedKeys.next()) {
+        return generatedKeys.getObject(1);
+      }
+      return null;
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error getting single generated key", e);
+    }
+  }
+
+  public static List<Object> getAllGeneratedKeys(ResultSet generatedKeys) {
+    try {
+      List<Object> keys = new ArrayList<>();
+      while (generatedKeys.next()) {
+        keys.add(generatedKeys.getObject(1));
+      }
+      return keys;
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error getting all generated keys", e);
     }
   }
 }

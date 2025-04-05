@@ -8,8 +8,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
+import java.util.function.Function;
 
 public class Zql {
+
+  public interface Query {
+    String getSql();
+
+    List<Object> getParams();
+  }
 
   private final ConnectionProvider connectionProvider;
 
@@ -29,7 +36,7 @@ public class Zql {
     }
   }
 
-  public <T> T firstRow(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
+  public <T> T oneRow(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources dbReSources = rows(sql, params)) {
       List<T> results = Mappers.resultSetToList(dbReSources.resultSet, 1, mapper);
       assertNoMoreRecords(dbReSources.resultSet);
@@ -81,7 +88,15 @@ public class Zql {
     return new DbReSources(connection, statement, resultSet, connectionProvider);
   }
 
-  public Integer executeUpdate(String sql, Object... params) {
+  public Integer update(Query query) {
+    return update(query.getSql(), query.getParams());
+  }
+
+  public Integer update(String sql, List<Object> params) {
+    return update(sql, params.toArray());
+  }
+
+  public Integer update(String sql, Object... params) {
     Connection connection = connectionProvider.getConnectionUnChecked();
     try {
       PreparedStatement statement = JdbcUtils.preparedStatement(connection, sql);
@@ -104,6 +119,68 @@ public class Zql {
     for (int i = 0; i < values.length; i++) {
       JdbcUtils.setObject(preparedStatement, i + 1, values[i]);
     }
+  }
+
+  public <T> T insertOne(String sql, List<Object> params) {
+    return insertOne(sql, params.toArray());
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T insertOne(String sql, Object... params) {
+    return (T) executeInsert(sql, params, JdbcUtils::getSingleGeneratedKey);
+  }
+
+  public <T> T insertOne(Query query) {
+    return insertOne(query.getSql(), query.getParams());
+  }
+
+  public List<Object> insertMulti(String sql, List<Object> params) {
+    return insertMulti(sql, params.toArray());
+  }
+
+  public List<Object> insertMulti(String sql, Object... params) {
+    return executeInsert(sql, params, JdbcUtils::getAllGeneratedKeys);
+  }
+
+  public List<Object> insertMulti(Query query) {
+    return insertMulti(query.getSql(), query.getParams());
+  }
+
+  private <T> T executeInsert(String sql, Object[] params, Function<ResultSet, T> keyProcessor) {
+    Connection connection = connectionProvider.getConnectionUnChecked();
+    try (PreparedStatement statement = JdbcUtils.preparedStatementWithKeys(connection, sql)) {
+      setValues(statement, params);
+
+      statement.executeUpdate();
+
+      try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+        return keyProcessor.apply(generatedKeys);
+      }
+    } catch (Exception e) {
+      throw new UnCaughtException("Error executing insert", e);
+    } finally {
+      closeConnection(connectionProvider, connection);
+    }
+  }
+
+  public boolean execute(String sql, List<Object> params) {
+    return execute(sql, params.toArray());
+  }
+
+  public boolean execute(String sql, Object... params) {
+    Connection connection = connectionProvider.getConnectionUnChecked();
+    try (PreparedStatement statement = JdbcUtils.preparedStatement(connection, sql)) {
+      setValues(statement, params);
+      return statement.execute();
+    } catch (Exception e) {
+      throw new UnCaughtException("Error executing statement", e);
+    } finally {
+      closeConnection(connectionProvider, connection);
+    }
+  }
+
+  public boolean execute(Query query) {
+    return execute(query.getSql(), query.getParams());
   }
 
   @lombok.AllArgsConstructor

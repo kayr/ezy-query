@@ -54,7 +54,7 @@ public class EzySql {
   private <T> Optional<T> mayBeOne(
       EzyQuery query, EzyCriteria params, Mappers.RowMapper<T> resultMapper) {
     QueryAndParams queryAndParams = query.query(params);
-    T one = zql.firstRow(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
+    T one = zql.oneRow(resultMapper, queryAndParams.getSql(), queryAndParams.getParams());
     return Optional.ofNullable(one);
   }
 

@@ -21,7 +21,7 @@ class Db {
         if (ds == null) {
             //initialise h2 inmemory database
             def config = new HikariConfig()
-            config.setJdbcUrl("jdbc:h2:mem:test;")
+            config.setJdbcUrl("jdbc:h2:mem:test;DATABASE_TO_LOWER=FALSE;DATABASE_TO_UPPER=FALSE;CASE_INSENSITIVE_IDENTIFIERS=FALSE")
             config.setUsername("sa")
             config.setPassword("")
             config.setMaximumPoolSize(2)
@@ -66,7 +66,7 @@ class Db {
 
     def close() {
         if (ds != null) {
-            ezySql().zql.executeUpdate("DROP ALL OBJECTS")
+            ezySql().zql.update("DROP ALL OBJECTS")
             ds.close()
         }
     }
@@ -123,6 +123,33 @@ class Db {
         intoDb(offices, "offices")
         intoDb(employees, "employees")
         intoDb(customers, "customers")
+        createItemsTableWithAutoId()
         return this
     }
+    
+    def createItemsTableWithAutoId() {
+        withDb { connection ->
+            def statement = connection.createStatement()
+            // Create a table with auto-incrementing primary key
+            statement.execute("""
+                CREATE TABLE items (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    price DECIMAL(10,2) NOT NULL,
+                    category VARCHAR(50)
+                )
+            """)
+            
+            // Insert some initial data
+            statement.execute("""
+                INSERT INTO items (name, price, category) VALUES 
+                ('Laptop', 999.99, 'Electronics'),
+                ('Chair', 149.50, 'Furniture'),
+                ('Book', 24.99, 'Office')
+            """)
+            
+            statement.close()
+        }
+    }
 }
+

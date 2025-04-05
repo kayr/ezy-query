@@ -36,7 +36,7 @@ public interface Mappers<T> {
     List<T> data = new ArrayList<>();
     int count = 0;
     while (count < limit && JdbcUtils.next(resultSet)) {
-      data.add(mapper.mapRowUnChecked(count, columns, resultSet));
+      data.add(mapper.mapRowUnChecked(count++, columns, resultSet));
     }
     return data;
   }

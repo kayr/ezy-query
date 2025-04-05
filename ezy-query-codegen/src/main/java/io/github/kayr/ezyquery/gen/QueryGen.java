@@ -415,17 +415,6 @@ public class QueryGen {
     return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
   }
 
-  private static ClassName resolveGeneratedAnnotation() {
-    // if Generated annotation is available, add it
-    ClassName generatedAnnotation;
-    if (Elf.classExists("javax.annotation.Generated")) {
-      generatedAnnotation = ClassName.get("javax.annotation", "Generated");
-    } else {
-      generatedAnnotation = ClassName.get("javax.annotation.processing", "Generated");
-    }
-    return generatedAnnotation;
-  }
-
   private CodeBlock toStringMethodBody(List<EzyQueryFieldSpec> fieldList) {
     CodeBlock.Builder toStringMethodBody =
         CodeBlock.builder().add("return \"$L.Result{\"\n", className);
@@ -535,28 +524,6 @@ public class QueryGen {
             .initializer(buildSqlParts(sqlParts).build())
             .build();
     return Pair.of(schemaField, sqlParts);
-  }
-
-  private static CodeBlock.Builder buildSqlParts(SqlParts sqlParts) {
-    CodeBlock.Builder schemaBuilder = CodeBlock.builder();
-    schemaBuilder.add("$T.of(", SqlParts.class);
-    schemaBuilder.add("\n$>$>");
-    List<SqlParts.IPart> parts = sqlParts.getParts();
-    for (int i = 0, partsSize = parts.size(); i < partsSize; i++) {
-      SqlParts.IPart sqlPart = parts.get(i);
-      if (sqlPart instanceof SqlParts.IPart.Text) {
-        schemaBuilder.add("$T.textPart($S)", SqlParts.class, sqlPart.asString());
-      } else {
-        schemaBuilder.add("$T.paramPart($S)", SqlParts.class, sqlPart.asString());
-      }
-
-      if (i < partsSize - 1) {
-        schemaBuilder.add(",\n");
-      }
-    }
-
-    schemaBuilder.add("\n$<$<)");
-    return schemaBuilder;
   }
 
   private List<FieldSpec> fieldConstants(List<EzyQueryFieldSpec> fieldList) {

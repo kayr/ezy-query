@@ -4,7 +4,6 @@ import spock.lang.Specification
 
 import java.time.Clock
 import java.time.Instant
-import java.time.ZoneId
 import java.time.ZoneOffset
 
 class StaticQueryGenTest extends Specification {
@@ -16,30 +15,15 @@ class StaticQueryGenTest extends Specification {
 
     def "test static query generation"() {
         given:
-        def sql = """
-            --- Select Users
-            select * from users
-            where name = :name
-            and address = :address
-            
-            
-            -- Select Orders
-            select * from orders
-            where user_id = userId
-            
-            -- Select Products
-            select * from products
-            where product_id = :productId
-            
-        """.stripIndent().trim()
+        def resource = TestUtil.load("static")
 
         when:
-        def generated = StaticQueryGen.of("package", "Query", sql)
+        def generated = StaticQueryGen.of("package", "Query", resource.v1)
                 .javaFile();
 
         println generated.toString()
 
         then:
-        1 == 1
+        generated.toString().trim() == resource.v2.trim()
     }
 }

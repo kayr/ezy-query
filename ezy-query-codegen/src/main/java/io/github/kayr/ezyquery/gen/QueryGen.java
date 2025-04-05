@@ -14,6 +14,7 @@ import io.github.kayr.ezyquery.gen.walkers.WalkContext;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.util.Elf;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
-public class QueryGen {
+public class QueryGen implements WritesCode {
 
   private final String sql;
   private final String className;
@@ -52,7 +53,7 @@ public class QueryGen {
   @lombok.SneakyThrows
   public Path writeTo(Path path) {
     JavaFile javaFile = javaCode();
-    return javaFile.writeToPath(path);
+    return javaFile.writeToPath(path, StandardCharsets.UTF_8);
   }
 
   public JavaFile javaCode() throws JSQLParserException {

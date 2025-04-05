@@ -9,13 +9,14 @@ class SectionsParserTest extends Specification {
 
         given:
         def sql = """
-            -- Select Users
+            -- ## Select Users
             select * from users
             where name = 'john'
             and age > 30
             order by name
             
-            -- Select Orders
+            --## Select Orders
+            -- normal comment leave no space between -- and ## above
             select * from orders
             where user_id = 1
         """.stripIndent().trim()
@@ -32,7 +33,8 @@ class SectionsParserTest extends Specification {
 
         sections[0].name() == "Select Users"
 
-        sections[1].sql() == "select * from orders\n" +
+        sections[1].sql() == "-- normal comment leave no space between -- and ## above\n" +
+                "select * from orders\n" +
                 "where user_id = 1\n"
         sections[1].name() == "Select Orders"
 

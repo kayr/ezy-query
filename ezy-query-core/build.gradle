@@ -27,6 +27,6 @@ dependencies {
 tasks.register('writeVersion', Copy) {
     from 'src/main/java/io/github/kayr/ezyquery/EzyQueryVersion.java.in'
     into 'src/main/java/io/github/kayr/ezyquery/'
-    expand(version: project.version)
+    expand(version: project.VERSION_NAME)
     rename { String fileName -> fileName.replace('.in', '') }
 }

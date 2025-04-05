@@ -12,7 +12,7 @@ class QueryGenTest extends Specification {
 
     def "test ex1"() {
 
-        def data = load('ex1')
+        def data = TestUtil.load('ex1')
 
         when:
         def generated = generateCode(data.v1)
@@ -30,7 +30,7 @@ class QueryGenTest extends Specification {
 
     def "no joins test"() {
 
-        def data = load('nojoin')
+        def data = TestUtil.load('nojoin')
 
 
         when:
@@ -43,7 +43,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test multi statement'() {
-        def data = load('multi-statement')
+        def data = TestUtil.load('multi-statement')
         when:
         def generated = generateCode(data.v1)
         def expected = data.v2.trim()
@@ -52,20 +52,6 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
-
-    Tuple3<String, String, Properties> load(String path) {
-        def sql = QueryGenTest.class.getResource("/generated/$path/in.sql.txt").text
-        def java = QueryGenTest.class.getResource("/generated/$path/out.java.txt").text
-        def pUrl = QueryGenTest.class.getResource("/generated/$path/ezy-query.properties")
-        def properties = new Properties();
-        if (pUrl != null) {
-            pUrl.withInputStream {
-                properties.load(it)
-            }
-
-        }
-        return new Tuple3(sql, java, properties)
-    }
 
     @spock.lang.Ignore("not implemented nested classes")
     def "JavaCode3"() {
@@ -101,7 +87,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test with named params'() {
-        def data = load('named-params')
+        def data = TestUtil.load('named-params')
         when:
         def generated = generateCode(data.v1)
         def expected = data.v2.trim()
@@ -111,7 +97,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test can read custom java types'() {
-        def data = load('custom-java-types')
+        def data = TestUtil.load('custom-java-types')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
@@ -122,7 +108,7 @@ class QueryGenTest extends Specification {
 
 
     def 'test can read nested queries'() {
-        def data = load('nested-select')
+        def data = TestUtil.load('nested-select')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
@@ -132,7 +118,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test simple nested query'() {
-        def data = load('employee-customer-summary')
+        def data = TestUtil.load('employee-customer-summary')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
@@ -142,7 +128,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test simple cte'() {
-        def data = load('basic-cte')
+        def data = TestUtil.load('basic-cte')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
@@ -152,7 +138,7 @@ class QueryGenTest extends Specification {
     }
 
     def 'test multiple cte'() {
-        def data = load('multi-cte')
+        def data = TestUtil.load('multi-cte')
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
@@ -163,19 +149,7 @@ class QueryGenTest extends Specification {
     }
 
 
-    private void copyToClipboard(String s) {
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
-        TimeUnit.SECONDS.sleep(5)
-    }
 
-    private void overWriteFile(String path, String content) {
-        def resourcesFolder = "src/test/resources"
-
-        def java = Paths.get(resourcesFolder, "/generated/$path/out.java.txt")
-        println("Overwriting file: ${java.toAbsolutePath()}")
-        java.toFile().write(content)
-
-    }
 
 
 }

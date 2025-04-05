@@ -47,7 +47,7 @@ public class BatchQueryGen {
     return readAllCode().map(this::generate).map(this::writeJavaFile).collect(Collectors.toList());
   }
 
-  private Path writeJavaFile(QueryGen gen) {
+  private Path writeJavaFile(WritesCode gen) {
     Path path = gen.writeTo(outputPath);
     log.info("Writing file: " + path);
     return path;
@@ -62,12 +62,36 @@ public class BatchQueryGen {
     return new SourceCode(code, path);
   }
 
-  private QueryGen generate(SourceCode code) {
+  private WritesCode generate(SourceCode code) {
     String packageName = resolvePackageName(inputPath, code.path);
-    String className =
-        Elf.fromKebabToCamelCase(code.path.getFileName().toString().replace(".sql", ""));
-    String sql = code.code;
-    return new QueryGen(packageName, className, sql, config);
+    String withNoSqlExt = removeExtension(code.path.getFileName().toString());
+    boolean isStatic = withNoSqlExt.endsWith(".static");
+    String finalName = isStatic ? removeExtension(withNoSqlExt) : withNoSqlExt;
+
+    String className = Elf.fromKebabToCamelCase(finalName);
+
+    WritesCode writesCode =
+        isStatic
+            ? StaticQueryGen.of(packageName, className, code.code)
+            : new QueryGen(packageName, className, code.code, config);
+
+    return path -> {
+      try {
+        return writesCode.writeTo(path);
+      } catch (Exception x) {
+        throw new CodeGenException(
+            "Failed to generate code for: " + code.path + ". Did forget to mark it as .static.sql",
+            x);
+      }
+    };
+  }
+
+  String removeExtension(String fileName) {
+    int dotIndex = fileName.lastIndexOf('.');
+    if (dotIndex == -1) {
+      return fileName;
+    }
+    return fileName.substring(0, dotIndex);
   }
 
   private String resolvePackageName(Path parentPath, Path filePath) {

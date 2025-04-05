@@ -4,13 +4,22 @@ import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.sql.Zql;
+import io.github.kayr.ezyquery.util.Elf;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
 @lombok.RequiredArgsConstructor(staticName = "of")
-public class StaticQueryGen {
+public class StaticQueryGen implements WritesCode {
+
+  @lombok.SneakyThrows
+  @Override
+  public Path writeTo(Path path) {
+    return javaFile().writeToPath(path, StandardCharsets.UTF_8);
+  }
 
   private final String packageName;
   private final String mainClassName;
@@ -19,6 +28,9 @@ public class StaticQueryGen {
   public JavaFile javaFile() {
 
     List<SectionsParser.Section> sections = SectionsParser.splitUp(sql);
+
+    Elf.assertTrue(
+        !sections.isEmpty(), "No sections found in the sql file. Please check the file format.");
 
     List<TypeSpec> cInnerClasses =
         sections.stream().map(this::createSectionClass).collect(Collectors.toList());
@@ -96,7 +108,7 @@ public class StaticQueryGen {
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .addSuperinterface(Zql.Query.class)
         .addJavadoc("-- $L\n", section.name())
-        .addJavadoc(section.sql())
+        .addJavadoc(section.sql().trim())
         .addField(fSqlField.build())
         .addMethod(mDefaultConstructor)
         .addMethod(mConstructor)

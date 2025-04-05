@@ -1,13 +1,14 @@
 /* (C)2022 */
 package io.github.kayr.ezyquery.parser;
 
+import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.Collections;
 import java.util.List;
 
 @lombok.Getter
 @lombok.AllArgsConstructor
-public class QueryAndParams {
+public class QueryAndParams implements Zql.Query {
 
   private String sql;
   private List<Object> params = Collections.emptyList();

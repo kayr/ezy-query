@@ -24,20 +24,23 @@ class BatchQueryGenTest extends Specification {
         def departmentsPath = outputDir.resolve("office/SelectDepartments.java")
         def employeesPath = outputDir.resolve("office/SelectEmployees.java")
         def customersPath = outputDir.resolve("SelectCustomers.java")
+        def randomQueryPath = outputDir.resolve("RandomQuery.java")
 
         then:
 
-        generatedFiles.size() == 3
-        generatedFiles.containsAll([departmentsPath, employeesPath, customersPath])
+        generatedFiles.size() == 4
+        generatedFiles.containsAll([departmentsPath, employeesPath, customersPath,randomQueryPath])
 
 
         Files.exists(departmentsPath)
         Files.exists(employeesPath)
         Files.exists(customersPath)
+        Files.exists(randomQueryPath)
 
         departmentsPath.toFile().text.contains("package office;")
         employeesPath.toFile().text.contains("package office;")
         !customersPath.toFile().text.contains("package")
+        randomQueryPath.toFile().text.contains("StaticQueryGen")
 
     }
 

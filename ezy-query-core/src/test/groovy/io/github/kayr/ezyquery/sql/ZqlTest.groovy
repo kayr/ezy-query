@@ -5,6 +5,9 @@ import io.github.kayr.ezyquery.sql.Zql.Query
 import spock.lang.Shared
 import spock.lang.Specification
 
+/*
+This test is mostly AI Generated. cause I am too lazy
+ */
 class ZqlTest extends Specification {
     @Shared
     Db db
@@ -213,23 +216,36 @@ class ZqlTest extends Specification {
         given:
         def zql = db.ezySql().zql
 
-        // First ensure we have something to delete
+        // Create a dedicated test table
+        zql.execute("""
+        CREATE TABLE IF NOT EXISTS test_delete_table (
+            id VARCHAR(10) PRIMARY KEY,
+            name VARCHAR(100),
+            location VARCHAR(100)
+        )
+    """, [])
+
+        // Insert a record to be deleted
         zql.update(
-                "INSERT INTO offices (officeCode, country, addressLine1) VALUES (?, ?, ?)",
-                ['6', 'DE', 'Berlin']
+                "INSERT INTO test_delete_table (id, name, location) VALUES (?, ?, ?)",
+                ['TEST1', 'Test Office', 'Berlin']
         )
 
         when:
-        def rowsAffected = zql.update("DELETE FROM offices WHERE officeCode = ?", ['6'])
+        def rowsAffected = zql.update("DELETE FROM test_delete_table WHERE id = ?", ['TEST1'])
 
         then:
         rowsAffected == 1
 
         when:
-        def office = zql.oneRow(Mappers.toMap(), "SELECT * FROM offices WHERE officeCode = ?", [6])
+        def record = zql.oneRow(Mappers.toMap(), "SELECT * FROM test_delete_table WHERE id = ?", ['TEST1'])
 
         then:
-        office == null
+        record == null
+
+        cleanup:
+        // Drop the test table to clean up
+        zql.execute("DROP TABLE IF EXISTS test_delete_table", [])
     }
 
     def 'test insertAndGetKey returns generated primary key'() {
@@ -364,9 +380,9 @@ class ZqlTest extends Specification {
             @Override
             List<Object> getParams() {
                 return [
-                    'Headphones', 89.99, 'Audio',
-                    'Speakers', 129.99, 'Audio',
-                    'Microphone', 59.99, 'Audio'
+                        'Headphones', 89.99, 'Audio',
+                        'Speakers', 129.99, 'Audio',
+                        'Microphone', 59.99, 'Audio'
                 ]
             }
         }
@@ -499,5 +515,131 @@ class ZqlTest extends Specification {
         items[0].description == 'First item'
         items[1].id == 2
         items[1].description == 'Second item'
+    }
+
+    def 'test rows with mapper and Query object'() {
+        given:
+        def zql = db.ezySql().zql
+        def query = new Query() {
+            @Override
+            String getSql() {
+                return "SELECT * FROM offices WHERE officeCode = ?"
+            }
+
+            @Override
+            List<Object> getParams() {
+                return [1]
+            }
+        }
+
+        when:
+        def offices = zql.rows(Mappers.toMap(), query)
+
+        then:
+        offices.size() == 1
+        offices[0].officeCode == '1'
+        offices[0].country == 'US' // After update in previous tests
+        offices[0].addressLine1 == 'Kampala'
+    }
+
+    def 'test oneRow with mapper and Query object'() {
+        given:
+        def zql = db.ezySql().zql
+        def query = new Query() {
+            @Override
+            String getSql() {
+                return "SELECT * FROM offices WHERE officeCode = ?"
+            }
+
+            @Override
+            List<Object> getParams() {
+                return [3]
+            }
+        }
+
+        when:
+        def office = zql.oneRow(Mappers.toMap(), query)
+
+        then:
+        office != null
+        office.officeCode == '3'
+        office.country == 'UK' // After update in previous tests
+        office.addressLine1 == 'Dar es Salaam'
+    }
+
+    def 'test oneRow with Query object returns null when no records found'() {
+        given:
+        def zql = db.ezySql().zql
+        def query = new Query() {
+            @Override
+            String getSql() {
+                return "SELECT * FROM offices WHERE officeCode = ?"
+            }
+
+            @Override
+            List<Object> getParams() {
+                return [99]
+            }
+        }
+
+        when:
+        def office = zql.oneRow(Mappers.toMap(), query)
+
+        then:
+        office == null
+    }
+
+
+
+    def 'test one method with Query object'() {
+        given:
+        def zql = db.ezySql().zql
+        def query = new Query() {
+            @Override
+            String getSql() {
+                return "SELECT COUNT(*) FROM offices"
+            }
+
+            @Override
+            List<Object> getParams() {
+                return []
+            }
+        }
+
+        when:
+        def count = zql.one(Integer.class, query)
+
+        then:
+        count == 5 // After insertions in previous tests
+    }
+
+    def 'test query method with Query object and result set consumer'() {
+        given:
+        def zql = db.ezySql().zql
+        def query = new Query() {
+            @Override
+            String getSql() {
+                return "SELECT * FROM offices ORDER BY officeCode"
+            }
+
+            @Override
+            List<Object> getParams() {
+                return []
+            }
+        }
+
+        when:
+        def result = zql.query(query, { rs ->
+            def offices = []
+            while (rs.next()) {
+                offices << [code: rs.getString("officeCode"), country: rs.getString("country")]
+            }
+            return offices
+        })
+
+        then:
+        result.size() >= 4
+        result[0].code == '1'
+        result[0].country == 'US'
     }
 }

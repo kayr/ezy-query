@@ -36,12 +36,20 @@ public class Zql {
     }
   }
 
+  public <T> List<T> rows(Mappers.RowMapper<T> mapper, Query query) {
+    return rows(mapper, query.getSql(), query.getParams());
+  }
+
   public <T> T oneRow(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
     try (DbReSources dbReSources = rows(sql, params)) {
       List<T> results = Mappers.resultSetToList(dbReSources.resultSet, 1, mapper);
       assertNoMoreRecords(dbReSources.resultSet);
       return results.isEmpty() ? null : results.get(0);
     }
+  }
+
+  public <T> T oneRow(Mappers.RowMapper<T> mapper, Query query) {
+    return oneRow(mapper, query.getSql(), query.getParams());
   }
 
   private static void assertNoMoreRecords(ResultSet dbReSources) {
@@ -56,6 +64,10 @@ public class Zql {
     } catch (Exception e) {
       throw new UnCaughtException("Error executing query", e);
     }
+  }
+
+  public <R> R query(Query query, ThrowingFunction<ResultSet, R> rsConsumer) {
+    return query(query.getSql(), query.getParams(), rsConsumer);
   }
 
   private DbReSources rows(String sql, List<Object> params) {
@@ -78,6 +90,10 @@ public class Zql {
 
       return result;
     }
+  }
+
+  public <T> T one(Class<T> clazz, Query query) {
+    return one(clazz, query.getSql(), query.getParams());
   }
 
   private DbReSources rows(String sql, Object... params) {

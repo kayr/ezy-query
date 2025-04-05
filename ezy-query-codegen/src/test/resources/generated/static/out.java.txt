@@ -113,7 +113,7 @@ public class Query {
   /**
    * -- Select Products
    * select * from products
-   *             where product_id = :productId
+   *             where product_id = :product_id
    */
   public static class SelectProducts implements Zql.Query {
     private final SqlParts sql;
@@ -122,7 +122,7 @@ public class Query {
       this.sql = SqlParts.of(
           SqlParts.textPart("select * from products\n"
               + "            where product_id = "),
-          SqlParts.paramPart("productId")
+          SqlParts.paramPart("product_id")
       );
     }
 
@@ -131,7 +131,7 @@ public class Query {
     }
 
     public SelectProducts productId(Object productId) {
-      return new SelectProducts(sql.setParam("productId", productId));
+      return new SelectProducts(sql.setParam("product_id", productId));
     }
 
     public QueryAndParams getQuery() {

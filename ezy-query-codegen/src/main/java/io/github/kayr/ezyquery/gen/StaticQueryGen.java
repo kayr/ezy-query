@@ -132,7 +132,10 @@ public class StaticQueryGen implements WritesCode {
             CodeElf.publicMethod(methodName, className)
                 .addParameter(Object.class, methodName)
                 .addStatement(
-                    "return new $T(sql.setParam($S, $L))", className, methodName, methodName)
+                    "return new $T(sql.setParam($S, $L))",
+                    className,
+                    paramPart.asString(),
+                    methodName)
                 .build();
 
         setMethods.add(setMethod);

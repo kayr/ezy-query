@@ -66,12 +66,12 @@ public class CodeElf {
         .build();
   }
 
-  public static ParameterizedTypeName paramType(Class<?> clazz, TypeName dataType) {
+  public static ParameterizedTypeName paramType(Class<?> clazz, TypeName... dataType) {
     return ParameterizedTypeName.get(ClassName.get(clazz), dataType);
   }
 
-  public static ParameterizedTypeName paramType(Class<?> clazz, Class<?> dataType) {
-    return ParameterizedTypeName.get(ClassName.get(clazz), ClassName.get(dataType));
+  public static ParameterizedTypeName paramType(Class<?> clazz, Class<?>... dataType) {
+    return ParameterizedTypeName.get(clazz, dataType);
   }
 
   public static CodeBlock.Builder buildSqlParts(SqlParts sqlParts) {

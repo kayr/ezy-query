@@ -3,12 +3,12 @@ package io.github.kayr.ezyquery.gen;
 import com.squareup.javapoet.*;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
-import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
@@ -93,20 +93,25 @@ public class StaticQueryGen implements WritesCode {
             .addStatement("return sql.getQuery()")
             .build();
 
-    MethodSpec mGetSql =
-        CodeElf.publicMethod("getSql", String.class, Override.class)
-            .addStatement("return getQuery().getSql()")
+    MethodSpec mSetParam =
+        CodeElf.publicMethod("setParam", className)
+            .addParameter(String.class, "param")
+            .addParameter(Object.class, "value")
+            .addStatement("return new $T(sql.setParam(param, value))", className)
             .build();
 
-    MethodSpec mGetParams =
-        CodeElf.publicMethod(
-                "getParams", CodeElf.paramType(List.class, Object.class), Override.class)
-            .addStatement("return getQuery().getParams()")
+    MethodSpec mSetParams =
+        CodeElf.publicMethod("setParams", className)
+            .addParameter(CodeElf.paramType(Map.class, String.class, Object.class), "params")
+            .addStatement("SqlParts sql = this.sql")
+            .beginControlFlow("for (Map.Entry<String, Object> entry : params.entrySet())")
+            .addStatement("sql = sql.setParam(entry.getKey(), entry.getValue())")
+            .endControlFlow()
+            .addStatement("return new $T(sql)", className)
             .build();
 
     return TypeSpec.classBuilder(className)
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .addSuperinterface(Zql.Query.class)
         .addJavadoc("-- $L\n", section.name())
         .addJavadoc(section.sql().trim())
         .addField(fSqlField.build())
@@ -114,8 +119,8 @@ public class StaticQueryGen implements WritesCode {
         .addMethod(mConstructor)
         .addMethods(mSetMethods)
         .addMethod(mGetQuery)
-        .addMethod(mGetSql)
-        .addMethod(mGetParams)
+        .addMethod(mSetParam)
+        .addMethod(mSetParams)
         .build();
   }
 

@@ -2,11 +2,9 @@ package package;
 
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
-import io.github.kayr.ezyquery.sql.Zql;
 import java.lang.Object;
-import java.lang.Override;
 import java.lang.String;
-import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.Generated;
 
 /**
@@ -35,7 +33,7 @@ public class Query {
    *             where name = :name
    *             and address = :address
    */
-  public static class SelectUsers implements Zql.Query {
+  public static class SelectUsers {
     private final SqlParts sql;
 
     public SelectUsers() {
@@ -65,14 +63,16 @@ public class Query {
       return sql.getQuery();
     }
 
-    @Override
-    public String getSql() {
-      return getQuery().getSql();
+    public SelectUsers setParam(String param, Object value) {
+      return new SelectUsers(sql.setParam(param, value));
     }
 
-    @Override
-    public List<Object> getParams() {
-      return getQuery().getParams();
+    public SelectUsers setParams(Map<String, Object> params) {
+      SqlParts sql = this.sql;
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        sql = sql.setParam(entry.getKey(), entry.getValue());
+      }
+      return new SelectUsers(sql);
     }
   }
 
@@ -81,7 +81,7 @@ public class Query {
    * select * from orders
    *             where user_id = userId
    */
-  public static class SelectOrders implements Zql.Query {
+  public static class SelectOrders {
     private final SqlParts sql;
 
     public SelectOrders() {
@@ -99,14 +99,16 @@ public class Query {
       return sql.getQuery();
     }
 
-    @Override
-    public String getSql() {
-      return getQuery().getSql();
+    public SelectOrders setParam(String param, Object value) {
+      return new SelectOrders(sql.setParam(param, value));
     }
 
-    @Override
-    public List<Object> getParams() {
-      return getQuery().getParams();
+    public SelectOrders setParams(Map<String, Object> params) {
+      SqlParts sql = this.sql;
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        sql = sql.setParam(entry.getKey(), entry.getValue());
+      }
+      return new SelectOrders(sql);
     }
   }
 
@@ -115,7 +117,7 @@ public class Query {
    * select * from products
    *             where product_id = :product_id
    */
-  public static class SelectProducts implements Zql.Query {
+  public static class SelectProducts {
     private final SqlParts sql;
 
     public SelectProducts() {
@@ -138,14 +140,16 @@ public class Query {
       return sql.getQuery();
     }
 
-    @Override
-    public String getSql() {
-      return getQuery().getSql();
+    public SelectProducts setParam(String param, Object value) {
+      return new SelectProducts(sql.setParam(param, value));
     }
 
-    @Override
-    public List<Object> getParams() {
-      return getQuery().getParams();
+    public SelectProducts setParams(Map<String, Object> params) {
+      SqlParts sql = this.sql;
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        sql = sql.setParam(entry.getKey(), entry.getValue());
+      }
+      return new SelectProducts(sql);
     }
   }
 }

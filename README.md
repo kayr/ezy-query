@@ -12,7 +12,7 @@ buildscript {
 }
 
 plugins {
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.18'
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.19'
 }
 ```
 
@@ -109,7 +109,7 @@ In future versions I will add support for older versions of gradle.
 ```groovy
 plugins {
     //gradle 7.0 and above see bottom of this page for older versions
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.18'
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.19'
 }
 ```
 

@@ -1,0 +1,225 @@
+package package;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import java.lang.Class;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.EzySqlQueryGen",
+    date = "1970-01-01T00:00:00"
+)
+public class Query {
+  public static SelectUsers selectUsers() {
+    return new SelectUsers();
+  }
+
+  public static SelectOrders selectOrders() {
+    return SelectOrders.SELECT_ORDERS;
+  }
+
+  public static SelectProducts selectProducts() {
+    return new SelectProducts();
+  }
+
+  /**
+   * -- Select Users
+   * select * from users
+   *             where name = :name
+   *             and address = :address
+   */
+  public static class SelectUsers {
+    private final SqlParts sql;
+
+    public SelectUsers() {
+      this.sql = SqlParts.of(
+          SqlParts.textPart("select * from users\n"
+              + "            where name = "),
+          SqlParts.paramPart("name"),
+          SqlParts.textPart("\n"
+              + "            and address = "),
+          SqlParts.paramPart("address")
+      );
+    }
+
+    private SelectUsers(SqlParts sql) {
+      this.sql = sql;
+    }
+
+    public SelectUsers name(Object name) {
+      return new SelectUsers(sql.setParam("name", name));
+    }
+
+    public SelectUsers address(Object address) {
+      return new SelectUsers(sql.setParam("address", address));
+    }
+
+    public QueryAndParams getQuery() {
+      return sql.getQuery();
+    }
+
+    public SelectUsers setParam(String param, Object value) {
+      return new SelectUsers(sql.setParam(param, value));
+    }
+
+    public SelectUsers setParams(Map<String, Object> params) {
+      SqlParts sql = this.sql;
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        sql = sql.setParam(entry.getKey(), entry.getValue());
+      }
+      return new SelectUsers(sql);
+    }
+  }
+
+  /**
+   *             select
+   *               id as id,
+   *               date as date,
+   *               customer_id as customerId
+   *             from orders
+   *             where user_id = userId
+   *
+   */
+  @Generated(
+      value = "io.github.kayr.ezyquery.gen.QueryGen",
+      date = "1970-01-01T00:00:00"
+  )
+  public static class SelectOrders implements EzyQueryWithResult<SelectOrders.Result> {
+    public static final SelectOrders SELECT_ORDERS = new SelectOrders();
+
+    public final Field<Object> ID = Field.of("id", "id", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> DATE = Field.of("date", "date", Object.class,Field.ExpressionType.COLUMN);
+
+    public final Field<Object> CUSTOMER_ID = Field.of("customer_id", "customerId", Object.class,Field.ExpressionType.COLUMN);
+
+    private final SqlParts schema = SqlParts.of(
+        SqlParts.textPart("orders")
+    );
+
+    private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+    private SelectOrders() {
+      init();
+    }
+
+    private void init() {
+      fields.add(ID);
+      fields.add(DATE);
+      fields.add(CUSTOMER_ID);
+    }
+
+    public QueryAndParams query(EzyCriteria criteria) {
+      return SqlBuilder.buildSql(this, criteria);
+    }
+
+    @Override
+    public SqlParts schema() {
+      return this.schema;
+    }
+
+    @Override
+    public Optional<SqlParts> whereClause() {
+      return Optional.of(
+            SqlParts.of(
+                SqlParts.textPart("user_id = userId")
+            ));
+    }
+
+    @Override
+    public Optional<SqlParts> orderByClause() {
+      return Optional.empty();
+    }
+
+    @Override
+    public List<Field<?>> fields() {
+      return this.fields;
+    }
+
+    @Override
+    public Class<Result> resultClass() {
+      return Result.class;
+    }
+
+    public static class Result {
+      private Object id;
+
+      private Object date;
+
+      private Object customerId;
+
+      public Object getId() {
+        return id;
+      }
+
+      public Object getDate() {
+        return date;
+      }
+
+      public Object getCustomerId() {
+        return customerId;
+      }
+
+      @Override
+      public String toString() {
+        return "SelectOrders.Result{"
+        + "id = " + id
+        + ", date = " + date
+        + ", customerId = " + customerId
+         + "}";
+      }
+    }
+  }
+
+  /**
+   * -- Select Products
+   * select * from products
+   *             where product_id = :product_id
+   */
+  public static class SelectProducts {
+    private final SqlParts sql;
+
+    public SelectProducts() {
+      this.sql = SqlParts.of(
+          SqlParts.textPart("select * from products\n"
+              + "            where product_id = "),
+          SqlParts.paramPart("product_id")
+      );
+    }
+
+    private SelectProducts(SqlParts sql) {
+      this.sql = sql;
+    }
+
+    public SelectProducts productId(Object productId) {
+      return new SelectProducts(sql.setParam("product_id", productId));
+    }
+
+    public QueryAndParams getQuery() {
+      return sql.getQuery();
+    }
+
+    public SelectProducts setParam(String param, Object value) {
+      return new SelectProducts(sql.setParam(param, value));
+    }
+
+    public SelectProducts setParams(Map<String, Object> params) {
+      SqlParts sql = this.sql;
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        sql = sql.setParam(entry.getKey(), entry.getValue());
+      }
+      return new SelectProducts(sql);
+    }
+  }
+}

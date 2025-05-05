@@ -62,11 +62,15 @@ public class StaticQueryGen implements WritesCode {
     return JavaFile.builder(packageName, cMainClass).build();
   }
 
-  private TypeSpec createSectionClass(SectionsParser.Section section) {
-    String name = StringCaseUtil.toPascalCase(section.name());
-    SqlParts sqlParts = SqlParts.of(section.sql().trim());
+  TypeSpec createSectionClass(SectionsParser.Section section) {
+    return createSectionClass(section.name(), section.sql());
+  }
 
-    ClassName className = ClassName.get(packageName, mainClassName, name);
+  TypeSpec createSectionClass(String sectionName, String sql) {
+    String theClassName = StringCaseUtil.toPascalCase(sectionName);
+    SqlParts sqlParts = SqlParts.of(sql.trim());
+
+    ClassName className = ClassName.get(packageName, mainClassName, theClassName);
 
     FieldSpec.Builder fSqlField =
         FieldSpec.builder(SqlParts.class, "sql", Modifier.PRIVATE, Modifier.FINAL);
@@ -112,8 +116,8 @@ public class StaticQueryGen implements WritesCode {
 
     return TypeSpec.classBuilder(className)
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .addJavadoc("-- $L\n", section.name())
-        .addJavadoc(section.sql().trim())
+        .addJavadoc("-- $L\n", sectionName)
+        .addJavadoc(sql.trim())
         .addField(fSqlField.build())
         .addMethod(mDefaultConstructor)
         .addMethod(mConstructor)

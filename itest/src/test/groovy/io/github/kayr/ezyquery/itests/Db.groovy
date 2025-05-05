@@ -62,7 +62,7 @@ class Db {
 
     def close() {
         if (ds != null) {
-            ezySql().zql.executeUpdate( "DROP ALL OBJECTS")
+            ezySql().zql.execute( "DROP ALL OBJECTS")
             ds.close()
         }
     }

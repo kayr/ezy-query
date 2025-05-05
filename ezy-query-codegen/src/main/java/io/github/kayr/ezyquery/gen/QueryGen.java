@@ -17,7 +17,6 @@ import io.github.kayr.ezyquery.util.Elf;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
@@ -57,6 +56,10 @@ public class QueryGen implements WritesCode {
   }
 
   public JavaFile javaCode() throws JSQLParserException {
+    return JavaFile.builder(packageName, buildClass()).build();
+  }
+
+  public TypeSpec buildClass() throws JSQLParserException {
     Statement statement = CCJSqlParserUtil.parse(sql);
 
     if (!(statement instanceof Select)) {
@@ -75,7 +78,7 @@ public class QueryGen implements WritesCode {
     return buildCode(fieldList, plainSelect);
   }
 
-  private JavaFile buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) {
+  private TypeSpec buildCode(List<EzyQueryFieldSpec> fieldList, PlainSelect plainSelect) {
 
     List<FieldSpec> fConstants = fieldConstants(fieldList);
 
@@ -151,9 +154,7 @@ public class QueryGen implements WritesCode {
       finalClassBuilder.addType(nestedQueryClass);
     }
 
-    TypeSpec finalClazz = finalClassBuilder.build();
-
-    return JavaFile.builder(packageName, finalClazz).build();
+    return finalClassBuilder.build();
   }
 
   private static SqlParts extractOrderByElems(PlainSelect plainSelect) {
@@ -413,7 +414,7 @@ public class QueryGen implements WritesCode {
   }
 
   protected String timeStamp() {
-    return LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+    return TimeElf.now().format(DateTimeFormatter.ISO_DATE_TIME);
   }
 
   private CodeBlock toStringMethodBody(List<EzyQueryFieldSpec> fieldList) {

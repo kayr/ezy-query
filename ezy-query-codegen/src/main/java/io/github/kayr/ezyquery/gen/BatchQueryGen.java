@@ -65,15 +65,18 @@ public class BatchQueryGen {
   private WritesCode generate(SourceCode code) {
     String packageName = resolvePackageName(inputPath, code.path);
     String withNoSqlExt = removeExtension(code.path.getFileName().toString());
-    boolean isStatic = withNoSqlExt.endsWith(".static");
-    String finalName = isStatic ? removeExtension(withNoSqlExt) : withNoSqlExt;
 
-    String className = Elf.fromKebabToCamelCase(finalName);
-
-    WritesCode writesCode =
-        isStatic
-            ? StaticQueryGen.of(packageName, className, code.code)
-            : new QueryGen(packageName, className, code.code, config);
+    WritesCode writesCode;
+    if (withNoSqlExt.endsWith(".ez")) {
+      String className = Elf.fromKebabToCamelCase(removeExtension(withNoSqlExt));
+      writesCode = EzySqlQueryGen.of(packageName, className, code.code, config);
+    } else if (withNoSqlExt.endsWith(".static")) {
+      String className = Elf.fromKebabToCamelCase(removeExtension(withNoSqlExt));
+      writesCode = StaticQueryGen.of(packageName, className, code.code);
+    } else {
+      String className = Elf.fromKebabToCamelCase(withNoSqlExt);
+      writesCode = new QueryGen(packageName, className, code.code, config);
+    }
 
     return path -> {
       try {

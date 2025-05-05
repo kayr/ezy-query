@@ -2,10 +2,14 @@ package io.github.kayr.ezyquery.itests
 
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
+import io.github.kayr.ezyquery.sql.Mappers
+import prod.Queries
 import prod.QueryWithParams
 import spock.lang.Specification
 import test.DerivedTableQuery
 import test.DerivedTableQueryCte
+
+import javax.swing.tree.RowMapper
 
 import static prod.ProdQuery1.PROD_QUERY1
 import static prod.QueryWithParams.QUERY_WITH_PARAMS
@@ -114,7 +118,55 @@ class TestCanFetchDataTest extends Specification {
         count == 1
     }
 
-    def 'test can retries data with named param'() {
+    def 'test that can fetch data using new ez.sql'() {
+        given:
+        def criteria = Queries.selectOffices()
+        .officeCode("1").offset(0).max(50).query
+
+        when:
+        def r = ez.zql.oneRow(Mappers.toMap(),criteria)
+
+
+        then:
+        r.officeCode == "1"
+        r.country == "UG"
+        r.addressLine == "Kampala"
+    }
+
+    def 'test that can fetch data using new ez.sql but with defaults'() {
+        given:
+        def criteria = Queries.selectOffices2()
+        .officeCode("1").offset(0).max(50).query
+
+        when:
+        def r = ez.zql.oneRow(Mappers.toMap(),criteria)
+
+
+        then:
+        r.officeCode == "1"
+        r.country == "UG"
+        r.addressLine == "Kampala"
+    }
+
+
+    def 'test that can fetch data using new ez.sql for dynamic embedded'() {
+        def q = Queries.selectOfficesDynamic()
+
+        given:
+        def criteria = ez.from(q).where(q.OFFICE_CODE.eq(1))
+
+        when:
+        def r = criteria.list()
+
+
+        then:
+        r.size() == 1
+        r.first().officeCode == "1"
+        r.first().country == "UG"
+        r.first().addressLine == "Kampala"
+    }
+
+    def 'test  retrieve data with named param'() {
         given:
         def c = ez.from(QUERY_WITH_PARAMS)
                 .setParam(QueryWithParams.PARAMS.FIRST_NAME, ["Kay"])
@@ -202,6 +254,15 @@ class TestCanFetchDataTest extends Specification {
         list*.item == ["item4", "item5", "item10"]
         list*.price == [400, 500, 1000]
         list*.quantity == [4, 5, 10]
+
+
+    }
+
+    def "xxxxx"() {
+
+        ez.from(Queries.selectOrders())
+        .setCriteria(Queries.selectOrders().CUSTOMER_ID, Queries.selectOrders().CUSTOMER_ID.in("1", "2", "3", "4", "5"))
+        .setParam(Queries.selectOrders().CUSTOMER_ID, ["1", "2", "3", "4", "5"])
 
 
     }

@@ -6,11 +6,13 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Boolean;
 import java.lang.Byte;
 import java.lang.Class;
 import java.lang.Double;
 import java.lang.Float;
+import java.lang.IllegalArgumentException;
 import java.lang.Integer;
 import java.lang.Long;
 import java.lang.Object;
@@ -148,7 +150,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private BigInteger id;
 
     private Long longval;
@@ -245,5 +247,52 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", objectval = " + objectval
        + "}";
     }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "id":
+          this.id = (BigInteger) value;
+          break;
+        case "longval":
+          this.longval = (Long) value;
+          break;
+        case "intval":
+          this.intval = (Integer) value;
+          break;
+        case "floatval":
+          this.floatval = (Float) value;
+          break;
+        case "doubleval":
+          this.doubleval = (Double) value;
+          break;
+        case "stringval":
+          this.stringval = (String) value;
+          break;
+        case "booleanval":
+          this.booleanval = (Boolean) value;
+          break;
+        case "dateval":
+          this.dateval = (Date) value;
+          break;
+        case "timeval":
+          this.timeval = (Timestamp) value;
+          break;
+        case "bigintval":
+          this.bigintval = (BigInteger) value;
+          break;
+        case "bigdecimalval":
+          this.bigdecimalval = (BigDecimal) value;
+          break;
+        case "blobval":
+          this.blobval = (Byte) value;
+          break;
+        case "objectval":
+          this.objectval = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
   }
-}

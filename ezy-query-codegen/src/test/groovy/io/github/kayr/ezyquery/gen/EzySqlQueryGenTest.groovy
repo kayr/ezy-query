@@ -6,6 +6,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
+
 class EzySqlQueryGenTest extends Specification {
 
     def setup() {
@@ -21,11 +22,8 @@ class EzySqlQueryGenTest extends Specification {
         def generated = EzySqlQueryGen.of("package", "Query", resource.v1, new Properties())
                 .generate()
 
-
         then:
         generated.toString().trim() == resource.v2.trim()
     }
 
 }
-
-

@@ -9,7 +9,9 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -141,7 +143,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Object bookTitle;
 
     private Object author;
@@ -175,99 +177,119 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", sales = " + sales
        + "}";
     }
-  }
-
-  public static class Params {
-    public final NamedParam EZY_BOOK_SALES = NamedParam.of("_ezy_book_sales");
-
-    public final NamedParam EZY_BOOK_AUTHOR_SALES = NamedParam.of("_ezy_book_author_sales");
-
-    public final NamedParam EZY_BOOK_PUBLISHER_NAMES_SALES = NamedParam.of("_ezy_book_publisher_names_sales");
-  }
-
-  public static final class Criteria {
-    public final BookPublisherNamesSales BOOK_PUBLISHER_NAMES_SALES = new BookPublisherNamesSales();
-
-    public final BookAuthorSales BOOK_AUTHOR_SALES = new BookAuthorSales();
-
-    public final BookSales BOOK_SALES = new BookSales();
-  }
-
-  public static class BookPublisherNamesSales implements CriteriaHolder {
-    public final Field<Object> TITLE = Field.of("dtl2.title", "title", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> AUTHOR_NAME = Field.of("a.name", "authorName", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> PUBLISHER_NAME = Field.of("p.name", "publisherName", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> SALES_AMOUNT = Field.of("dtl2.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
-
-    private final List<Field<?>> fields = new ArrayList<Field<?>>();
-
-    private BookPublisherNamesSales() {
-      init();
-    }
-
-    private void init() {
-      fields.add(TITLE);
-      fields.add(AUTHOR_NAME);
-      fields.add(PUBLISHER_NAME);
-      fields.add(SALES_AMOUNT);
-    }
 
     @Override
-    public NamedCriteriaParam getName() {
-      return NamedCriteriaParam.of("_ezy_book_publisher_names_sales", fields);
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "bookTitle":
+          this.bookTitle = (Object) value;
+          break;
+        case "author":
+          this.author = (Object) value;
+          break;
+        case "publisher":
+          this.publisher = (Object) value;
+          break;
+        case "sales":
+          this.sales = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam EZY_BOOK_SALES = NamedParam.of("_ezy_book_sales");
+
+      public final NamedParam EZY_BOOK_AUTHOR_SALES = NamedParam.of("_ezy_book_author_sales");
+
+      public final NamedParam EZY_BOOK_PUBLISHER_NAMES_SALES = NamedParam.of("_ezy_book_publisher_names_sales");
+    }
+
+    public static final class Criteria {
+      public final BookPublisherNamesSales BOOK_PUBLISHER_NAMES_SALES = new BookPublisherNamesSales();
+
+      public final BookAuthorSales BOOK_AUTHOR_SALES = new BookAuthorSales();
+
+      public final BookSales BOOK_SALES = new BookSales();
+    }
+
+    public static class BookPublisherNamesSales implements CriteriaHolder {
+      public final Field<Object> TITLE = Field.of("dtl2.title", "title", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> AUTHOR_NAME = Field.of("a.name", "authorName", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> PUBLISHER_NAME = Field.of("p.name", "publisherName", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> SALES_AMOUNT = Field.of("dtl2.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private BookPublisherNamesSales() {
+        init();
+      }
+
+      private void init() {
+        fields.add(TITLE);
+        fields.add(AUTHOR_NAME);
+        fields.add(PUBLISHER_NAME);
+        fields.add(SALES_AMOUNT);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_book_publisher_names_sales", fields);
+      }
+    }
+
+    public static class BookAuthorSales implements CriteriaHolder {
+      public final Field<Object> TITLE = Field.of("b.title", "title", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> AUTHOR_ID = Field.of("b.author_id", "authorId", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> PUBLISHER_ID = Field.of("b.publisher_id", "publisherId", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> SALES_AMOUNT = Field.of("dtl1.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private BookAuthorSales() {
+        init();
+      }
+
+      private void init() {
+        fields.add(TITLE);
+        fields.add(AUTHOR_ID);
+        fields.add(PUBLISHER_ID);
+        fields.add(SALES_AMOUNT);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_book_author_sales", fields);
+      }
+    }
+
+    public static class BookSales implements CriteriaHolder {
+      public final Field<Object> BOOK_ID = Field.of("book_id", "bookId", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> SALES_AMOUNT = Field.of("sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private BookSales() {
+        init();
+      }
+
+      private void init() {
+        fields.add(BOOK_ID);
+        fields.add(SALES_AMOUNT);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_book_sales", fields);
+      }
     }
   }
-
-  public static class BookAuthorSales implements CriteriaHolder {
-    public final Field<Object> TITLE = Field.of("b.title", "title", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> AUTHOR_ID = Field.of("b.author_id", "authorId", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> PUBLISHER_ID = Field.of("b.publisher_id", "publisherId", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> SALES_AMOUNT = Field.of("dtl1.sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
-
-    private final List<Field<?>> fields = new ArrayList<Field<?>>();
-
-    private BookAuthorSales() {
-      init();
-    }
-
-    private void init() {
-      fields.add(TITLE);
-      fields.add(AUTHOR_ID);
-      fields.add(PUBLISHER_ID);
-      fields.add(SALES_AMOUNT);
-    }
-
-    @Override
-    public NamedCriteriaParam getName() {
-      return NamedCriteriaParam.of("_ezy_book_author_sales", fields);
-    }
-  }
-
-  public static class BookSales implements CriteriaHolder {
-    public final Field<Object> BOOK_ID = Field.of("book_id", "bookId", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> SALES_AMOUNT = Field.of("sales_amount", "salesAmount", Object.class,Field.ExpressionType.COLUMN);
-
-    private final List<Field<?>> fields = new ArrayList<Field<?>>();
-
-    private BookSales() {
-      init();
-    }
-
-    private void init() {
-      fields.add(BOOK_ID);
-      fields.add(SALES_AMOUNT);
-    }
-
-    @Override
-    public NamedCriteriaParam getName() {
-      return NamedCriteriaParam.of("_ezy_book_sales", fields);
-    }
-  }
-}

@@ -6,9 +6,7 @@ import io.github.kayr.ezyquery.parser.SqlParts;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
@@ -129,7 +127,7 @@ public class StaticQueryGen implements WritesCode {
   }
 
   private static List<MethodSpec> methodsForSet(SqlParts sqlParts, ClassName className) {
-    List<MethodSpec> setMethods = new ArrayList<>();
+    Set<MethodSpec> setMethods = new LinkedHashSet<>(); // use a set to avoid duplicates
 
     List<SqlParts.IPart> parts = sqlParts.getParts();
     for (SqlParts.IPart part : parts) {
@@ -150,7 +148,7 @@ public class StaticQueryGen implements WritesCode {
         setMethods.add(setMethod);
       }
     }
-    return setMethods;
+    return new ArrayList<>(setMethods);
   }
 }
 

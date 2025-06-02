@@ -6,7 +6,10 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.math.BigDecimal;
@@ -87,7 +90,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private BigDecimal f1;
 
     private String f2;
@@ -121,5 +124,25 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", f4 = " + f4
        + "}";
     }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "f1":
+          this.f1 = (BigDecimal) value;
+          break;
+        case "f2":
+          this.f2 = (String) value;
+          break;
+        case "f3":
+          this.f3 = (Vector) value;
+          break;
+        case "f4":
+          this.f4 = (LocalDate) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
   }
-}

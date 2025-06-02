@@ -6,8 +6,11 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
 import java.lang.Double;
+import java.lang.IllegalArgumentException;
+import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
@@ -77,7 +80,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Double doubleval;
 
     private Double doubleval2;
@@ -97,5 +100,19 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", doubleval2 = " + doubleval2
        + "}";
     }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "doubleval":
+          this.doubleval = (Double) value;
+          break;
+        case "doubleval2":
+          this.doubleval2 = (Double) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
   }
-}

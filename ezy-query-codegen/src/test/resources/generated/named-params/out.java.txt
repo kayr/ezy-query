@@ -7,7 +7,9 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -101,7 +103,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Object name;
 
     private Object prodName;
@@ -121,15 +123,29 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", prodName = " + prodName
        + "}";
     }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "name":
+          this.name = (Object) value;
+          break;
+        case "prodName":
+          this.prodName = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam JOIN_IDS = NamedParam.of("joinIds");
+
+      public final NamedParam USER_ID = NamedParam.of("userID");
+
+      public final NamedParam ORDER_ID = NamedParam.of("orderID");
+
+      public final NamedParam ORDER_BY_COLUMN = NamedParam.of("orderByColumn");
+    }
   }
-
-  public static class Params {
-    public final NamedParam JOIN_IDS = NamedParam.of("joinIds");
-
-    public final NamedParam USER_ID = NamedParam.of("userID");
-
-    public final NamedParam ORDER_ID = NamedParam.of("orderID");
-
-    public final NamedParam ORDER_BY_COLUMN = NamedParam.of("orderByColumn");
-  }
-}

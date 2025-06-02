@@ -14,4 +14,4 @@
 
             -- ## Select Products
             select * from products
-            where product_id = :product_id
+            where product_id = :product_id and product_id = :product_id

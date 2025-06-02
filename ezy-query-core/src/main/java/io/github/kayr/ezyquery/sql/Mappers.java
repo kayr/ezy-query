@@ -4,7 +4,10 @@ import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.ReflectionUtil;
 import io.github.kayr.ezyquery.util.ThrowingSupplier;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Simple mapper to convert a ResultSet to a List of Objects */
 public interface Mappers<T> {
@@ -52,6 +55,11 @@ public interface Mappers<T> {
   }
 
   static <T> RowMapper<T> toClass(Class<T> target) {
+    if (DynamicFieldSetter.class.isAssignableFrom(target)) {
+      return toObject(
+          () -> ReflectionUtil.construct(target),
+          (col, obj, cellValue) -> ((DynamicFieldSetter) obj).setField(col.getLabel(), cellValue));
+    }
     return toObject(
         () -> ReflectionUtil.construct(target),
         (col, obj, cellValue) -> {

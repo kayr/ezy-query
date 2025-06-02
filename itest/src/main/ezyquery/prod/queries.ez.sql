@@ -21,5 +21,5 @@
            country as "country",
            addressLine1 as "addressLine"
        FROM offices
-       WHERE officeCode = :officeCode
+       WHERE officeCode = :officeCode and officeCode = :officeCode
            LIMIT :max OFFSET :offset

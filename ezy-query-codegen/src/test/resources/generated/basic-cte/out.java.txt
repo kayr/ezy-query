@@ -7,7 +7,9 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -112,7 +114,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return withClauses;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Object customerNumber;
 
     private Object customerName;
@@ -146,9 +148,29 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", salesRepCountry = " + salesRepCountry
        + "}";
     }
-  }
 
-  public static class Params {
-    public final NamedParam JOB_TITLE = NamedParam.of("jobTitle");
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "customerNumber":
+          this.customerNumber = (Object) value;
+          break;
+        case "customerName":
+          this.customerName = (Object) value;
+          break;
+        case "salesRepName":
+          this.salesRepName = (Object) value;
+          break;
+        case "salesRepCountry":
+          this.salesRepCountry = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam JOB_TITLE = NamedParam.of("jobTitle");
+    }
   }
-}

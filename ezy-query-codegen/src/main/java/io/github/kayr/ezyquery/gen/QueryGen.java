@@ -13,6 +13,7 @@ import io.github.kayr.ezyquery.gen.walkers.DynamicQueriesFinder;
 import io.github.kayr.ezyquery.gen.walkers.WalkContext;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import io.github.kayr.ezyquery.util.Elf;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -437,7 +438,9 @@ public class QueryGen implements WritesCode {
 
   private TypeSpec resultClass(List<EzyQueryFieldSpec> fieldList) {
     TypeSpec.Builder resultClassBuilder =
-        TypeSpec.classBuilder("Result").addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        TypeSpec.classBuilder("Result")
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            .addSuperinterface(DynamicFieldSetter.class);
     for (EzyQueryFieldSpec f : fieldList) {
       resultClassBuilder.addField(
           FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
@@ -459,6 +462,28 @@ public class QueryGen implements WritesCode {
             .build();
 
     resultClassBuilder.addMethod(toStringMethod);
+
+    // add a dynamic field setter method... it should use a case statement and assign the neccessary
+    // fields
+    MethodSpec.Builder dynamicFieldSetter =
+        publicMethod("setField", Void.TYPE)
+            .addParameter(String.class, "fieldName")
+            .addParameter(Object.class, "value")
+            .addAnnotation(Override.class);
+
+    dynamicFieldSetter.addCode("switch(fieldName) {\n");
+    for (EzyQueryFieldSpec f : fieldList) {
+      dynamicFieldSetter.addCode("$>case $S:\n", f.getAlias());
+      dynamicFieldSetter.addCode("$>this.$L = ($T) value;\n", f.getAlias(), f.getDataType());
+      dynamicFieldSetter.addCode("break;\n$<$<");
+    }
+    dynamicFieldSetter
+        .addCode("$>default:\n")
+        .addCode(
+            "$>throw new $T($S + fieldName);\n", IllegalArgumentException.class, "Unknown field: ")
+        .addCode("$<}\n");
+
+    resultClassBuilder.addMethod(dynamicFieldSetter.build());
 
     return resultClassBuilder.build();
   }

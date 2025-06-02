@@ -6,7 +6,9 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -152,7 +154,7 @@ public class Query {
       return Result.class;
     }
 
-    public static class Result {
+    public static class Result implements DynamicFieldSetter {
       private Object id;
 
       private Object date;
@@ -179,47 +181,66 @@ public class Query {
         + ", customerId = " + customerId
          + "}";
       }
-    }
-  }
 
-  /**
-   * -- Select Products
-   * select * from products
-   *             where product_id = :product_id
-   */
-  public static class SelectProducts {
-    private final SqlParts sql;
-
-    public SelectProducts() {
-      this.sql = SqlParts.of(
-          SqlParts.textPart("select * from products\n"
-              + "            where product_id = "),
-          SqlParts.paramPart("product_id")
-      );
-    }
-
-    private SelectProducts(SqlParts sql) {
-      this.sql = sql;
-    }
-
-    public SelectProducts productId(Object productId) {
-      return new SelectProducts(sql.setParam("product_id", productId));
-    }
-
-    public QueryAndParams getQuery() {
-      return sql.getQuery();
-    }
-
-    public SelectProducts setParam(String param, Object value) {
-      return new SelectProducts(sql.setParam(param, value));
-    }
-
-    public SelectProducts setParams(Map<String, Object> params) {
-      SqlParts sql = this.sql;
-      for (Map.Entry<String, Object> entry : params.entrySet()) {
-        sql = sql.setParam(entry.getKey(), entry.getValue());
+      @Override
+      public void setField(String fieldName, Object value) {
+        switch(fieldName) {
+          case "id":
+            this.id = (Object) value;
+            break;
+          case "date":
+            this.date = (Object) value;
+            break;
+          case "customerId":
+            this.customerId = (Object) value;
+            break;
+          default:
+            throw new IllegalArgumentException("Unknown field: " + fieldName);
+          }
+        }
       }
-      return new SelectProducts(sql);
+    }
+
+    /**
+     * -- Select Products
+     * select * from products
+     *             where product_id = :product_id and product_id = :product_id
+     */
+    public static class SelectProducts {
+      private final SqlParts sql;
+
+      public SelectProducts() {
+        this.sql = SqlParts.of(
+            SqlParts.textPart("select * from products\n"
+                + "            where product_id = "),
+            SqlParts.paramPart("product_id"),
+            SqlParts.textPart(" and product_id = "),
+            SqlParts.paramPart("product_id")
+        );
+      }
+
+      private SelectProducts(SqlParts sql) {
+        this.sql = sql;
+      }
+
+      public SelectProducts productId(Object productId) {
+        return new SelectProducts(sql.setParam("product_id", productId));
+      }
+
+      public QueryAndParams getQuery() {
+        return sql.getQuery();
+      }
+
+      public SelectProducts setParam(String param, Object value) {
+        return new SelectProducts(sql.setParam(param, value));
+      }
+
+      public SelectProducts setParams(Map<String, Object> params) {
+        SqlParts sql = this.sql;
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+          sql = sql.setParam(entry.getKey(), entry.getValue());
+        }
+        return new SelectProducts(sql);
+      }
     }
   }
-}

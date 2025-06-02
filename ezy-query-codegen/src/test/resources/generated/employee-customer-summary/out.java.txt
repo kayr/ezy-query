@@ -9,7 +9,9 @@ import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -110,7 +112,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Object employeeNumber;
 
     private Object firstName;
@@ -158,35 +160,61 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", totalCustomers = " + totalCustomers
        + "}";
     }
-  }
-
-  public static class Params {
-    public final NamedParam EZY_CUSTOMER_SUMMARY = NamedParam.of("_ezy_customerSummary");
-  }
-
-  public static final class Criteria {
-    public final CustomerSummary CUSTOMER_SUMMARY = new CustomerSummary();
-  }
-
-  public static class CustomerSummary implements CriteriaHolder {
-    public final Field<Object> SALES_REP_EMPLOYEE_NUMBER = Field.of("salesRepEmployeeNumber", "salesRepEmployeeNumber", Object.class,Field.ExpressionType.COLUMN);
-
-    public final Field<Object> TOTAL_CUSTOMERS = Field.of("some_function()", "totalCustomers", Object.class,Field.ExpressionType.OTHER);
-
-    private final List<Field<?>> fields = new ArrayList<Field<?>>();
-
-    private CustomerSummary() {
-      init();
-    }
-
-    private void init() {
-      fields.add(SALES_REP_EMPLOYEE_NUMBER);
-      fields.add(TOTAL_CUSTOMERS);
-    }
 
     @Override
-    public NamedCriteriaParam getName() {
-      return NamedCriteriaParam.of("_ezy_customerSummary", fields);
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "employeeNumber":
+          this.employeeNumber = (Object) value;
+          break;
+        case "firstName":
+          this.firstName = (Object) value;
+          break;
+        case "officeCode":
+          this.officeCode = (Object) value;
+          break;
+        case "country":
+          this.country = (Object) value;
+          break;
+        case "addressLine1":
+          this.addressLine1 = (Object) value;
+          break;
+        case "totalCustomers":
+          this.totalCustomers = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam EZY_CUSTOMER_SUMMARY = NamedParam.of("_ezy_customerSummary");
+    }
+
+    public static final class Criteria {
+      public final CustomerSummary CUSTOMER_SUMMARY = new CustomerSummary();
+    }
+
+    public static class CustomerSummary implements CriteriaHolder {
+      public final Field<Object> SALES_REP_EMPLOYEE_NUMBER = Field.of("salesRepEmployeeNumber", "salesRepEmployeeNumber", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> TOTAL_CUSTOMERS = Field.of("some_function()", "totalCustomers", Object.class,Field.ExpressionType.OTHER);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private CustomerSummary() {
+        init();
+      }
+
+      private void init() {
+        fields.add(SALES_REP_EMPLOYEE_NUMBER);
+        fields.add(TOTAL_CUSTOMERS);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_customerSummary", fields);
+      }
     }
   }
-}

@@ -6,7 +6,9 @@ import io.github.kayr.ezyquery.api.Field;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
 import java.lang.Class;
+import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -93,7 +95,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     return Result.class;
   }
 
-  public static class Result {
+  public static class Result implements DynamicFieldSetter {
     private Object code;
 
     private Object a;
@@ -141,5 +143,31 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       + ", e = " + e
        + "}";
     }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "code":
+          this.code = (Object) value;
+          break;
+        case "a":
+          this.a = (Object) value;
+          break;
+        case "b":
+          this.b = (Object) value;
+          break;
+        case "c":
+          this.c = (Object) value;
+          break;
+        case "d":
+          this.d = (Object) value;
+          break;
+        case "e":
+          this.e = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
   }
-}

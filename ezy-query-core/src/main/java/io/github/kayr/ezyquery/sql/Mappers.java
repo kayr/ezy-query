@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Simple mapper to convert a ResultSet to a List of Objects */
-public interface Mappers<T> {
+public interface Mappers {
 
   interface RowMapper<T> {
     T mapRow(int rowIndex, List<ColumnInfo> columns, ResultSet rs) throws Exception;

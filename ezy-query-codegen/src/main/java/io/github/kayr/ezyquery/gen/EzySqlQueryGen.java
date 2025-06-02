@@ -75,8 +75,6 @@ public class EzySqlQueryGen implements WritesCode {
 
     Pair<QueryKind, String> typeAndName = extractName(section.name());
 
-    System.out.println("************ Generating class: " + typeAndName);
-
     if (typeAndName.getOne() == QueryKind.STATIC) {
       return Pair.of(typeAndName.getOne(), generateStaticClass(typeAndName.getTwo(), section));
     } else {

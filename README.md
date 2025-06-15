@@ -87,7 +87,7 @@ Query using the Java fluent API.
         .offset(20);
 ```
 
-Query using String expressions.
+Query using String expressions. 
 
 ```java
     ezySql
@@ -97,6 +97,22 @@ Query using String expressions.
         .orderBy("customerName asc, customerEmail desc")
         .limit(10)
         .offset(20);
+```
+
+**NOTE:** To use this feature you will need to add JSQLParser to your classpath. If you are using gradle you can add it like this
+
+```groovy
+dependency {
+    implementation 'com.github.jsqlparser:jsqlparser:4.8'
+}
+```
+or maven 
+```xml
+<dependency>
+    <groupId>com.github.jsqlparser</groupId>
+    <artifactId>jsqlparser</artifactId>
+    <version>4.8</version>
+</dependency>
 ```
 
 ## Setup

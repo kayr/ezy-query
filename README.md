@@ -1,4 +1,11 @@
-# ezy-query
+# EzyQuery: Bring back the power of raw SQL in Java.
+
+EzyQuery brings the best of both worlds: SQL's expressiveness and Java's compile-time safety, making database access
+both powerful and reliable. It is a Java library that bridges the gap between raw SQL and compile-time type-safe code.
+
+It is lightweight with zero runtime dependencies.
+
+## Download
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.kayr/ezy-query-gradle-plugin/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/io.github.kayr/ezy-query-gradle-plugin)
 
@@ -16,12 +23,16 @@ plugins {
 }
 ```
 
-Convert your SQL query to A queryable Java API/Code.. think of A Queryable View In Your Code Using Java
+## How it works
+
+Converts your SQL query to A queryable Java API/Code.. think of A Queryable View In Your Code Using Java
 
 You don't have to write your sql queries in your code or use string concatenation to build your sql queries.
 This will work for most sql queries in the
-format `SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... LIMIT ... OFFSET ...`
+format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... LIMIT ... OFFSET ...`
 You do not have to worry about Sql Injection as the generated sql queries are parameterized.
+
+If your sql is too complex or uses unsupported features you can still use it to generate APIs for your named params.
 
 ## The workflow
 
@@ -31,7 +42,8 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 
 ## Features
 
-1. Flexible Query fluent API e.g   `where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))`.
+1. Flexible Query fluent API e.g
+   `where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))`.
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
    Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
    parameter. The query is parsed and converted to a parameterized sql query.
@@ -51,25 +63,25 @@ You do not have to worry about Sql Injection as the generated sql queries are pa
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Setup](#setup)
-  - [1. Add the gradle plugin to your build.gradle file.](#1-add-the-gradle-plugin-to-your-buildgradle-file)
-  - [2. Create the source directory for your sql files.](#2-create-the-source-directory-for-your-sql-files)
-  - [3. Create your sql files.](#3-create-your-sql-files)
-  - [4. Generate the java code.](#4-generate-the-java-code)
-  - [5. Set up EzyQuery](#5-set-up-ezyquery)
-  - [6. Use the generated code.](#6-use-the-generated-code)
-    - [6.1. Filtering using the fluent api.](#61-filtering-using-the-fluent-api)
-    - [6.2. Filtering using the Condition API](#62-filtering-using-the-condition-api)
-    - [6.3. Filtering using the Ezy-Query String Expressions](#63-filtering-using-the-ezy-query-string-expressions)
-    - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
-    - [6.5 Named Parameters](#65-named-parameters)
-    - [6.6 Specifying a custom result mapper](#66-specifying-a-custom-result-mapper)
-    - [6.7. Sorting](#67-sorting)
-    - [6.8. Pagination](#68-pagination)
-    - [6.9 Adding a default where clause.](#69-adding-a-default-where-clause)
-    - [6.10 Adding data types to the generated pojo.](#610-adding-data-types-to-the-generated-pojo)
-      - [6.10.1 Overriding default type mappings e.g for newer JDBC drivers.](#6101-overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
-    - [6.11 Optionally select fields to be returned.](#611-optionally-select-fields-to-be-returned)
-  - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
+    - [1. Add the gradle plugin to your build.gradle file.](#1-add-the-gradle-plugin-to-your-buildgradle-file)
+    - [2. Create the source directory for your sql files.](#2-create-the-source-directory-for-your-sql-files)
+    - [3. Create your sql files.](#3-create-your-sql-files)
+    - [4. Generate the java code.](#4-generate-the-java-code)
+    - [5. Set up EzyQuery](#5-set-up-ezyquery)
+    - [6. Use the generated code.](#6-use-the-generated-code)
+        - [6.1. Filtering using the fluent api.](#61-filtering-using-the-fluent-api)
+        - [6.2. Filtering using the Condition API](#62-filtering-using-the-condition-api)
+        - [6.3. Filtering using the Ezy-Query String Expressions](#63-filtering-using-the-ezy-query-string-expressions)
+        - [6.4 Filtering with native SQL](#64-filtering-with-native-sql)
+        - [6.5 Named Parameters](#65-named-parameters)
+        - [6.6 Specifying a custom result mapper](#66-specifying-a-custom-result-mapper)
+        - [6.7. Sorting](#67-sorting)
+        - [6.8. Pagination](#68-pagination)
+        - [6.9 Adding a default where clause.](#69-adding-a-default-where-clause)
+        - [6.10 Adding data types to the generated pojo.](#610-adding-data-types-to-the-generated-pojo)
+            - [6.10.1 Overriding default type mappings e.g for newer JDBC drivers.](#6101-overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
+        - [6.11 Optionally select fields to be returned.](#611-optionally-select-fields-to-be-returned)
+    - [7.0 Using on older versions of Gradle.](#70-using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -79,35 +91,63 @@ Query using the Java fluent API.
 ```java
 //full query
     ezySql
-        .from(GET_CUSTOMERS)
-        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
-        .where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
-        .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(), GET_CUSTOMERS.CUSTOMER_EMAIL.desc())
-        .limit(10)
-        .offset(20);
+            .from(GET_CUSTOMERS)
+        .
+
+select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
+        .
+
+where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").
+
+and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
+        .
+
+orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(),GET_CUSTOMERS.CUSTOMER_EMAIL.
+
+desc())
+        .
+
+limit(10)
+        .
+
+offset(20);
 ```
 
-Query using String expressions. 
+Query using String expressions.
 
 ```java
     ezySql
         .from(GET_CUSTOMERS)
-        .select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
-        .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
-        .orderBy("customerName asc, customerEmail desc")
-        .limit(10)
-        .offset(20);
+        .
+
+select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
+        .
+
+where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
+        .
+
+orderBy("customerName asc, customerEmail desc")
+        .
+
+limit(10)
+        .
+
+offset(20);
 ```
 
-**NOTE:** To use this feature you will need to add JSQLParser to your classpath. If you are using gradle you can add it like this
+**NOTE:** To use this feature you will need to add JSQLParser to your classpath. If you are using gradle you can add it
+like this
 
 ```groovy
 dependency {
     implementation 'com.github.jsqlparser:jsqlparser:4.8'
 }
 ```
-or maven 
+
+or maven
+
 ```xml
+
 <dependency>
     <groupId>com.github.jsqlparser</groupId>
     <artifactId>jsqlparser</artifactId>
@@ -151,13 +191,11 @@ e.g `get-customer.sql` will be generated as `GetCustomer.java`
 
 ```sql
 -- file: get-customer.sql
-SELECT
-   c.id as customerId,
-   c.name as customerName,
-   c.email as customerEmail,
-   c.score as customerScore,
-FROM
-    customers c
+SELECT c.id    as customerId,
+       c.name  as customerName,
+       c.email as customerEmail,
+       c.score as customerScore,
+FROM customers c
 ```
 
 ### 4. Generate the java code.
@@ -176,11 +214,11 @@ In pure java you just have to initialize EzySql with a datasource or Sql connect
 
 ```java
 //set up with a datasource
-EzySql ezySql=EzySql.withDataSource(dataSource);
+EzySql ezySql = EzySql.withDataSource(dataSource);
 
 
 //or use an sql connection
-  EzySql ezySql=EzySql.withConnection(connection);
+EzySql ezySql = EzySql.withConnection(connection);
 ```
 
 If you are using spring boot, you can do this by creating a bean of type `EzySql` in your spring configuration. Then
@@ -188,10 +226,11 @@ inject the bean
 into your code using the `@Autowired` annotation.
 
 ```java
+
 @Bean
-public EzySql ezyQuery(DataSource dataSource){
-  return EzySql.withDataSource(dataSource);
-  }
+public EzySql ezyQuery(DataSource dataSource) {
+    return EzySql.withDataSource(dataSource);
+}
 ```
 
 ### 6. Use the generated code.
@@ -200,17 +239,18 @@ You can now use the generated code to query your database. This will dynamically
 then return the result in a pojo.
 
 ```java
+
 @Autowired
 private EzySql ezySql;
 
-public void getCustomers(){
-  var query=ezySql.from(GET_CUSTOMERS)
+public void getCustomers() {
+    var query = ezySql.from(GET_CUSTOMERS)
 
 
-  assert result.count()>1;
-  assert result.list().size()>0;
+    assert result.count() > 1;
+    assert result.list().size() > 0;
 
-  }
+}
 ```
 
 #### 6.1. Filtering using the fluent api.
@@ -219,8 +259,14 @@ public void getCustomers(){
 import static docs.GetCustomers.*;
 
  ezySql.from(GET_CUSTOMERS)
-   .where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
-   .list();
+   .
+
+where(GET_CUSTOMERS.CUSTOMER_NAME.eq("John").
+
+and(GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull()))
+        .
+
+list();
 ```
 
 #### 6.2. Filtering using the Condition API
@@ -229,34 +275,45 @@ import static docs.GetCustomers.*;
 import static docs.GetCustomers.*;
   
 ezySql.from(GET_CUSTOMERS)
-  .where(
-  Cnd.and(
-    GET_CUSTOMERS.CUSTOMER_NAME.eq("John"),
-    GET_CUSTOMERS.CUSTOMER_EMAIL.isNotNull())
-  ).list();
+  .
+
+where(
+        Cnd.and(
+                GET_CUSTOMERS.CUSTOMER_NAME.eq("John"),
+    GET_CUSTOMERS.CUSTOMER_EMAIL.
+
+isNotNull())
+        ).
+
+list();
 ```
 
 #### 6.3. Filtering using the Ezy-Query String Expressions
 
 ```java
  ezySql.from(GET_CUSTOMERS)
-  .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
-  .getQuery().print();
+  .
+
+where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
+        .
+
+getQuery().
+
+print();
 ```
 
 The above will print the following query. It parses the expression and converts it to the supported Criteria API. Notice
 how the `customerName` is converted to `c.name` in the sql query.
 
 ```sql
-SELECT 
-  c.id as "customerId", 
-  c.name as "customerName", 
-  c.email as "customerEmail", 
-  c.score as "customerScore"
+SELECT c.id    as "customerId",
+       c.name  as "customerName",
+       c.email as "customerEmail",
+       c.score as "customerScore"
 FROM customers c
 WHERE (c.name = ? AND c.email IS NOT NULL)
 LIMIT 50 OFFSET 0
-PARAMS:[John]
+    PARAMS:[John]
 ```
 
 #### 6.4 Filtering with native SQL
@@ -266,7 +323,9 @@ concatenation and use the `?` placeholder instead.
 
 ```java
 ezySql.from(GET_CUSTOMERS)
-  .where(Cnd.sql("c.name = ? and c.created_at > now()","John")) //use the ? placeholder to avoid sql injection
+  .
+
+where(Cnd.sql("c.name = ? and c.created_at > now()","John")) //use the ? placeholder to avoid sql injection
 ```
 
 #### 6.5 Named Parameters
@@ -281,18 +340,15 @@ Given the following sql query.
 
 ```sql
 -- file: get-customers.sql
-SELECT
-   o.id as customerId,
-   c.name as customerName,
-   c.email as customerEmail,
-   o.item as item,
-   o.price as price,
-    o.quantity as quantity
-FROM
-    orders o
-    inner join customers c on c.id = o.customerId
-WHERE
-    c.membership = :membership
+SELECT o.id       as customerId,
+       c.name     as customerName,
+       c.email    as customerEmail,
+       o.item     as item,
+       o.price    as price,
+       o.quantity as quantity
+FROM orders o
+         inner join customers c on c.id = o.customerId
+WHERE c.membership = :membership
 ```
 
 You can pass the named parameter `:membership` at runtime as follows.
@@ -307,18 +363,18 @@ You can pass the named parameter `:membership` at runtime as follows.
 This will print the following sql query along with the params.
 
 ```sql
-SELECT 
-  o.id as "customerId", 
-  c.name as "customerName", 
-  c.email as "customerEmail", 
-  o.item as "item", 
-  o.price as "price", 
-  o.quantity as "quantity"
+SELECT o.id       as "customerId",
+       c.name     as "customerName",
+       c.email    as "customerEmail",
+       o.item     as "item",
+       o.price    as "price",
+       o.quantity as "quantity"
 FROM orders o
-INNER JOIN customers c ON c.id = o.customerId
-WHERE (c.membership = ?) AND (o.price > ? AND o.quantity < ?)
+         INNER JOIN customers c ON c.id = o.customerId
+WHERE (c.membership = ?)
+  AND (o.price > ? AND o.quantity < ?)
 LIMIT 50 OFFSET 0
-PARAMS:[GOLD, 100, 10]
+    PARAMS:[GOLD, 100, 10]
 ```
 
 You can see that the `GOLD` param has been added to the list of params.
@@ -363,28 +419,40 @@ Sort using fields
 
 ```java
  ezySql.from(GET_CUSTOMERS)
-  .orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(),GET_CUSTOMERS.CUSTOMER_EMAIL.desc())
+  .
+
+orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc(),GET_CUSTOMERS.CUSTOMER_EMAIL.
+
+desc())
 ```
 
 Sort using strings expression
 
 ```java
 ezySql.from(GET_CUSTOMERS)
-  .orderBy("customerName asc, customerEmail desc")
+  .
+
+orderBy("customerName asc, customerEmail desc")
 ```
 
 Sort using Sort Object
 
 ```java
 ezySql.from(GET_CUSTOMERS)
-  .orderBy(Sort.by("customerName",Sort.DIR.ASC))
+  .
+
+orderBy(Sort.by("customerName", Sort.DIR.ASC))
 ```
 
 #### 6.8. Pagination
 
 ```java
  ezySql.from(GET_CUSTOMERS)
-  .limit(10).offset(20)
+  .
+
+limit(10).
+
+offset(20)
 ```
 
 #### 6.9 Adding a default where clause.
@@ -393,15 +461,12 @@ To add a default where clause to all queries then you can add it to the input sq
 
 ```sql
 -- file: get-customer.sql
-SELECT
-   c.id as customerId,
-   c.name as customerName,
-   c.email as customerEmail,
-   c.score as customerScore
-FROM
-    customers c
-WHERE
-    c.status = 'active'
+SELECT c.id    as customerId,
+       c.name  as customerName,
+       c.email as customerEmail,
+       c.score as customerScore
+FROM customers c
+WHERE c.status = 'active'
 ```
 
 The above will add the where clause `c.status = 'active'` to all queries.
@@ -413,11 +478,9 @@ You can add a data type to the generated pojo by adding a suffix to the field na
 
 ```sql
 -- file: get-customer.sql
-SELECT
-   c.id as customerId_int,
-   c.name as customerName_string,
-   c.score as customerScore_double,
-....
+SELECT c.id    as customerId_int,
+       c.name  as customerName_string,
+       c.score as customerScore_double, ....
 ```
 
 With the above sql,the generated pojo will have the following fields.
@@ -463,11 +526,10 @@ Then in your sql file you can use the custom type as follows.
 
 ```sql
 -- file: get-customer.sql
-SELECT
-   c.id as customerId_customtype, -- specify the custom type
-   c.name as customerName_string,
-   c.score as customerTags_vector, -- specify the custom vector type
-....
+SELECT c.id    as customerId_customtype, -- specify the custom type
+       c.name  as customerName_string,
+       c.score as customerTags_vector,   -- specify the custom vector type
+    ....
 ```
 
 The generated pojo will have the following fields.
@@ -496,7 +558,9 @@ type.time=java.time.LocalTime
 
 ```java
 ezySql.from(GET_CUSTOMERS)
-  .select(GET_CUSTOMERS.CUSTOMER_NAME,GET_CUSTOMERS.CUSTOMER_EMAIL)
+  .
+
+select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
 ```
 
 ### 7.0 Using on older versions of Gradle.

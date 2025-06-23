@@ -21,7 +21,6 @@ import lombok.NonNull;
  * This class works with the EzySQL query objects as opposed to raw Sql Strings. All the db handling
  * is delegated to Zql with handles all the database problems.
  */
-@SuppressWarnings("LombokGetterMayBeUsed")
 public class EzySql {
 
   @lombok.Getter private final Zql zql;

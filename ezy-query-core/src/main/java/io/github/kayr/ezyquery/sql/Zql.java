@@ -3,10 +3,7 @@ package io.github.kayr.ezyquery.sql;
 import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.Elf;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.function.Function;
 
@@ -114,10 +111,11 @@ public class Zql {
 
   public Integer update(String sql, Object... params) {
     Connection connection = connectionProvider.getConnectionUnChecked();
-    try {
-      PreparedStatement statement = JdbcUtils.preparedStatement(connection, sql);
+    try (PreparedStatement statement = JdbcUtils.preparedStatement(connection, sql)) {
       setValues(statement, params);
       return JdbcUtils.executeUpdate(statement);
+    } catch (SQLException e) {
+      throw new UnCaughtException(e);
     } finally {
       closeConnection(connectionProvider, connection);
     }

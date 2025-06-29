@@ -88,7 +88,7 @@ public class EzySqlQueryGen implements WritesCode {
             packageName + "." + mainClassName,
             StringCaseUtil.toPascalCase(className),
             section.sql(),
-            new Properties())
+            properties)
         .buildClass()
         .toBuilder()
         .addModifiers(Modifier.STATIC)

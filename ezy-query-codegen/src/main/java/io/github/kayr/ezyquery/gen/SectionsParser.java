@@ -33,7 +33,7 @@ public class SectionsParser {
         trimmed.startsWith(SECTION_MARKER)
             ? SECTION_MARKER.length()
             : SECTION_MARKER_NO_SPACE.length();
-    return trimmed.substring(markerIndex + 1).trim();
+    return trimmed.substring(markerIndex).trim();
   }
 
   private static int collectSection(int i, List<String> lines, StringBuilder sb) {

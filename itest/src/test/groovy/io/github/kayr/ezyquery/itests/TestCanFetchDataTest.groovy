@@ -40,11 +40,11 @@ class TestCanFetchDataTest extends Specification {
         ]
 
         def customers = [
-                [customerNumber: '1', customerName: 'Kay', salesRepEmployeeNumber: '1'],
-                [customerNumber: '2', customerName: 'John', salesRepEmployeeNumber: '1'],
-                [customerNumber: '3', customerName: 'Jane', salesRepEmployeeNumber: '1'],
-                [customerNumber: '4', customerName: 'Doe', salesRepEmployeeNumber: '2'],
-                [customerNumber: '5', customerName: 'Daniel', salesRepEmployeeNumber: '2']
+                [id: 100, customerNumber: '1', customerName: 'Kay', salesRepEmployeeNumber: '1', email: "kay@example.com", phone: '11227788', score: 3],
+                [id: 101, customerNumber: '2', customerName: 'John', salesRepEmployeeNumber: '1', email: 'john@example.com', score: 4],
+                [id: 102, customerNumber: '3', customerName: 'Jane', salesRepEmployeeNumber: '1', email: 'jane@example.com', score: 6],
+                [id: 103, customerNumber: '4', customerName: 'Doe', salesRepEmployeeNumber: '2'],
+                [id: 104, customerNumber: '5', customerName: 'Daniel', salesRepEmployeeNumber: '2']
 
         ]
 
@@ -121,10 +121,10 @@ class TestCanFetchDataTest extends Specification {
     def 'test that can fetch data using new ez.sql'() {
         given:
         def criteria = Queries.selectOffices()
-        .officeCode("1").offset(0).max(50).query
+                .officeCode("1").offset(0).max(50).query
 
         when:
-        def r = ez.zql.oneRow(Mappers.toMap(),criteria)
+        def r = ez.zql.oneRow(Mappers.toMap(), criteria)
 
 
         then:
@@ -136,10 +136,10 @@ class TestCanFetchDataTest extends Specification {
     def 'test that can fetch data using new ez.sql but with defaults'() {
         given:
         def criteria = Queries.selectOffices2()
-        .officeCode("1").offset(0).max(50).query
+                .officeCode("1").offset(0).max(50).query
 
         when:
-        def r = ez.zql.oneRow(Mappers.toMap(),criteria)
+        def r = ez.zql.oneRow(Mappers.toMap(), criteria)
 
 
         then:
@@ -261,8 +261,8 @@ class TestCanFetchDataTest extends Specification {
     def "xxxxx"() {
 
         ez.from(Queries.selectOrders())
-        .setCriteria(Queries.selectOrders().CUSTOMER_ID, Queries.selectOrders().CUSTOMER_ID.in("1", "2", "3", "4", "5"))
-        .setParam(Queries.selectOrders().CUSTOMER_ID, ["1", "2", "3", "4", "5"])
+                .setCriteria(Queries.selectOrders().CUSTOMER_ID, Queries.selectOrders().CUSTOMER_ID.in("1", "2", "3", "4", "5"))
+                .setParam(Queries.selectOrders().CUSTOMER_ID, ["1", "2", "3", "4", "5"])
 
 
     }

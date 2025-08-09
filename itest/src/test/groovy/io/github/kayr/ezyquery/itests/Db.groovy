@@ -20,7 +20,7 @@ class Db {
     def init() {
         if (ds == null) {
             //initialise h2 inmemory database
-            def config = new HikariConfig()
+            var config = new HikariConfig()
             config.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=0")
             config.setUsername("sa")
             config.setPassword("")
@@ -53,7 +53,7 @@ class Db {
                 withSqlRenderer(Db.h2_RENDERER)
 
 
-        def csvData = FuzzyCSVTable.fromMapList(data).name(name)
+        def csvData = FuzzyCSVTable.fromMapList(data).name(name).equalizeRowWidths()
 
         withDb { csvData.dbExport(it, exportParams) }
 

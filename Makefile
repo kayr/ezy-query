@@ -31,3 +31,11 @@ generate:
 
 rebuild: clean build test publishLocal
 	cd itest && make clean build
+
+
+SRC_DIR ?= itest
+DOC_FILE ?= README.md
+
+update-docs:
+	@echo "📄 Extracting snippets from $(SRC_DIR) into $(DOC_FILE)"
+	groovy scripts/snippets.groovy $(SRC_DIR) $(DOC_FILE)

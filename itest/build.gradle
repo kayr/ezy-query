@@ -30,6 +30,8 @@ dependencies {
     testImplementation 'org.codehaus.groovy:groovy:3.0.9'
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     testImplementation group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3'
+    testImplementation 'com.github.jsqlparser:jsqlparser:4.8'
+
 }
 
 repositories {

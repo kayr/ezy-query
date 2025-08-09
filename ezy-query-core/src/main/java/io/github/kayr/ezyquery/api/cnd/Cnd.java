@@ -117,13 +117,39 @@ public class Cnd {
     return ExprCond.expr(expr);
   }
 
+  /**
+   * Creates condition from a map of criteria.
+   *
+   * <p>The syntax for each entry in the map is as follows:
+   *
+   * <pre>
+   *     key  - the name of the field to filter on
+   *     value - the value to filter on
+   *            if the value is {@link Optional}, the value will be used only if it is present.
+   *            this is useful for things like unary operators where you want to do something like
+   *            Cnd.fromMap("name.isnotnull",Optional.empty())
+   * </pre>
+   *
+   * @param criteria a map of criteria
+   * @return the condition created from the criteria
+   */
   public static ICond fromMap(Map<String, ?> criteria) {
     // convert to multi map
-    Map<String, List<?>> multiMap = new HashMap<>();
+    Map<String, List<?>> multiMap = new LinkedHashMap<>();
     for (Map.Entry<String, ?> entry : criteria.entrySet()) {
       String k = entry.getKey();
       Object v = entry.getValue();
-      multiMap.put(k, Collections.singletonList(v));
+
+      if (v instanceof Optional) {
+        Optional<Object> ov = (Optional<Object>) v;
+        v = ov.orElse(null);
+      }
+
+      if (v != null) {
+        multiMap.put(k, Collections.singletonList(v));
+      } else {
+        multiMap.put(k, Collections.emptyList());
+      }
     }
     return fromMvMap(multiMap);
   }

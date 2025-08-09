@@ -83,7 +83,6 @@ public class CndFromMap {
     handle("in", inHandler());
     handle("notin", notInHandler());
     handle("between", betweenHandler());
-    handle("between", betweenHandler());
     handle("notbetween", notBetweenHandler());
     handle("isnull", isNullHandler());
     handle("isnotnull", isNotNullHandler());

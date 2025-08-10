@@ -42,7 +42,7 @@ plugins {
 
 ## How it works
 
-Converts your SQL query to A queryable Java API/Code.. think of A Queryable View In Your Code Using Java
+Converts your SQL query to A queryable Java API/Code... think of A Queryable View In Your Code Using Java
 This will work for most sql queries in the
 format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... LIMIT ... OFFSET ...`
 
@@ -75,8 +75,9 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
     where id = :id;
    ```
 2. Run `./gradlew ezyBuild` to convert your SQL query file to a java class. This will generate a java class for you.
-   The class is a `CustomerQueries` will contain two query classes tha can access via the static methods e.g.
-   `CustomerQueries.getAllCustomers()`
+   The class name will be generated based on your file name. The class `CustomerQueries` will contain two query classes
+   that can be accessed via the static methods e.g. `CustomerQueries.getAllCustomers()`. Below is a snippet of what will
+   be generated.
    ```java
    public class CustomerQueries {
        public static GetAllCustomers getAllCustomers() {...}
@@ -97,15 +98,14 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
        }
    }
    ```
-3. Setup up EzySql instance. Below is an example with Hikari
+3. Setup up EzySql instance that will act as an entry point to using EzyQuery. Below is an example with Hikari
     ```java
     var config = new HikariConfig();
     //...
     EzySql ezySql = EzySql.withDataSource(new HikariDataSource(config))
     ```    
-4. You can now use the java class to query your database with a flexible easy to use api.
-   The example below uses the get all customers query to fetch all customers
-   whose name is `John` and email is not null;
+4. You can now use the generated class to query your database with a flexible easy to use api.
+   The example below that fetches/filters/sorts customers from the db whose name is `John` and email is not null;
    <!-- snippet:how-to-use-->
    ```java
            var Q = CustomerQueries.getAllCustomers()
@@ -128,16 +128,16 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Other features](#other-features)
-  - [Working with spring boot](#working-with-spring-boot)
-  - [Filtering](#filtering)
-  - [Sorting and pagination](#sorting-and-pagination)
-  - [Named Parameters](#named-parameters)
-  - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
-  - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
-  - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
-  - [Overriding default type mappings e.g for newer JDBC drivers.](#overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
-  - [Optionally select fields to be returned.](#optionally-select-fields-to-be-returned)
-  - [Using on older versions of Gradle.](#using-on-older-versions-of-gradle)
+    - [Working with spring boot](#working-with-spring-boot)
+    - [Filtering](#filtering)
+    - [Sorting and pagination](#sorting-and-pagination)
+    - [Named Parameters](#named-parameters)
+    - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
+    - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
+    - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
+    - [Overriding default type mappings e.g for newer JDBC drivers.](#overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
+    - [Optionally select fields to be returned.](#optionally-select-fields-to-be-returned)
+    - [Using on older versions of Gradle.](#using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -159,7 +159,7 @@ public EzySql ezyQuery(DataSource dataSource) {
 
 ### Filtering
 
-You have multiple options to filter provide filter to your sql query:
+You have multiple options to filter provide filters to your query:
 
 1. *Through the fluent API*
     <!--snippet:filter-with-fluent-api--> 
@@ -169,8 +169,9 @@ You have multiple options to filter provide filter to your sql query:
                     .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
     ```
    <!--endsnippet-->
-2. *Filtering with the condition API:* This one is similar to building an AST with and offer alot more predictability of
-   the result at the cost of reading the code in a lispy style syntax.
+2. *Filtering with the condition API:* This one is similar to building an AST with and offers alot more predictability
+   of
+   the resulting filter at the cost of readability(lispy style).
     <!--snippet:filter-with-condition-api-->
     ```java
             var Q = CustomerQueries.getAllCustomers()
@@ -178,8 +179,8 @@ You have multiple options to filter provide filter to your sql query:
                     .where(Cnd.and(Cnd.eq(Q.CUSTOMER_NAME, "John"), Cnd.isNotNull(Q.CUSTOMER_EMAIL)))
     ```
    <!--endsnippet-->
-3. *Filtering with the ezy-query expression:* This allows you to filters string directly to ezy-query. This can be
-   useful where you want to allow client code to customize filter and search you api in a powerful way.
+3. *Filtering with the ezy-query expression:* This allows you pass filter strings directly to ezy-query. This can be
+   useful where you want to allow client code to dynamically filter the data from the frontend.
     <!-- snippet:filter-with-ezy-query-expressions-->
     ```java
             var Q = CustomerQueries.getAllCustomers()
@@ -217,14 +218,20 @@ You have multiple options to filter provide filter to your sql query:
    <!-- endsnippet-->
    Most http server libraries use multivalue maps so there is alternate method for creating a criteria from a
    multivalue map.
-   <!-- snippet:filter-with-mv-map-->
-   <<missing snippet: filter-with-mv-map>>
+   <!-- snippet:filter-with-mv-map -->
+   ```java
+           var Q = CustomerQueries.getAllCustomers()
+           var sql = ezySql.from(Q)
+                   .where(Cnd.fromMvMap(
+                           Map.of("customerName.eq", List.of("John"),
+                                   "customerEmail.isnotnull": emptyList())))//empty list to show we have no values here
+   ```
    <!-- endsnippet-->
    *Supported map operators for a map include:"
    `eq,neq,like,notlike,gt,gte,lt,lte,in,notin,between,notbetween,isnull,isnotnull`
 5. *Filtering with native sql:* Sometimes there will be operations not supported by ezy-query for this case you can
-   always fall back to using native sql. Be care with this method.
-   ***Always paremetirize your variables to avoid sql injection***
+   always fall back to using native sql. Be careful with this method,
+   ***always paremetirize your variables to avoid sql injection***
     <!-- snippet:filter-with-raw-sql-->
     ```java
             var Q = CustomerQueries.getAllCustomers()
@@ -266,10 +273,9 @@ Sort using Sort Object
 ```
 <!-- endsnippet-->
 
-
 ### Named Parameters
 
-You can add named parameters to static parts of your sql query and passed them at runtime. This is useful when some
+You can add named parameters to static parts of your sql query and pass them at runtime. This is useful when some
 parts of the query are not necessarily dynamic e.g if you have an sql query that has derived tables that need named
 params.
 
@@ -286,7 +292,7 @@ SELECT o.id       as customerId,
        o.price    as price,
        o.quantity as quantity
 FROM orders o
-         inner join customers c on c.id = o.customerId
+         inner join customers c on c.id = o.customerId and c.membership = :membership
 WHERE c.membership = :membership
 ```
 
@@ -305,29 +311,29 @@ You can pass the named parameter `:membership` at runtime as follows.
 This will generate the following sql query along with the params.
 
 ```sql
-SELECT 
-  o.id as "customerId", 
-  c.cutomerName as "customerName", 
-  c.email as "customerEmail", 
-  o.item as "item", 
-  o.price as "price", 
-  o.quantity as "quantity"
+SELECT
+    o.id as "customerId",
+    c.cutomerName as "customerName",
+    c.email as "customerEmail",
+    o.item as "item",
+    o.price as "price",
+    o.quantity as "quantity"
 FROM orders o
-INNER JOIN customers c ON c.id = o.customerId
+         INNER JOIN customers c ON c.id = o.customerId AND c.membership = ?
 WHERE (c.membership = ?) AND (o.price > ? AND o.quantity < ?)
 LIMIT 50 OFFSET 0
--- params=[GOLD, 100, 10]}
+-- params=[GOLD, GOLD, 100, 10]}
 ```
 
 You can see that the `GOLD` param has been added to the list of params.
 
 ### Specifying a custom result mapper
 
-You can specify a custom mapper to control how you want the result to returned from the database. E.g Instead of
+You can specify a custom mapper to control how you want the results to be returned or mapped from the database. E.g Instead of
 returning a list of pojos you can return a list of maps.
 Here is an example.
 
-We already have a built in mapper that converts the result to a map. You can use it as follows.
+We already have a built-in mapper that converts the result to a map. You can use it as follows.
 <!-- snippet:mapper-to-map -->
 ```java
         var Q = CustomerQueries.getAllCustomers()
@@ -372,7 +378,7 @@ The above will add the where clause `c.status = 'active'` to all queries generat
 ### Adding data types to the generated pojo.
 
 The generated pojo by default will have all fields as `Object`.
-You can add a data type to the generated pojo by adding a suffix to the field name.
+You can add a data type to the generated pojo by adding a suffix to the field name aliases like below.
 
 ```sql
 -- file: get-customer.sql
@@ -453,6 +459,7 @@ type.time=java.time.LocalTime
 ```
 
 ### Optionally select fields to be returned.
+
 <!-- snippet:optional-select-field -->
 ```java
         var Q = CustomerQueries.getAllCustomers()
@@ -465,6 +472,7 @@ type.time=java.time.LocalTime
         assert result.get(0).customerId == null//we did not select this.. so it will be null
 ```
 <!-- endsnippet-->
+
 ```java
 ezySql.from(GET_CUSTOMERS)
   .

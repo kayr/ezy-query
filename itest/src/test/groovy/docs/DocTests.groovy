@@ -8,8 +8,6 @@ import io.github.kayr.ezyquery.sql.ColumnInfo
 import io.github.kayr.ezyquery.sql.Mappers
 import spock.lang.Specification
 
-import static java.util.Collections.emptyList
-
 class DocSpec extends Specification {
 
     private EzySql ezySql
@@ -143,7 +141,7 @@ class DocSpec extends Specification {
         //endsnippet
     }
 
-    def "full query"() {
+    def "optional select field"() {
         when:
         //snippet:optional-select-field
         var Q = CustomerQueries.getAllCustomers()
@@ -152,7 +150,7 @@ class DocSpec extends Specification {
                 .list()
 
         then://nosnippet
-        assert result.getCount() > 0
+        assert result.size() > 0
         assert result.get(0).customerName != null
         assert result.get(0).customerId == null//we did not select this.. so it will be null
         //endsnippet
@@ -178,11 +176,14 @@ class DocSpec extends Specification {
         when:
         //snippet:filter-with-mv-map
         var Q = CustomerQueries.getAllCustomers()
-        var sql = ezySql.from(Q)
-                .where(Cnd.fromMvMap(
-                        Map.of("customerName.eq", List.of("John"),
-                                "customerEmail.isnotnull": emptyList())))//empty list to show we have no values here
 
+        def filterMap = new HashMap<String, List<?>>()
+        filterMap.put("customerName.eq", List.of("John"))
+        filterMap.put("customerEmail.isnotnull", Collections.emptyList())//empty list to show we have no values here
+
+        var sql = ezySql.from(Q)
+                .where(Cnd.fromMvMap(filterMap))
+        //endsnippet
                 .getQuery().getSql()
 
         then:
@@ -222,7 +223,8 @@ class DocSpec extends Specification {
     def 'specifying a custom mapper'() {
         when:
         //snippet:mapper-to-map-custom
-        List<Map> result = ezySql.from(QueryWithParams.QUERY)
+        var Q = CustomerQueries.getAllCustomers()
+        List<Map> result = ezySql.from(Q)
                 .mapTo((rowIndex, columns, resultSet) -> {
                     Map<String, Object> map = new HashMap<>();
                     for (ColumnInfo column : columns) {

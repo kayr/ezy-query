@@ -14,7 +14,7 @@ SELECT o.id          as customerId_long,
        o.price       as price_double,
        o.quantity    as quantity
 FROM orders o
-         inner join customers c on c.id = o.customerId
+         inner join customers c on c.id = o.customerId and c.membership = :membership
 WHERE c.membership = :membership;
 
 -- ## static: update customer status

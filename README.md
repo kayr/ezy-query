@@ -161,7 +161,7 @@ public EzySql ezyQuery(DataSource dataSource) {
 
 You have multiple options to filter provide filters to your query:
 
-1. *Through the fluent API*
+1. ***Through the fluent API***
     <!--snippet:filter-with-fluent-api--> 
     ```java
             var Q = CustomerQueries.getAllCustomers()
@@ -169,7 +169,7 @@ You have multiple options to filter provide filters to your query:
                     .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
     ```
    <!--endsnippet-->
-2. *Filtering with the condition API:* This one is similar to building an AST with and offers alot more predictability
+2. ***Filtering with the condition API:*** This one is similar to building an AST with and offers alot more predictability
    of
    the resulting filter at the cost of readability(lispy style).
     <!--snippet:filter-with-condition-api-->
@@ -179,7 +179,7 @@ You have multiple options to filter provide filters to your query:
                     .where(Cnd.and(Cnd.eq(Q.CUSTOMER_NAME, "John"), Cnd.isNotNull(Q.CUSTOMER_EMAIL)))
     ```
    <!--endsnippet-->
-3. *Filtering with the ezy-query expression:* This allows you pass filter strings directly to ezy-query. This can be
+3. ***Filtering with the ezy-query expression:*** This allows you pass filter strings directly to ezy-query. This can be
    useful where you want to allow client code to dynamically filter the data from the frontend.
     <!-- snippet:filter-with-ezy-query-expressions-->
     ```java
@@ -204,7 +204,7 @@ You have multiple options to filter provide filters to your query:
         <version>4.8</version>
     </dependency>
     ```
-4. *Filtering with maps:* This is where you can use the java maps to build filters for a query. This is useful for
+4. ***Filtering with maps:*** This is where you can use the java maps to build filters for a query. This is useful for
    example when you need to pass query params from an http call directly to your query:
    e.g `http://example.com?customerName.eg=John&customerEmail.isNotNull`
     <!-- snippet:filter-with-map-->
@@ -229,7 +229,7 @@ You have multiple options to filter provide filters to your query:
    <!-- endsnippet-->
    *Supported map operators for a map include:"
    `eq,neq,like,notlike,gt,gte,lt,lte,in,notin,between,notbetween,isnull,isnotnull`
-5. *Filtering with native sql:* Sometimes there will be operations not supported by ezy-query for this case you can
+5. ***Filtering with native sql:*** Sometimes there will be operations not supported by ezy-query for this case you can
    always fall back to using native sql. Be careful with this method,
    ***always paremetirize your variables to avoid sql injection***
     <!-- snippet:filter-with-raw-sql-->

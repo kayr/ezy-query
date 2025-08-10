@@ -32,8 +32,26 @@ class DocSpec extends Specification {
                 .where(Cnd.and(Cnd.eq(Q.CUSTOMER_NAME, "John"), Cnd.isNotNull(Q.CUSTOMER_EMAIL)))
         //endsnippet
                 .getQuery().getSql()
+                .with {
+                    genSqlDoc(it,"filter-with-condition-api")
+                }
         then:
         sql != null
+        println sql
+
+    }
+
+
+    def genSqlDoc(String doc, snippetName) {
+
+        def baseFolder = new File(".", "build/generated/sql-snippets/")
+        baseFolder.mkdirs()
+        def finalFile = new File(baseFolder, snippetName + ".sql")
+        finalFile.text = """
+-- snippet:$snippetName-out
+$doc
+-- endsnippet
+"""
 
     }
 
@@ -45,6 +63,9 @@ class DocSpec extends Specification {
                 .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
         //endsnippet
                 .getQuery().getSql()
+                .with {
+                    genSqlDoc(it,'filter-with-fluent-api')
+                }
         then:
         sql != null
 
@@ -128,7 +149,7 @@ class DocSpec extends Specification {
         //snippet:how-to-use
         var Q = CustomerQueries.getAllCustomers()
         var result = ezySql.from(Q)
-                .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
+                .where(Q.CUSTOMER_NAME.eq("john").and(Q.CUSTOMER_EMAIL.isNotNull()))
                 .orderBy(Q.CUSTOMER_NAME.asc(), Q.CUSTOMER_EMAIL.desc())
                 .offset(0)
                 .limit(10)
@@ -137,7 +158,7 @@ class DocSpec extends Specification {
         then://nosnippet
         assert result.getCount() > 0
         assert !result.getList().isEmpty()
-        assert result.getList().get(0).getCustomerName().equals("John")
+        assert result.getList().get(0).getCustomerName().equals("john")
         //endsnippet
     }
 
@@ -236,5 +257,29 @@ class DocSpec extends Specification {
         //endsnippet
         then:
         result.size() > 0
+    }
+
+    def 'running other types of query'() {
+        //snippet:running-other-queries
+        /*//nosnippet
+        //set up the datasource
+        DataSource ds = new HikariDataSource(config)
+        //create the Zql instance which is a convenient api around jdbc
+        var zql = new Zql(ConnectionProvider.of(ds)
+        //var zql = ezySql.getZql() // or you can get it from EzySql instance
+         *///nosnippet
+        var zql = ezySql.getZql() //nosnippet
+
+        when://nosnippet
+        var Q = CustomerQueries.updateCustomer()
+
+        var updateCount = zql.update(
+                Q.email("john@example.com") //these functions are generated from the query param in the sql query
+                        .score(10)
+                        .getQuery())
+        then://nosnippet
+        assert updateCount > 0
+
+        //endsnippet
     }
 }

@@ -29,16 +29,17 @@ plugins {
 2. Query Expressions e.g `.where(Cnd.expr("customerName = 'John' and customerEmail is not null"))`.
    Ideally if you are building a Rest-API then clients get a powerful filtering API by passing the expressions as a
    parameter. The query is parsed and converted to a parameterized sql query.
-3. Named parameters. You can add named parameters to static parts of your SQL query and these will recognized.
-4. If your sql is too complex or uses unsupported features you can still use it to generate APIs for your named params.
-5. All generated sql queries are parameterized to avoid sql injection.
-6. Automatic mapping of sql result to java pojo.
-7. The same query is used to count and list data. Which makes building pagination easy and prevents the need to write
+3. Named parameters. You can add named parameters to static parts of your SQL query and these will recognize.
+4. Support for CTEs.
+5. If your sql is too complex or uses unsupported features you can still use it to generate APIs for your named params.
+6. All generated sql queries are parameterized to avoid sql injection.
+7. Automatic mapping of sql result to java pojo.
+8. The same query is used to count and list data. Which makes building pagination easy and prevents the need to write
    two queries.
-8. Sort by any field in the query. e.g `orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc())`.
-9. You can sort using a string expression. e.g `customerName asc, customerEmail desc`.
-10. Gradle plugin to generate the java code from your sql files.
-11. Maven plugin
+9. Sort by any field in the query. e.g `orderBy(GET_CUSTOMERS.CUSTOMER_NAME.asc())`.
+10. You can sort using a string expression. e.g `customerName asc, customerEmail desc`.
+11. Gradle plugin to generate the java code from your sql files.
+12. Maven plugin
 
 ## How it works
 
@@ -48,37 +49,48 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
 
 1. Write your sql query in a file ending with `.ez.sql`. in the directory `src/main/ezyquery`.
    For better organisation consider adding the files in the similar package structure and your sources code.
-    ```sql 
-    -- file: get-customers.sql
-    -- ## dynamic:get all customers
-    SELECT c.id           as customerId_long,
-    c.customerName as customerName_string,
-    c.email        as customerEmail_string,
-    c.phone        as customerPhone,
-    c.score        as customerScore
-    FROM customers c;
-    
-    -- ##dynamic:get orders
-    SELECT o.id          as customerId_long,
-    c.cutomerName as customerName_string,
-    c.email       as customerEmail,
-    o.item        as item,
-    o.price       as price_double,
-    o.quantity    as quantity
-    FROM orders o
-    inner join customers c on c.id = o.customerId
-    WHERE c.membership = :membership;
-    
-    -- ## static: update customer status
-    update customer c
-    set c.activaion_status = :status
-    where id = :id;
+   <!-- snippet:custom-queries-sql -->
+   ```sql
+   -- file: customer-queries.sql
+   -- ## dynamic:get all customers
+   SELECT c.id                  as customerId_long,
+          lower(c.customerName) as customerName_string,
+          c.email               as customerEmail_string,
+          c.phone               as customerPhone,
+          c.score               as customerScore
+   FROM customers c;
+   
+   -- ##dynamic:get orders
+   SELECT o.id          as customerId_long,
+          c.cutomerName as customerName_string,
+          c.email       as customerEmail,
+          o.item        as item,
+          o.price       as price_double,
+          o.quantity    as quantity
+   FROM orders o
+            inner join customers c on c.id = o.customerId and c.membership = :membership
+   WHERE c.membership = :membership;
+   
+   -- ## static: update customer score
+   update customers c
+   set c.score = :score
+   where email = :email;
    ```
+   <!-- endsnippet -->
+   The above query has two types of queries dynamic and static.
+    - **Dynamic queries**: These are pre-processed by ezy-query to allow for advanced filtering, sorting, and
+      pagination. If you prefix your query name with dynamic e.g `-- ## dynamic:get all customers` then ezy query will
+      pre-process to allow for advance feature. Only select statements can be dynamic queries.
+    - **Static queries**: These only get basic preprocessing to extract the named parameters and mostly left untouched.
+      These are useful for other types of queries for example insert, delete, update statements or any other types of
+      sql. EzyQuery will not try to validate the sql syntax like the case for dynamic queries. These are creating by
+      prefixing the name with *static:* e.g. `## static: update customer status`
 2. Run `./gradlew ezyBuild` to convert your SQL query file to a java class. This will generate a java class for you.
    The class name will be generated based on your file name. The class `CustomerQueries` will contain two query classes
    that can be accessed via the static methods e.g. `CustomerQueries.getAllCustomers()`. Below is a snippet of what will
    be generated.
    ```java
+   //This is a snippet of the generated class
    public class CustomerQueries {
        public static GetAllCustomers getAllCustomers() {...}
        public static GetOrders getOrders() {...}
@@ -107,10 +119,10 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
 4. You can now use the generated class to query your database with a flexible easy to use api.
    The example below that fetches/filters/sorts customers from the db whose name is `John` and email is not null;
    <!-- snippet:how-to-use-->
-   ```java
+   ```groovy
            var Q = CustomerQueries.getAllCustomers()
            var result = ezySql.from(Q)
-                   .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
+                   .where(Q.CUSTOMER_NAME.eq("john").and(Q.CUSTOMER_EMAIL.isNotNull()))
                    .orderBy(Q.CUSTOMER_NAME.asc(), Q.CUSTOMER_EMAIL.desc())
                    .offset(0)
                    .limit(10)
@@ -118,7 +130,7 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
    
            assert result.getCount() > 0
            assert !result.getList().isEmpty()
-           assert result.getList().get(0).getCustomerName().equals("John")
+           assert result.getList().get(0).getCustomerName().equals("john")
    ```
    <!-- endsnippet -->
 
@@ -128,16 +140,17 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Other features](#other-features)
-    - [Working with spring boot](#working-with-spring-boot)
-    - [Filtering](#filtering)
-    - [Sorting and pagination](#sorting-and-pagination)
-    - [Named Parameters](#named-parameters)
-    - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
-    - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
-    - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
-    - [Overriding default type mappings e.g for newer JDBC drivers.](#overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
-    - [Optionally select fields to be returned.](#optionally-select-fields-to-be-returned)
-    - [Using on older versions of Gradle.](#using-on-older-versions-of-gradle)
+  - [Working with spring boot](#working-with-spring-boot)
+  - [Filtering](#filtering)
+  - [Sorting and pagination](#sorting-and-pagination)
+  - [Named Parameters](#named-parameters)
+  - [Executing other types of queries(INSERT/UPDATE/DELETE etc)](#executing-other-types-of-queriesinsertupdatedelete-etc)
+  - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
+  - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
+  - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
+  - [Overriding default type mappings e.g for newer JDBC drivers.](#overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
+  - [Optionally select fields to be returned.](#optionally-select-fields-to-be-returned)
+  - [Using on older versions of Gradle.](#using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -161,28 +174,45 @@ public EzySql ezyQuery(DataSource dataSource) {
 
 You have multiple options to filter provide filters to your query:
 
-1. ***Through the fluent API***
+1. **Through the fluent API**
     <!--snippet:filter-with-fluent-api--> 
-    ```java
+    ```groovy
             var Q = CustomerQueries.getAllCustomers()
             var sql = ezySql.from(Q)
                     .where(Q.CUSTOMER_NAME.eq("John").and(Q.CUSTOMER_EMAIL.isNotNull()))
     ```
    <!--endsnippet-->
-2. ***Filtering with the condition API:*** This one is similar to building an AST with and offers alot more predictability
-   of
-   the resulting filter at the cost of readability(lispy style).
+   The above will generate the below sql query. Notice how it replaces the customer name with the full function call
+   `lower(c.customerName)`. Expressions can be as complex as you need them to be.
+    <!--snippet:filter-with-fluent-api-out--> 
+    ```sql
+    SELECT 
+      c.id as "customerId", 
+      lower(c.customerName) as "customerName", 
+      c.email as "customerEmail", 
+      c.phone as "customerPhone", 
+      c.score as "customerScore"
+    FROM customers c
+    WHERE (lower(c.customerName) = ? AND c.email IS NOT NULL)
+    LIMIT 50 OFFSET 0
+    ```
+    <!--endsnippet--> 
+
+2. **Filtering with the condition API:** This one is similar to building an AST with and offers alot more predictability
+   of the resulting filter at the cost of readability(lispy style).
     <!--snippet:filter-with-condition-api-->
-    ```java
+    ```groovy
             var Q = CustomerQueries.getAllCustomers()
             var sql = ezySql.from(Q)
                     .where(Cnd.and(Cnd.eq(Q.CUSTOMER_NAME, "John"), Cnd.isNotNull(Q.CUSTOMER_EMAIL)))
     ```
    <!--endsnippet-->
-3. ***Filtering with the ezy-query expression:*** This allows you pass filter strings directly to ezy-query. This can be
+
+
+3. **Filtering with the ezy-query expression:** This allows you pass filter strings directly to ezy-query. This can be
    useful where you want to allow client code to dynamically filter the data from the frontend.
     <!-- snippet:filter-with-ezy-query-expressions-->
-    ```java
+    ```groovy
             var Q = CustomerQueries.getAllCustomers()
             var sql = ezySql.from(Q)
                     .where(Cnd.expr("customerName = 'John' and customerEmail is not null"))
@@ -204,11 +234,11 @@ You have multiple options to filter provide filters to your query:
         <version>4.8</version>
     </dependency>
     ```
-4. ***Filtering with maps:*** This is where you can use the java maps to build filters for a query. This is useful for
+4. **Filtering with maps:** This is where you can use the java maps to build filters for a query. This is useful for
    example when you need to pass query params from an http call directly to your query:
    e.g `http://example.com?customerName.eg=John&customerEmail.isNotNull`
     <!-- snippet:filter-with-map-->
-    ```java
+    ```groovy
             var Q = CustomerQueries.getAllCustomers()
             var sql = ezySql.from(Q)
                     .where(Cnd.fromMap(
@@ -219,21 +249,24 @@ You have multiple options to filter provide filters to your query:
    Most http server libraries use multivalue maps so there is alternate method for creating a criteria from a
    multivalue map.
    <!-- snippet:filter-with-mv-map -->
-   ```java
+   ```groovy
            var Q = CustomerQueries.getAllCustomers()
+   
+           def filterMap = new HashMap<String, List<?>>()
+           filterMap.put("customerName.eq", List.of("John"))
+           filterMap.put("customerEmail.isnotnull", Collections.emptyList())//empty list to show we have no values here
+   
            var sql = ezySql.from(Q)
-                   .where(Cnd.fromMvMap(
-                           Map.of("customerName.eq", List.of("John"),
-                                   "customerEmail.isnotnull": emptyList())))//empty list to show we have no values here
+                   .where(Cnd.fromMvMap(filterMap))
    ```
    <!-- endsnippet-->
    *Supported map operators for a map include:"
    `eq,neq,like,notlike,gt,gte,lt,lte,in,notin,between,notbetween,isnull,isnotnull`
-5. ***Filtering with native sql:*** Sometimes there will be operations not supported by ezy-query for this case you can
+5. **Filtering with native sql:** Sometimes there will be operations not supported by ezy-query for this case you can
    always fall back to using native sql. Be careful with this method,
    ***always paremetirize your variables to avoid sql injection***
     <!-- snippet:filter-with-raw-sql-->
-    ```java
+    ```groovy
             var Q = CustomerQueries.getAllCustomers()
             var sql = ezySql.from(Q)
                     .where(Cnd.sql("c.customerName = ? AND c.email IS NOT NULL", "John"))
@@ -244,7 +277,7 @@ You have multiple options to filter provide filters to your query:
 
 Sort using fields
 <!-- snippet:sort-fluent -->
-```java
+```groovy
         var Q = CustomerQueries.getAllCustomers()
         var sql = ezySql.from(Q)
                 .orderBy(Q.CUSTOMER_NAME.asc(), Q.CUSTOMER_EMAIL.desc())
@@ -257,7 +290,7 @@ Sort using fields
 Sort using strings expression
 
 <!-- snippet:sort-with-string -->
-```java
+```groovy
         var Q = CustomerQueries.getAllCustomers()
         var sql = ezySql.from(Q)
                 .orderBy("customerName asc, customerEmail desc")
@@ -266,7 +299,7 @@ Sort using strings expression
 <!-- endsnippet-->
 Sort using Sort Object
 <!-- snippet:sort-with-sort-object -->
-```java
+```groovy
         var Q = CustomerQueries.getAllCustomers()
         var sql = ezySql.from(Q)
                 .orderBy(Sort.by("customerName", Sort.DIR.ASC))
@@ -299,7 +332,7 @@ WHERE c.membership = :membership
 You can pass the named parameter `:membership` at runtime as follows.
 
 <!-- snippet:named-params -->
-```java
+```groovy
         var Q = CustomerQueries.getOrders()
         var P = CustomerQueries.GetOrders.PARAMS
         var sql = ezySql.from(Q)
@@ -311,31 +344,69 @@ You can pass the named parameter `:membership` at runtime as follows.
 This will generate the following sql query along with the params.
 
 ```sql
-SELECT
-    o.id as "customerId",
-    c.cutomerName as "customerName",
-    c.email as "customerEmail",
-    o.item as "item",
-    o.price as "price",
-    o.quantity as "quantity"
+SELECT o.id          as "customerId",
+       c.cutomerName as "customerName",
+       c.email       as "customerEmail",
+       o.item        as "item",
+       o.price       as "price",
+       o.quantity    as "quantity"
 FROM orders o
          INNER JOIN customers c ON c.id = o.customerId AND c.membership = ?
-WHERE (c.membership = ?) AND (o.price > ? AND o.quantity < ?)
+WHERE (c.membership = ?)
+  AND (o.price > ? AND o.quantity < ?)
 LIMIT 50 OFFSET 0
 -- params=[GOLD, GOLD, 100, 10]}
 ```
 
 You can see that the `GOLD` param has been added to the list of params.
 
+### Executing other types of queries(INSERT/UPDATE/DELETE etc)
+
+Ezyquery was mainly built to provide dynamically ways to filter your data at runtime using a relatively safe and easy to
+use API. However, you can also use it to execute any arbitrary sql query like inserts, deletes or updates. Parameters are
+extracted and made available as method calls in your query.
+
+**Example**:
+
+When you have the query below.
+
+   <!-- snippet:update-customer-sql-->
+   ```sql
+   -- ## static: update customer
+   update customers c
+   set c.score = :score
+   where email = :email;
+   ```
+   <!-- endsnippet-->
+
+Below is how you would execute it using the ezy query sql utility classes.
+
+  <!-- snippet:running-other-queries-->
+  ```groovy
+          //set up the datasource
+          DataSource ds = new HikariDataSource(config)
+          //create the Zql instance which is a convenient api around jdbc
+          var zql = new Zql(ConnectionProvider.of(ds)
+          //var zql = ezySql.getZql() // or you can get it from EzySql instance
+  
+          var Q = CustomerQueries.updateCustomer()
+  
+          var updateCount = zql.update(
+                  Q.email("john@example.com") //these functions are generated from the query param in the sql query
+                          .score(10)
+                          .getQuery())
+          assert updateCount > 0
+  ```
+   <!-- endsnippet-->
+
 ### Specifying a custom result mapper
 
-You can specify a custom mapper to control how you want the results to be returned or mapped from the database. E.g Instead of
-returning a list of pojos you can return a list of maps.
-Here is an example.
+You can specify a custom mapper to control how you want the results to be returned or mapped from the database. E.g
+Instead of returning a list of pojos you can return a list of maps. Here is an example.
 
 We already have a built-in mapper that converts the result to a map. You can use it as follows.
 <!-- snippet:mapper-to-map -->
-```java
+```groovy
         var Q = CustomerQueries.getAllCustomers()
         List<Map> result = ezySql.from(Q)
                 .mapTo(Mappers.toMap())
@@ -346,8 +417,9 @@ We already have a built-in mapper that converts the result to a map. You can use
 
 For illustration purposes we will create a custom mapper that converts the result to a map. See code below.
 <!-- snippet:mapper-to-map-custom -->
-```java
-        List<Map> result = ezySql.from(QueryWithParams.QUERY)
+```groovy
+        var Q = CustomerQueries.getAllCustomers()
+        List<Map> result = ezySql.from(Q)
                 .mapTo((rowIndex, columns, resultSet) -> {
                     Map<String, Object> map = new HashMap<>();
                     for (ColumnInfo column : columns) {
@@ -461,24 +533,17 @@ type.time=java.time.LocalTime
 ### Optionally select fields to be returned.
 
 <!-- snippet:optional-select-field -->
-```java
+```groovy
         var Q = CustomerQueries.getAllCustomers()
         var result = ezySql.from(Q)
                 .select(Q.CUSTOMER_NAME, Q.CUSTOMER_EMAIL)
                 .list()
 
-        assert result.getCount() > 0
+        assert result.size() > 0
         assert result.get(0).customerName != null
         assert result.get(0).customerId == null//we did not select this.. so it will be null
 ```
 <!-- endsnippet-->
-
-```java
-ezySql.from(GET_CUSTOMERS)
-  .
-
-select(GET_CUSTOMERS.CUSTOMER_NAME, GET_CUSTOMERS.CUSTOMER_EMAIL)
-```
 
 ### Using on older versions of Gradle.
 

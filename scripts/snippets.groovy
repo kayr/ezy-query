@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
-import java.nio.file.*
+
+import java.nio.file.Files
+import java.nio.file.Paths
 
 if (args.length < 2) {
     println "Usage: extractSnippets.groovy <sourceDir> <markdownFile>"
@@ -19,22 +21,37 @@ if (!Files.exists(markdownFile) || Files.isDirectory(markdownFile)) {
 }
 
 def snippets = [:]
+def snippetTypes = [:]
 def snippetName = null
 def snippetLines = []
 
+
+static def extension(name) {
+    return name.toString().split('\\.')[-1]
+}
+
 // Extract snippets from Java
 Files.walk(javaSrcDir)
-        .filter { it.toString().endsWith(".java") || it.toString().endsWith(".groovy") }
+        .filter { !it.toString().endsWith(".md") }
+        .filter { it.toString().endsWith(".java") || it.toString().endsWith(".groovy") || it.toString().endsWith(".sql") }
         .forEach { file ->
             file.eachLine { line ->
-                def startMatch = line =~ /\/\/\s*snippet:(\S+)/
-                def endMatch = line =~ /\/\/\s*endsnippet/
+                def startMatch = file.toString().endsWith(".sql") ?
+                        line =~ /--\s*snippet:(\S+)/ :
+                        line =~ /\/\/\s*snippet:(\S+)/
+                def endMatch = line =~ /((\/\/)|(--))\s*endsnippet/
+
+//                println(startMatch)
 
                 if (startMatch) {
+                    println("b: ${startMatch[0]}")
                     snippetName = startMatch[0][1]
+                    println("file name $snippetName")
                     snippetLines = []
                 } else if (endMatch) {
+                    def extension = extension(file)
                     snippets[snippetName] = snippetLines.join("\n")
+                    snippetTypes[snippetName] = extension
                     snippetName = null
                 } else if (snippetName && !line.trim().endsWith("//nosnippet")) {
                     snippetLines << line
@@ -62,7 +79,8 @@ markdownFile.eachLine { line ->
 
         updatedLines << line
         if (snippets.containsKey(currentName)) {
-            updatedLines << indent + "```java"
+            def type = snippetTypes[currentName]
+            updatedLines << indent + "```$type"
             snippets[currentName].split("\n").each { snippetLine ->
                 updatedLines << indent + snippetLine
             }

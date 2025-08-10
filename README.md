@@ -433,7 +433,8 @@ For illustration purposes we will create a custom mapper that converts the resul
 
 ### Adding a default where clause to a generate query
 
-To add a default where clause to all queries then you can add it to the input sql file.
+Just add a default where clause to your base sql query, then all your queries will have this where clause.
+An example use-case is where you always want to fetch active customers
 
 ```sql
 -- file: get-customer.sql
@@ -445,11 +446,11 @@ FROM customers c
 WHERE c.status = 'active'
 ```
 
-The above will add the where clause `c.status = 'active'` to all queries generated from this
+The above will add the where clause `c.status = 'active'` to all queries generated from the above query.
 
 ### Adding data types to the generated pojo.
 
-The generated pojo by default will have all fields as `Object`.
+The generated result pojo by default will have all fields as `Object`.
 You can add a data type to the generated pojo by adding a suffix to the field name aliases like below.
 
 ```sql
@@ -530,7 +531,7 @@ type.date=java.time.LocalDate
 type.time=java.time.LocalTime
 ```
 
-### Optionally select fields to be returned.
+### Optionally selecting fields to be returned.
 
 <!-- snippet:optional-select-field -->
 ```groovy

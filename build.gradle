@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.31.0'
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.32.0'
     }
 }
 
@@ -52,9 +52,9 @@ subprojects {
             publications {
                 mavenJava(MavenPublication) {
                     from components.java
-                    groupId 'io.github.kayr'
-                    artifactId project.POM_ARTIFACT_ID
-                    version project.VERSION_NAME
+                    groupId = 'io.github.kayr'
+                    artifactId = project.POM_ARTIFACT_ID
+                    version = project.VERSION_NAME
                 }
             }
             repositories {

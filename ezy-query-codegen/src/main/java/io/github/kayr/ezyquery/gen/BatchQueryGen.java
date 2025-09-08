@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery.gen;
 
 import io.github.kayr.ezyquery.util.Elf;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -99,7 +100,7 @@ public class BatchQueryGen {
 
   private String resolvePackageName(Path parentPath, Path filePath) {
     Path relativePath = parentPath.relativize(filePath.getParent());
-    return relativePath.toString().replace("/", ".");
+    return relativePath.toString().replace(File.separatorChar, '.');
   }
 
   @lombok.Getter

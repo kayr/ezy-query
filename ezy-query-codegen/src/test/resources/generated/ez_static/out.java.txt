@@ -3,6 +3,7 @@ package package;
 import io.github.kayr.ezyquery.EzyQueryWithResult;
 import io.github.kayr.ezyquery.api.EzyCriteria;
 import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
 import io.github.kayr.ezyquery.api.SqlBuilder;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.parser.SqlParts;
@@ -29,6 +30,11 @@ public class Query {
 
   public static SelectOrders selectOrders() {
     return SelectOrders.SELECT_ORDERS;
+  }
+
+  public static DeliberatelyInsertMultipleNewlinesForTesting deliberatelyInsertMultipleNewlinesForTesting(
+      ) {
+    return DeliberatelyInsertMultipleNewlinesForTesting.DELIBERATELY_INSERT_MULTIPLE_NEWLINES_FOR_TESTING;
   }
 
   public static SelectProducts selectProducts() {
@@ -85,13 +91,12 @@ public class Query {
   }
 
   /**
-   *             select
+   * select
    *               id as id,
    *               date as date,
    *               customer_id as customerId
    *             from orders
-   *             where user_id = userId
-   *
+   *             where user_id = userId;
    */
   @Generated(
       value = "io.github.kayr.ezyquery.gen.QueryGen",
@@ -202,45 +207,170 @@ public class Query {
     }
 
     /**
-     * -- Select Products
-     * select * from products
-     *             where product_id = :product_id and product_id = :product_id
+     * select
+     *             products.id as productId,
+     *             products.name as productName,
+     *             categories.name as categoryName
+     *         from products
+     *         inner join categories on products.category_id = categories.id
+     *         where categories.name = :category_name;
      */
-    public static class SelectProducts {
-      private final SqlParts sql;
+    @Generated(
+        value = "io.github.kayr.ezyquery.gen.QueryGen",
+        date = "1970-01-01T00:00:00"
+    )
+    public static class DeliberatelyInsertMultipleNewlinesForTesting implements EzyQueryWithResult<DeliberatelyInsertMultipleNewlinesForTesting.Result> {
+      public static final DeliberatelyInsertMultipleNewlinesForTesting DELIBERATELY_INSERT_MULTIPLE_NEWLINES_FOR_TESTING = new DeliberatelyInsertMultipleNewlinesForTesting();
 
-      public SelectProducts() {
-        this.sql = SqlParts.of(
-            SqlParts.textPart("select * from products\n"
-                + "            where product_id = "),
-            SqlParts.paramPart("product_id"),
-            SqlParts.textPart(" and product_id = "),
-            SqlParts.paramPart("product_id")
-        );
+      public static final Params PARAMS = new Params();
+
+      public final Field<Object> PRODUCT_ID = Field.of("products.id", "productId", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> PRODUCT_NAME = Field.of("products.name", "productName", Object.class,Field.ExpressionType.COLUMN);
+
+      public final Field<Object> CATEGORY_NAME = Field.of("categories.name", "categoryName", Object.class,Field.ExpressionType.COLUMN);
+
+      private final SqlParts schema = SqlParts.of(
+          SqlParts.textPart("products\n"
+              + "INNER JOIN categories ON products.category_id = categories.id")
+      );
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private DeliberatelyInsertMultipleNewlinesForTesting() {
+        init();
       }
 
-      private SelectProducts(SqlParts sql) {
-        this.sql = sql;
+      private void init() {
+        fields.add(PRODUCT_ID);
+        fields.add(PRODUCT_NAME);
+        fields.add(CATEGORY_NAME);
       }
 
-      public SelectProducts productId(Object productId) {
-        return new SelectProducts(sql.setParam("product_id", productId));
+      public QueryAndParams query(EzyCriteria criteria) {
+        return SqlBuilder.buildSql(this, criteria);
       }
 
-      public QueryAndParams getQuery() {
-        return sql.getQuery();
+      @Override
+      public SqlParts schema() {
+        return this.schema;
       }
 
-      public SelectProducts setParam(String param, Object value) {
-        return new SelectProducts(sql.setParam(param, value));
+      @Override
+      public Optional<SqlParts> whereClause() {
+        return Optional.of(
+              SqlParts.of(
+                  SqlParts.textPart("categories.name = "),
+                  SqlParts.paramPart("category_name")
+              ));
       }
 
-      public SelectProducts setParams(Map<String, Object> params) {
-        SqlParts sql = this.sql;
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-          sql = sql.setParam(entry.getKey(), entry.getValue());
+      @Override
+      public Optional<SqlParts> orderByClause() {
+        return Optional.empty();
+      }
+
+      @Override
+      public List<Field<?>> fields() {
+        return this.fields;
+      }
+
+      @Override
+      public Class<Result> resultClass() {
+        return Result.class;
+      }
+
+      public static class Result implements DynamicFieldSetter {
+        private Object productId;
+
+        private Object productName;
+
+        private Object categoryName;
+
+        public Object getProductId() {
+          return productId;
         }
-        return new SelectProducts(sql);
+
+        public Object getProductName() {
+          return productName;
+        }
+
+        public Object getCategoryName() {
+          return categoryName;
+        }
+
+        @Override
+        public String toString() {
+          return "DeliberatelyInsertMultipleNewlinesForTesting.Result{"
+          + "productId = " + productId
+          + ", productName = " + productName
+          + ", categoryName = " + categoryName
+           + "}";
+        }
+
+        @Override
+        public void setField(String fieldName, Object value) {
+          switch(fieldName) {
+            case "productId":
+              this.productId = (Object) value;
+              break;
+            case "productName":
+              this.productName = (Object) value;
+              break;
+            case "categoryName":
+              this.categoryName = (Object) value;
+              break;
+            default:
+              throw new IllegalArgumentException("Unknown field: " + fieldName);
+            }
+          }
+        }
+
+        public static class Params {
+          public final NamedParam CATEGORY_NAME = NamedParam.of("category_name");
+        }
+      }
+
+      /**
+       * -- Select Products
+       * select * from products
+       *             where product_id = :product_id and product_id = :product_id
+       */
+      public static class SelectProducts {
+        private final SqlParts sql;
+
+        public SelectProducts() {
+          this.sql = SqlParts.of(
+              SqlParts.textPart("select * from products\n"
+                  + "            where product_id = "),
+              SqlParts.paramPart("product_id"),
+              SqlParts.textPart(" and product_id = "),
+              SqlParts.paramPart("product_id")
+          );
+        }
+
+        private SelectProducts(SqlParts sql) {
+          this.sql = sql;
+        }
+
+        public SelectProducts productId(Object productId) {
+          return new SelectProducts(sql.setParam("product_id", productId));
+        }
+
+        public QueryAndParams getQuery() {
+          return sql.getQuery();
+        }
+
+        public SelectProducts setParam(String param, Object value) {
+          return new SelectProducts(sql.setParam(param, value));
+        }
+
+        public SelectProducts setParams(Map<String, Object> params) {
+          SqlParts sql = this.sql;
+          for (Map.Entry<String, Object> entry : params.entrySet()) {
+            sql = sql.setParam(entry.getKey(), entry.getValue());
+          }
+          return new SelectProducts(sql);
+        }
       }
     }
-  }

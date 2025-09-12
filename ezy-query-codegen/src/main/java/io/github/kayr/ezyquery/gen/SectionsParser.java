@@ -71,5 +71,9 @@ public class SectionsParser {
   public static class Section {
     private final String name;
     private final String sql;
+
+    public Section trimmed() {
+      return Section.of(name, sql.trim());
+    }
   }
 }

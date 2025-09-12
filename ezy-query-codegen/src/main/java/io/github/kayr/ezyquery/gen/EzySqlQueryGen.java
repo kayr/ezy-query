@@ -26,7 +26,7 @@ public class EzySqlQueryGen implements WritesCode {
     List<TypeSpec> types = new ArrayList<>();
     for (SectionsParser.Section section : sections) {
       try {
-        Pair<QueryKind, TypeSpec> kindAndClass = toJavaClass(section);
+        Pair<QueryKind, TypeSpec> kindAndClass = toJavaClass(section.trimmed());
 
         // add the types
         TypeSpec theType = kindAndClass.getTwo();

@@ -3,13 +3,12 @@ package io.github.kayr.ezyquery.itests
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.sql.Mappers
+import prod.ProdQuery1
 import prod.Queries
 import prod.QueryWithParams
 import spock.lang.Specification
 import test.DerivedTableQuery
 import test.DerivedTableQueryCte
-
-import javax.swing.tree.RowMapper
 
 import static prod.ProdQuery1.PROD_QUERY1
 import static prod.QueryWithParams.QUERY_WITH_PARAMS
@@ -198,6 +197,25 @@ class TestCanFetchDataTest extends Specification {
         list.size() == 1
         list.every { it.addressLine == "Kampala" }
         count == 1
+    }
+
+    def 'test that prod query is compiled and usable using withers'() {
+        given:
+        def criteria = ez.from(PROD_QUERY1)
+                .where(PROD_QUERY1.ADDRESS_LINE.in("Kampala", "Nairobi"))
+
+
+        when:
+        def originalList = criteria.list()
+        def modifiedList = originalList.collect {it.withAddressLine("XXX" + it.addressLine)}
+        def count = criteria.count()
+
+        then:
+        originalList.size() == 3
+        originalList.collect {it.addressLine}.unique() == ['Kampala', 'Nairobi']
+        modifiedList.collect {it.addressLine}.unique() == ['XXXKampala', 'XXXNairobi']
+
+
     }
 
     def 'test query with default order by'() {

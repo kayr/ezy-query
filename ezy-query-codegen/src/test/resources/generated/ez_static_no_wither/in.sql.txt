@@ -1,0 +1,31 @@
+       -- ## static:Select Users
+            select * from users
+            where name = :name
+            and address = :address
+
+
+            -- ##dynamic:Select Orders
+            select
+              id as id,
+              date as date,
+              customer_id as customerId
+            from orders
+            where user_id = userId;
+
+        -- ## dynamic: deliberately insert multiple newlines for testing
+        select
+            products.id as productId,
+            products.name as productName,
+            categories.name as categoryName
+        from products
+        inner join categories on products.category_id = categories.id
+        where categories.name = :category_name;
+
+
+
+
+            -- ## Select Products
+            select * from products
+            where product_id = :product_id and product_id = :product_id
+
+

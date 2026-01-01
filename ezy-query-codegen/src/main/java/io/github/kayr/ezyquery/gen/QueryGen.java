@@ -458,26 +458,27 @@ public class QueryGen implements WritesCode {
               .addStatement("return $L", f.getAlias())
               .build());
 
-      if("true".equals(config.get("result.addWither"))) {
-      resultClassBuilder.addMethod(
-          publicMethod(toWitherName(f.getAlias()), resultClassName)
-              .addParameter(f.getDataType(), f.getAlias())
-              .addStatement("$T theCopy = this.copy()", resultClassName)
-              .addStatement("theCopy.$L = $L", f.getAlias(), f.getAlias())
-              .addStatement("return theCopy")
-              .build());
+      if ("true".equals(config.get("resultDto.addWither"))) {
+        resultClassBuilder.addMethod(
+            publicMethod(toWitherName(f.getAlias()), resultClassName)
+                .addParameter(f.getDataType(), f.getAlias())
+                .addStatement("$T theCopy = this.copy()", resultClassName)
+                .addStatement("theCopy.$L = $L", f.getAlias(), f.getAlias())
+                .addStatement("return theCopy")
+                .build());
       }
     }
 
-    // add a copy method
-    MethodSpec.Builder copyBuilder = publicMethod("copy", resultClassName);
-    copyBuilder.addStatement("$T theCopy = new $T()", resultClassName, resultClassName);
-    for (EzyQueryFieldSpec f : fieldList) {
-      copyBuilder.addStatement("theCopy.$L = this.$L", f.getAlias(), f.getAlias());
+    if ("true".equals(config.get("resultDto.addWither"))) {
+      // add a copy method
+      MethodSpec.Builder copyBuilder = publicMethod("copy", resultClassName);
+      copyBuilder.addStatement("$T theCopy = new $T()", resultClassName, resultClassName);
+      for (EzyQueryFieldSpec f : fieldList) {
+        copyBuilder.addStatement("theCopy.$L = this.$L", f.getAlias(), f.getAlias());
+      }
+      copyBuilder.addStatement("return theCopy");
+      resultClassBuilder.addMethod(copyBuilder.build());
     }
-    copyBuilder.addStatement("return theCopy");
-    resultClassBuilder.addMethod(copyBuilder.build());
-
     // to string methods
     MethodSpec toStringMethod =
         publicMethod("toString", String.class, Override.class)

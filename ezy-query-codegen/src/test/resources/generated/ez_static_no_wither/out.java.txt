@@ -186,38 +186,12 @@ public class Query {
         return id;
       }
 
-      public Result withId(Object id) {
-        Result theCopy = this.copy();
-        theCopy.id = id;
-        return theCopy;
-      }
-
       public Object getDate() {
         return date;
       }
 
-      public Result withDate(Object date) {
-        Result theCopy = this.copy();
-        theCopy.date = date;
-        return theCopy;
-      }
-
       public Object getCustomerId() {
         return customerId;
-      }
-
-      public Result withCustomerId(Object customerId) {
-        Result theCopy = this.copy();
-        theCopy.customerId = customerId;
-        return theCopy;
-      }
-
-      public Result copy() {
-        Result theCopy = new Result();
-        theCopy.id = this.id;
-        theCopy.date = this.date;
-        theCopy.customerId = this.customerId;
-        return theCopy;
       }
 
       @Override
@@ -335,38 +309,12 @@ public class Query {
           return productId;
         }
 
-        public Result withProductId(Object productId) {
-          Result theCopy = this.copy();
-          theCopy.productId = productId;
-          return theCopy;
-        }
-
         public Object getProductName() {
           return productName;
         }
 
-        public Result withProductName(Object productName) {
-          Result theCopy = this.copy();
-          theCopy.productName = productName;
-          return theCopy;
-        }
-
         public Object getCategoryName() {
           return categoryName;
-        }
-
-        public Result withCategoryName(Object categoryName) {
-          Result theCopy = this.copy();
-          theCopy.categoryName = categoryName;
-          return theCopy;
-        }
-
-        public Result copy() {
-          Result theCopy = new Result();
-          theCopy.productId = this.productId;
-          theCopy.productName = this.productName;
-          theCopy.categoryName = this.categoryName;
-          return theCopy;
         }
 
         @Override

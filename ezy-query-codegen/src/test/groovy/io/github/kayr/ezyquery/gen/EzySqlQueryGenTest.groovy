@@ -19,8 +19,27 @@ class EzySqlQueryGenTest extends Specification {
 
         def resource = TestUtil.load("ez_static")
 
+
+        def properties = new Properties()
+        properties.setProperty("resultDto.addWither","true")
         when:
-        def generated = EzySqlQueryGen.of("package", "Query", new BatchQueryGen.SourceCode(resource.v1, Path.of('ez_static',"in.sql.txt")), new Properties())
+        def generated = EzySqlQueryGen.of("package", "Query", new BatchQueryGen.SourceCode(resource.v1, Path.of('ez_static',"in.sql.txt")), properties)
+                .generate()
+
+
+        then:
+        generated.toString().trim() == resource.v2.trim()
+    }
+
+    def "test ez sql files are parsed without withers"() {
+
+        def resource = TestUtil.load("ez_static_no_wither")
+
+
+        def properties = new Properties()
+        properties.setProperty("resultDto.addWither","false")
+        when:
+        def generated = EzySqlQueryGen.of("package", "Query", new BatchQueryGen.SourceCode(resource.v1, Path.of('ez_static',"in.sql.txt")), properties)
                 .generate()
 
 

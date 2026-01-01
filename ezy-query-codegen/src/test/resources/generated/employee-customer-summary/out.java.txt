@@ -186,7 +186,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result copy() {
-      Result theCopy = this.copy();
+      Result theCopy = new Result();
       theCopy.employeeNumber = this.employeeNumber;
       theCopy.firstName = this.firstName;
       theCopy.officeCode = this.officeCode;

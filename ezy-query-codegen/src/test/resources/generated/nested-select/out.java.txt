@@ -157,7 +157,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withBookTitle(Object bookTitle) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.bookTitle = bookTitle;
       return theCopy;
     }
@@ -167,7 +167,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withAuthor(Object author) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.author = author;
       return theCopy;
     }
@@ -177,7 +177,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withPublisher(Object publisher) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.publisher = publisher;
       return theCopy;
     }
@@ -187,7 +187,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withSales(Object sales) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.sales = sales;
       return theCopy;
     }

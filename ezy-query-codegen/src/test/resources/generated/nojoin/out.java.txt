@@ -90,7 +90,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withDoubleval(Double doubleval) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.doubleval = doubleval;
       return theCopy;
     }
@@ -100,7 +100,7 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
     }
 
     public Result withDoubleval2(Double doubleval2) {
-      Result theCopy = new Result();
+      Result theCopy = this.copy();
       theCopy.doubleval2 = doubleval2;
       return theCopy;
     }

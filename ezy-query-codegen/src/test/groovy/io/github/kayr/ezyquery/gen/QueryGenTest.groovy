@@ -23,6 +23,10 @@ class QueryGenTest extends Specification {
 
     @NamedVariant
     private String generateCode(String sql, Properties config = new Properties(), String className = "MyQuery") {
+        if (config.get("resultDto.addWither") == null) {
+            config.setProperty("resultDto.addWither", "true")
+        }
+
         new NoTimeQueryGen("mypackage.sql", className, sql, config).javaCode().toString().trim()
     }
 
@@ -115,7 +119,7 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
-    def 'test simple nested query'() {
+    def 'test employee-customer-summary'() {
         def data = TestUtil.load('employee-customer-summary')
         when:
         def generated = generateCode(data.v1, data.v3)
@@ -142,13 +146,9 @@ class QueryGenTest extends Specification {
         def expected = data.v2.trim()
 
 
-
         then:
         generated == expected
     }
-
-
-
 
 
 }

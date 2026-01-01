@@ -3,6 +3,7 @@ package io.github.kayr.ezyquery.util;
 import io.github.kayr.ezyquery.api.UnCaughtException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,6 +53,15 @@ public class Elf {
 
   public static <T> List<T> copyList(Collection<T> list) {
     return new ArrayList<>(list);
+  }
+
+  public static <T> List<T> arrayToList(Object array) {
+    if (array == null) return null;
+    List<T> result = new ArrayList<>(Array.getLength(array));
+    for (int i = 0; i < Array.getLength(array); i++) {
+      result.add((T) Array.get(array, i));
+    }
+    return result;
   }
 
   @SafeVarargs

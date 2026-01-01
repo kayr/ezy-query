@@ -4,8 +4,11 @@ import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.api.cnd.Cnd
 import io.github.kayr.ezyquery.itests.TestCanFetchDataTest
+import io.github.kayr.ezyquery.parser.SqlParts
 import io.github.kayr.ezyquery.sql.ColumnInfo
 import io.github.kayr.ezyquery.sql.Mappers
+import io.github.kayr.ezyquery.sql.Zql
+import org.h2.result.Row
 import spock.lang.Specification
 
 class DocSpec extends Specification {

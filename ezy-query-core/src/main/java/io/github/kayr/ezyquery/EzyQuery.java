@@ -20,6 +20,7 @@ public interface EzyQuery {
   }
 
   default Optional<SqlParts> whereClause() {
+    System.out.println("hahhskkdjks");
     return Optional.empty();
   }
 

@@ -1,9 +1,6 @@
 package io.github.kayr.ezyquery.parser;
 
-import io.github.kayr.ezyquery.api.Field;
-import io.github.kayr.ezyquery.api.NamedCriteriaParam;
-import io.github.kayr.ezyquery.api.NamedParam;
-import io.github.kayr.ezyquery.api.NamedParamValue;
+import io.github.kayr.ezyquery.api.*;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.Conds;
 import io.github.kayr.ezyquery.api.cnd.ICond;
@@ -193,13 +190,17 @@ public class SqlParts {
 
     if (value == null) return Collections.singletonList(null);
 
+    if (value instanceof RawValue) {
+      return Collections.singletonList(((RawValue) value).getValue());
+    }
+
     if (value instanceof Collection) {
       //noinspection unchecked
       return Elf.copyList((Collection<Object>) value);
     }
 
     if (value.getClass().isArray()) {
-      return Arrays.asList((Object[]) value);
+      return Elf.arrayToList(value);
     }
 
     if (value instanceof Iterable) {

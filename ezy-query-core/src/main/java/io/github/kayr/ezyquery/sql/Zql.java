@@ -1,5 +1,6 @@
 package io.github.kayr.ezyquery.sql;
 
+import io.github.kayr.ezyquery.api.RawValue;
 import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.Elf;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
@@ -195,6 +196,10 @@ public class Zql {
 
   public boolean execute(Query query) {
     return execute(query.getSql(), query.getParams());
+  }
+
+  public static RawValue raw(Object value) {
+    return RawValue.of(value);
   }
 
   @lombok.AllArgsConstructor

@@ -1,6 +1,6 @@
 package io.github.kayr.ezyquery.parser
 
-
+import io.github.kayr.ezyquery.api.RawValue
 import spock.lang.Specification
 
 class SqlPartsTest extends Specification {
@@ -63,19 +63,22 @@ class SqlPartsTest extends Specification {
         SqlParts.convertToValueParam(a) == b
 
         where:
-        a                             | b
-        "a"                           | ["a"]
-        1                             | [1]
-        [1, 2]                        | [1, 2]
-        ["a", "b"]                    | ["a", "b"]
-        null                          | [null]
-        new Vector([1, 2])            | [1, 2]
-        new Vector([1, 2]).iterator() | [1, 2]
-        new Vector([1, 2]).elements() | [1, 2]
-        new HashSet([1, 2])           | [1, 2]
-        createIterable([1, 2])        | [1, 2]
-        [1, 2].stream()               | [1, 2]
-        [1, 2].toArray()              | [1, 2]
+        a                                     | b
+        "a"                                   | ["a"]
+        1                                     | [1]
+        [1, 2]                                | [1, 2]
+        ["a", "b"]                            | ["a", "b"]
+        null                                  | [null]
+        new Vector([1, 2])                    | [1, 2]
+        new Vector([1, 2]).iterator()         | [1, 2]
+        new Vector([1, 2]).elements()         | [1, 2]
+        new HashSet([1, 2])                   | [1, 2]
+        createIterable([1, 2])                | [1, 2]
+        [1, 2].stream()                       | [1, 2]
+        [1, 2].toArray()                      | [1, 2]
+        [1, 2] as int[]                       | [1, 2]
+        [1L, 2L] as long[]                    | [1L, 2L]
+        RawValue.of([1, 2] as int[]) | [[1, 2] as int[]]
     }
 
     def 'should be parse raw sql query with params'() {
@@ -88,7 +91,7 @@ class SqlPartsTest extends Specification {
     }
 
 
-    def 'should parse query with named param at beginning and end'(){
+    def 'should parse query with named param at beginning and end'() {
         when:
         def query = SqlParts.of(":param1 from table inner join ( select * from table2 where table2.id in ( :param2 )) as t2 on t2.id = table.id :p")
 
@@ -97,7 +100,7 @@ class SqlPartsTest extends Specification {
         query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == ["param1", "param2", "p"]
     }
 
-    def 'should parse query with params in the middle'(){
+    def 'should parse query with params in the middle'() {
         when:
         def query = SqlParts.of("from table inner join ( select * from table2 where table2.id in ( :param1 )) as t2 on t2.id = table.id :param2 and table.xxx = t2.yyy")
 
@@ -108,8 +111,7 @@ class SqlPartsTest extends Specification {
     }
 
 
-
-    def 'should parse with no named params'(){
+    def 'should parse with no named params'() {
         when:
         def query = SqlParts.of("from table inner join ( select * from table2 where table2.id in ( 1 )) as t2 on t2.id = table.id ")
 
@@ -118,7 +120,7 @@ class SqlPartsTest extends Specification {
         query.parts.findAll { it instanceof SqlParts.IPart.Param }.collect { it.name } == []
     }
 
-    def "empty should return empty query"(){
+    def "empty should return empty query"() {
         when:
         def query = SqlParts.empty()
 

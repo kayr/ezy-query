@@ -437,10 +437,14 @@ public class QueryGen implements WritesCode {
   }
 
   private TypeSpec resultClass(List<EzyQueryFieldSpec> fieldList) {
+    ClassName resultClassName = ClassName.get(packageName, className, "Result");
+
     TypeSpec.Builder resultClassBuilder =
-        TypeSpec.classBuilder("Result")
+        TypeSpec.classBuilder(resultClassName)
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
             .addSuperinterface(DynamicFieldSetter.class);
+
+    // add fields
     for (EzyQueryFieldSpec f : fieldList) {
       resultClassBuilder.addField(
           FieldSpec.builder(f.getDataType(), f.getAlias(), Modifier.PRIVATE).build());
@@ -453,7 +457,26 @@ public class QueryGen implements WritesCode {
           publicMethod(toGetterName(f.getAlias()), f.getDataType())
               .addStatement("return $L", f.getAlias())
               .build());
+
+      if("true".equals(config.get("result.addWither"))) {
+      resultClassBuilder.addMethod(
+          publicMethod(toWitherName(f.getAlias()), resultClassName)
+              .addParameter(f.getDataType(), f.getAlias())
+              .addStatement("$T theCopy = this.copy()", resultClassName)
+              .addStatement("theCopy.$L = $L", f.getAlias(), f.getAlias())
+              .addStatement("return theCopy")
+              .build());
+      }
     }
+
+    // add a copy method
+    MethodSpec.Builder copyBuilder = publicMethod("copy", resultClassName);
+    copyBuilder.addStatement("$T theCopy = new $T()", resultClassName, resultClassName);
+    for (EzyQueryFieldSpec f : fieldList) {
+      copyBuilder.addStatement("theCopy.$L = this.$L", f.getAlias(), f.getAlias());
+    }
+    copyBuilder.addStatement("return theCopy");
+    resultClassBuilder.addMethod(copyBuilder.build());
 
     // to string methods
     MethodSpec toStringMethod =
@@ -490,6 +513,10 @@ public class QueryGen implements WritesCode {
 
   private static String toGetterName(String fieldName) {
     return "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+  }
+
+  private static String toWitherName(String fieldName) {
+    return "with" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
   }
 
   /** Init() method */

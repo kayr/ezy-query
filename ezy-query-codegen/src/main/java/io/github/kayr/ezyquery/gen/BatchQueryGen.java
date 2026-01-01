@@ -70,7 +70,7 @@ public class BatchQueryGen {
     WritesCode writesCode;
     if (withNoSqlExt.endsWith(".ez")) {
       String className = Elf.fromKebabToCamelCase(removeExtension(withNoSqlExt));
-      writesCode = EzySqlQueryGen.of(packageName, className, code.code, config);
+      writesCode = EzySqlQueryGen.of(packageName, className, code, config);
     } else if (withNoSqlExt.endsWith(".static")) {
       String className = Elf.fromKebabToCamelCase(removeExtension(withNoSqlExt));
       writesCode = StaticQueryGen.of(packageName, className, code.code);

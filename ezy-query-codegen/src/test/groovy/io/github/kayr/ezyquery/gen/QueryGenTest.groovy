@@ -3,10 +3,6 @@ package io.github.kayr.ezyquery.gen
 import groovy.transform.NamedVariant
 import spock.lang.Specification
 
-import java.awt.*
-import java.awt.datatransfer.StringSelection
-import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
 
 class QueryGenTest extends Specification {
 
@@ -18,6 +14,8 @@ class QueryGenTest extends Specification {
         def generated = generateCode(data.v1)
 
         def expected = data.v2.trim()
+
+
         then:
         generated == expected
     }
@@ -142,6 +140,7 @@ class QueryGenTest extends Specification {
         when:
         def generated = generateCode(data.v1, data.v3)
         def expected = data.v2.trim()
+
 
 
         then:

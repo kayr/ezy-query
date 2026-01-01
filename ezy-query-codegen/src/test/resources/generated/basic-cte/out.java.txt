@@ -127,16 +127,49 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return customerNumber;
     }
 
+    public Result withCustomerNumber(Object customerNumber) {
+      Result theCopy = this.copy();
+      theCopy.customerNumber = customerNumber;
+      return theCopy;
+    }
+
     public Object getCustomerName() {
       return customerName;
+    }
+
+    public Result withCustomerName(Object customerName) {
+      Result theCopy = this.copy();
+      theCopy.customerName = customerName;
+      return theCopy;
     }
 
     public Object getSalesRepName() {
       return salesRepName;
     }
 
+    public Result withSalesRepName(Object salesRepName) {
+      Result theCopy = this.copy();
+      theCopy.salesRepName = salesRepName;
+      return theCopy;
+    }
+
     public Object getSalesRepCountry() {
       return salesRepCountry;
+    }
+
+    public Result withSalesRepCountry(Object salesRepCountry) {
+      Result theCopy = this.copy();
+      theCopy.salesRepCountry = salesRepCountry;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.customerNumber = this.customerNumber;
+      theCopy.customerName = this.customerName;
+      theCopy.salesRepName = this.salesRepName;
+      theCopy.salesRepCountry = this.salesRepCountry;
+      return theCopy;
     }
 
     @Override

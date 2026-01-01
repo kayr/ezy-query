@@ -3,6 +3,7 @@ package io.github.kayr.ezyquery.gen;
 import com.squareup.javapoet.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -15,11 +16,11 @@ public class EzySqlQueryGen implements WritesCode {
 
   private final String packageName;
   private final String mainClassName;
-  private final String sql;
+  private final BatchQueryGen.SourceCode sql;
   private final Properties properties;
 
   public JavaFile generate() {
-    List<SectionsParser.Section> sections = SectionsParser.splitUp(sql);
+    List<SectionsParser.Section> sections = SectionsParser.splitUp(sql.getCode());
 
     List<MethodSpec> mSections = new ArrayList<>();
 
@@ -31,6 +32,7 @@ public class EzySqlQueryGen implements WritesCode {
         // add the types
         TypeSpec theType = kindAndClass.getTwo();
         QueryKind theTypeKind = kindAndClass.getOne();
+
         types.add(theType);
 
         // add the method
@@ -38,6 +40,7 @@ public class EzySqlQueryGen implements WritesCode {
         String methodName = StringCaseUtil.toCamelCase(theType.name);
         MethodSpec.Builder method =
             MethodSpec.methodBuilder(methodName)
+                .addJavadoc("from: " + section.name() + ", in: " + fromCurrDir(sql.getPath()))
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(ClassName.get(packageName, mainClassName, theType.name));
 
@@ -92,6 +95,7 @@ public class EzySqlQueryGen implements WritesCode {
         .buildClass()
         .toBuilder()
         .addModifiers(Modifier.STATIC)
+        .addJavadoc("\n\nfrom: " + section.name() + ", in: " + fromCurrDir(sql.getPath()))
         .build();
   }
 
@@ -100,7 +104,16 @@ public class EzySqlQueryGen implements WritesCode {
         .createSectionClass(sectionName, section.sql())
         .toBuilder()
         .addModifiers(Modifier.STATIC)
+        .addJavadoc("\n\nfrom: " + section.name() + ", in: " + fromCurrDir(sql.getPath()))
         .build();
+  }
+
+  private Path fromCurrDir(Path path) {
+    String cwdStr = System.getProperty("user.dir");
+    Path cwd = Paths.get(cwdStr);
+
+    if (path.startsWith(cwd)) return cwd.relativize(path);
+    else return path;
   }
 
   private static Pair<QueryKind, String> extractName(String name) {

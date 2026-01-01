@@ -112,8 +112,27 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return name;
     }
 
+    public Result withName(Object name) {
+      Result theCopy = new Result();
+      theCopy.name = name;
+      return theCopy;
+    }
+
     public Object getProdName() {
       return prodName;
+    }
+
+    public Result withProdName(Object prodName) {
+      Result theCopy = new Result();
+      theCopy.prodName = prodName;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.name = this.name;
+      theCopy.prodName = this.prodName;
+      return theCopy;
     }
 
     @Override

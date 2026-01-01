@@ -15,12 +15,6 @@ public class CodeElf {
   private CodeElf() {}
 
   public static MethodSpec.Builder publicMethod(
-      String name, Class<?> returnType, Class<?>... annotations) {
-
-    return method(modifiers(Modifier.PUBLIC), name, TypeName.get(returnType), annotations);
-  }
-
-  public static MethodSpec.Builder publicMethod(
       String name, TypeName returnType, Class<?>... annotations) {
 
     MethodSpec.Builder method = MethodSpec.methodBuilder(name).addModifiers(Modifier.PUBLIC);
@@ -29,6 +23,12 @@ public class CodeElf {
 
     addNotations(annotations, method);
     return method;
+  }
+
+  public static MethodSpec.Builder publicMethod(
+      String name, Class<?> returnType, Class<?>... annotations) {
+
+    return method(modifiers(Modifier.PUBLIC), name, TypeName.get(returnType), annotations);
   }
 
   public static MethodSpec.Builder method(

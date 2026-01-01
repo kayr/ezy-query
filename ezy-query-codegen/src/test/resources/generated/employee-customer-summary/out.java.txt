@@ -129,24 +129,71 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return employeeNumber;
     }
 
+    public Result withEmployeeNumber(Object employeeNumber) {
+      Result theCopy = this.copy();
+      theCopy.employeeNumber = employeeNumber;
+      return theCopy;
+    }
+
     public Object getFirstName() {
       return firstName;
+    }
+
+    public Result withFirstName(Object firstName) {
+      Result theCopy = this.copy();
+      theCopy.firstName = firstName;
+      return theCopy;
     }
 
     public Object getOfficeCode() {
       return officeCode;
     }
 
+    public Result withOfficeCode(Object officeCode) {
+      Result theCopy = this.copy();
+      theCopy.officeCode = officeCode;
+      return theCopy;
+    }
+
     public Object getCountry() {
       return country;
+    }
+
+    public Result withCountry(Object country) {
+      Result theCopy = this.copy();
+      theCopy.country = country;
+      return theCopy;
     }
 
     public Object getAddressLine1() {
       return addressLine1;
     }
 
+    public Result withAddressLine1(Object addressLine1) {
+      Result theCopy = this.copy();
+      theCopy.addressLine1 = addressLine1;
+      return theCopy;
+    }
+
     public Object getTotalCustomers() {
       return totalCustomers;
+    }
+
+    public Result withTotalCustomers(Object totalCustomers) {
+      Result theCopy = this.copy();
+      theCopy.totalCustomers = totalCustomers;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = this.copy();
+      theCopy.employeeNumber = this.employeeNumber;
+      theCopy.firstName = this.firstName;
+      theCopy.officeCode = this.officeCode;
+      theCopy.country = this.country;
+      theCopy.addressLine1 = this.addressLine1;
+      theCopy.totalCustomers = this.totalCustomers;
+      return theCopy;
     }
 
     @Override

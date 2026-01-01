@@ -103,16 +103,49 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return f1;
     }
 
+    public Result withF1(BigDecimal f1) {
+      Result theCopy = this.copy();
+      theCopy.f1 = f1;
+      return theCopy;
+    }
+
     public String getF2() {
       return f2;
+    }
+
+    public Result withF2(String f2) {
+      Result theCopy = this.copy();
+      theCopy.f2 = f2;
+      return theCopy;
     }
 
     public Vector getF3() {
       return f3;
     }
 
+    public Result withF3(Vector f3) {
+      Result theCopy = this.copy();
+      theCopy.f3 = f3;
+      return theCopy;
+    }
+
     public LocalDate getF4() {
       return f4;
+    }
+
+    public Result withF4(LocalDate f4) {
+      Result theCopy = this.copy();
+      theCopy.f4 = f4;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.f1 = this.f1;
+      theCopy.f2 = this.f2;
+      theCopy.f3 = this.f3;
+      theCopy.f4 = this.f4;
+      return theCopy;
     }
 
     @Override

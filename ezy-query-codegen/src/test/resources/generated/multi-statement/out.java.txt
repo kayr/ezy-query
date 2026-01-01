@@ -112,24 +112,71 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return code;
     }
 
+    public Result withCode(Object code) {
+      Result theCopy = this.copy();
+      theCopy.code = code;
+      return theCopy;
+    }
+
     public Object getA() {
       return a;
+    }
+
+    public Result withA(Object a) {
+      Result theCopy = this.copy();
+      theCopy.a = a;
+      return theCopy;
     }
 
     public Object getB() {
       return b;
     }
 
+    public Result withB(Object b) {
+      Result theCopy = this.copy();
+      theCopy.b = b;
+      return theCopy;
+    }
+
     public Object getC() {
       return c;
+    }
+
+    public Result withC(Object c) {
+      Result theCopy = this.copy();
+      theCopy.c = c;
+      return theCopy;
     }
 
     public Object getD() {
       return d;
     }
 
+    public Result withD(Object d) {
+      Result theCopy = this.copy();
+      theCopy.d = d;
+      return theCopy;
+    }
+
     public Object getE() {
       return e;
+    }
+
+    public Result withE(Object e) {
+      Result theCopy = this.copy();
+      theCopy.e = e;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.code = this.code;
+      theCopy.a = this.a;
+      theCopy.b = this.b;
+      theCopy.c = this.c;
+      theCopy.d = this.d;
+      theCopy.e = this.e;
+      return theCopy;
     }
 
     @Override

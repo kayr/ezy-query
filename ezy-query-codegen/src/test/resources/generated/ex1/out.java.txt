@@ -181,52 +181,148 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return id;
     }
 
+    public Result withId(BigInteger id) {
+      Result theCopy = this.copy();
+      theCopy.id = id;
+      return theCopy;
+    }
+
     public Long getLongval() {
       return longval;
+    }
+
+    public Result withLongval(Long longval) {
+      Result theCopy = this.copy();
+      theCopy.longval = longval;
+      return theCopy;
     }
 
     public Integer getIntval() {
       return intval;
     }
 
+    public Result withIntval(Integer intval) {
+      Result theCopy = this.copy();
+      theCopy.intval = intval;
+      return theCopy;
+    }
+
     public Float getFloatval() {
       return floatval;
+    }
+
+    public Result withFloatval(Float floatval) {
+      Result theCopy = this.copy();
+      theCopy.floatval = floatval;
+      return theCopy;
     }
 
     public Double getDoubleval() {
       return doubleval;
     }
 
+    public Result withDoubleval(Double doubleval) {
+      Result theCopy = this.copy();
+      theCopy.doubleval = doubleval;
+      return theCopy;
+    }
+
     public String getStringval() {
       return stringval;
+    }
+
+    public Result withStringval(String stringval) {
+      Result theCopy = this.copy();
+      theCopy.stringval = stringval;
+      return theCopy;
     }
 
     public Boolean getBooleanval() {
       return booleanval;
     }
 
+    public Result withBooleanval(Boolean booleanval) {
+      Result theCopy = this.copy();
+      theCopy.booleanval = booleanval;
+      return theCopy;
+    }
+
     public Date getDateval() {
       return dateval;
+    }
+
+    public Result withDateval(Date dateval) {
+      Result theCopy = this.copy();
+      theCopy.dateval = dateval;
+      return theCopy;
     }
 
     public Timestamp getTimeval() {
       return timeval;
     }
 
+    public Result withTimeval(Timestamp timeval) {
+      Result theCopy = this.copy();
+      theCopy.timeval = timeval;
+      return theCopy;
+    }
+
     public BigInteger getBigintval() {
       return bigintval;
+    }
+
+    public Result withBigintval(BigInteger bigintval) {
+      Result theCopy = this.copy();
+      theCopy.bigintval = bigintval;
+      return theCopy;
     }
 
     public BigDecimal getBigdecimalval() {
       return bigdecimalval;
     }
 
+    public Result withBigdecimalval(BigDecimal bigdecimalval) {
+      Result theCopy = this.copy();
+      theCopy.bigdecimalval = bigdecimalval;
+      return theCopy;
+    }
+
     public Byte getBlobval() {
       return blobval;
     }
 
+    public Result withBlobval(Byte blobval) {
+      Result theCopy = this.copy();
+      theCopy.blobval = blobval;
+      return theCopy;
+    }
+
     public Object getObjectval() {
       return objectval;
+    }
+
+    public Result withObjectval(Object objectval) {
+      Result theCopy = this.copy();
+      theCopy.objectval = objectval;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.id = this.id;
+      theCopy.longval = this.longval;
+      theCopy.intval = this.intval;
+      theCopy.floatval = this.floatval;
+      theCopy.doubleval = this.doubleval;
+      theCopy.stringval = this.stringval;
+      theCopy.booleanval = this.booleanval;
+      theCopy.dateval = this.dateval;
+      theCopy.timeval = this.timeval;
+      theCopy.bigintval = this.bigintval;
+      theCopy.bigdecimalval = this.bigdecimalval;
+      theCopy.blobval = this.blobval;
+      theCopy.objectval = this.objectval;
+      return theCopy;
     }
 
     @Override

@@ -24,19 +24,31 @@ import javax.annotation.processing.Generated;
     date = "1970-01-01T00:00:00"
 )
 public class Query {
+  /**
+   * from: static:Select Users, in: ez_static/in.sql.txt
+   */
   public static SelectUsers selectUsers() {
     return new SelectUsers();
   }
 
+  /**
+   * from: dynamic:Select Orders, in: ez_static/in.sql.txt
+   */
   public static SelectOrders selectOrders() {
     return SelectOrders.SELECT_ORDERS;
   }
 
+  /**
+   * from: dynamic: deliberately insert multiple newlines for testing, in: ez_static/in.sql.txt
+   */
   public static DeliberatelyInsertMultipleNewlinesForTesting deliberatelyInsertMultipleNewlinesForTesting(
       ) {
     return DeliberatelyInsertMultipleNewlinesForTesting.DELIBERATELY_INSERT_MULTIPLE_NEWLINES_FOR_TESTING;
   }
 
+  /**
+   * from: Select Products, in: ez_static/in.sql.txt
+   */
   public static SelectProducts selectProducts() {
     return new SelectProducts();
   }
@@ -46,6 +58,8 @@ public class Query {
    * select * from users
    *             where name = :name
    *             and address = :address
+   *
+   * from: static:Select Users, in: ez_static/in.sql.txt
    */
   public static class SelectUsers {
     private final SqlParts sql;
@@ -97,6 +111,8 @@ public class Query {
    *               customer_id as customerId
    *             from orders
    *             where user_id = userId;
+   *
+   * from: dynamic:Select Orders, in: ez_static/in.sql.txt
    */
   @Generated(
       value = "io.github.kayr.ezyquery.gen.QueryGen",
@@ -170,12 +186,38 @@ public class Query {
         return id;
       }
 
+      public Result withId(Object id) {
+        Result theCopy = this.copy();
+        theCopy.id = id;
+        return theCopy;
+      }
+
       public Object getDate() {
         return date;
       }
 
+      public Result withDate(Object date) {
+        Result theCopy = this.copy();
+        theCopy.date = date;
+        return theCopy;
+      }
+
       public Object getCustomerId() {
         return customerId;
+      }
+
+      public Result withCustomerId(Object customerId) {
+        Result theCopy = this.copy();
+        theCopy.customerId = customerId;
+        return theCopy;
+      }
+
+      public Result copy() {
+        Result theCopy = this.copy();
+        theCopy.id = this.id;
+        theCopy.date = this.date;
+        theCopy.customerId = this.customerId;
+        return theCopy;
       }
 
       @Override
@@ -214,6 +256,8 @@ public class Query {
      *         from products
      *         inner join categories on products.category_id = categories.id
      *         where categories.name = :category_name;
+     *
+     * from: dynamic: deliberately insert multiple newlines for testing, in: ez_static/in.sql.txt
      */
     @Generated(
         value = "io.github.kayr.ezyquery.gen.QueryGen",
@@ -291,12 +335,38 @@ public class Query {
           return productId;
         }
 
+        public Result withProductId(Object productId) {
+          Result theCopy = this.copy();
+          theCopy.productId = productId;
+          return theCopy;
+        }
+
         public Object getProductName() {
           return productName;
         }
 
+        public Result withProductName(Object productName) {
+          Result theCopy = this.copy();
+          theCopy.productName = productName;
+          return theCopy;
+        }
+
         public Object getCategoryName() {
           return categoryName;
+        }
+
+        public Result withCategoryName(Object categoryName) {
+          Result theCopy = this.copy();
+          theCopy.categoryName = categoryName;
+          return theCopy;
+        }
+
+        public Result copy() {
+          Result theCopy = this.copy();
+          theCopy.productId = this.productId;
+          theCopy.productName = this.productName;
+          theCopy.categoryName = this.categoryName;
+          return theCopy;
         }
 
         @Override
@@ -335,6 +405,8 @@ public class Query {
        * -- Select Products
        * select * from products
        *             where product_id = :product_id and product_id = :product_id
+       *
+       * from: Select Products, in: ez_static/in.sql.txt
        */
       public static class SelectProducts {
         private final SqlParts sql;

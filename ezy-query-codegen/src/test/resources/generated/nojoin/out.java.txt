@@ -89,8 +89,27 @@ public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
       return doubleval;
     }
 
+    public Result withDoubleval(Double doubleval) {
+      Result theCopy = new Result();
+      theCopy.doubleval = doubleval;
+      return theCopy;
+    }
+
     public Double getDoubleval2() {
       return doubleval2;
+    }
+
+    public Result withDoubleval2(Double doubleval2) {
+      Result theCopy = new Result();
+      theCopy.doubleval2 = doubleval2;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.doubleval = this.doubleval;
+      theCopy.doubleval2 = this.doubleval2;
+      return theCopy;
     }
 
     @Override

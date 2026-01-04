@@ -10,10 +10,8 @@ import io.github.kayr.ezyquery.util.CoercionUtil;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import javax.sql.DataSource;
 import lombok.NonNull;
 
@@ -24,9 +22,19 @@ import lombok.NonNull;
 public class EzySql {
 
   @lombok.Getter private final Zql zql;
+  private final Function<Class<?>, Mappers.RowMapper<?>> mapperFactory;
 
   private EzySql(Zql zql) {
+    this(zql, Mappers::toClass);
+  }
+
+  private EzySql(Zql zql, Function<Class<?>, Mappers.RowMapper<?>> mapperFactory) {
     this.zql = zql;
+    this.mapperFactory = mapperFactory;
+  }
+
+  public EzySql withMapperFactory(Function<Class<?>, Mappers.RowMapper<?>> mapperFactory) {
+    return new EzySql(zql, mapperFactory);
   }
 
   public static EzySql withProvider(ConnectionProvider connectionProvider) {
@@ -81,6 +89,10 @@ public class EzySql {
     return new CriteriaBuilder<>(q, this);
   }
 
+  public CriteriaBuilder<Map<String, Object>> from(EzyQuery q) {
+    return new CriteriaBuilder<>(q, this, EzyCriteria.selectAll(), Mappers.toMap());
+  }
+
   public static class CriteriaBuilder<T> {
     private final EzyQuery query;
     private final EzySql ezySql;
@@ -88,7 +100,12 @@ public class EzySql {
     private final Mappers.RowMapper<T> resultsMapper;
 
     public CriteriaBuilder(EzyQueryWithResult<T> query, EzySql ezySql) {
-      this(query, ezySql, EzyCriteria.selectAll(), Mappers.toClass(query.resultClass()));
+      //noinspection unchecked
+      this(
+          query,
+          ezySql,
+          EzyCriteria.selectAll(),
+          (Mappers.RowMapper<T>) ezySql.mapperFactory.apply(query.resultClass()));
     }
 
     public CriteriaBuilder(

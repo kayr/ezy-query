@@ -2,7 +2,9 @@ package io.github.kayr.ezyquery.sql;
 
 import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.ReflectionUtil;
+import io.github.kayr.ezyquery.util.ThrowingFunction;
 import io.github.kayr.ezyquery.util.ThrowingSupplier;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -71,5 +73,29 @@ public interface Mappers {
   static RowMapper<Map<String, Object>> toMap() {
     return toObject(
         LinkedHashMap::new, (column, obj, cellValue) -> obj.put(column.getLabel(), cellValue));
+  }
+
+  static <T> RowMapper<T> toObject(
+      Class<T> target, Map<Class<?>, ThrowingFunction<Object, Object>> fieldMappers) {
+
+    boolean isDynamic = DynamicFieldSetter.class.isAssignableFrom(target);
+
+    return toObject(
+        () -> ReflectionUtil.construct(target),
+        (col, obj, cellValue) -> {
+          Field targetField = ReflectionUtil.getField(target, col.getLabel());
+
+          if (targetField == null) {
+            if (isDynamic) ((DynamicFieldSetter) obj).setField(col.getLabel(), cellValue);
+            return;
+          }
+
+          ThrowingFunction<Object, Object> converter = fieldMappers.get(targetField.getType());
+
+          Object convertedValue = converter != null ? converter.apply(cellValue) : cellValue;
+
+          if (isDynamic) ((DynamicFieldSetter) obj).setField(col.getLabel(), convertedValue);
+          else ReflectionUtil.setNonSyntheticField(obj, targetField, convertedValue);
+        });
   }
 }

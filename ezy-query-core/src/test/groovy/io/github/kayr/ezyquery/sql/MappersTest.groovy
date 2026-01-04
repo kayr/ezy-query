@@ -1,9 +1,14 @@
 package io.github.kayr.ezyquery.sql
 
+
 import io.github.kayr.ezyquery.it.Db
 import io.github.kayr.ezyquery.testqueries.Offices
+import io.github.kayr.ezyquery.util.ThrowingFunction
 import spock.lang.Shared
 import spock.lang.Specification
+
+import java.sql.ResultSet
+
 
 class MappersTest extends Specification {
 
@@ -64,6 +69,75 @@ class MappersTest extends Specification {
         result[2].get('code') == '3'
         result[2].get('addressLine') == 'Dar es Salaam'
         result[2].get('country') == 'TZ'
+    }
+
+    def "toObject with field mappers should apply converters"() {
+        given:
+
+        def fieldMappers = [(Integer.class): { Object v -> (v as Integer) * 2 } as ThrowingFunction]
+        def mapper = Mappers.toObject(Person, fieldMappers)
+
+        def columns = [new ColumnInfo("name", "name"), new ColumnInfo("age", "age")]
+        def rs = Mock(ResultSet)
+        rs.getObject("name") >> "John"
+        rs.getObject("age") >> 25
+
+        when:
+        def person = mapper.mapRow(0, columns, rs)
+
+        then:
+        person.name == "John"
+        person.age == 50
+    }
+
+    def "toObject with field mappers should support DynamicFieldSetter"() {
+        given:
+
+        def fieldMappers = [(String.class): { Object v -> "Mr. $v" } as ThrowingFunction]
+        def mapper = Mappers.toObject(PersonWithDynamic, fieldMappers)
+
+        def columns = [new ColumnInfo("extra", "extra")]
+        def rs = Mock(ResultSet)
+        rs.getObject("extra") >> "SomeValue"
+
+        when:
+        def person = mapper.mapRow(0, columns, rs)
+
+        then:
+        person.extraFields["extra"] == "SomeValue"
+    }
+
+    def "toObject with field mappers should fallback to normal set if no converter and not dynamic"() {
+        given:
+
+        def mapper = Mappers.toObject(Person, Collections.emptyMap())
+
+        def columns = [new ColumnInfo("name", "name"), new ColumnInfo("age", "age")]
+        def rs = Mock(ResultSet)
+        rs.getObject("name") >> "John"
+        rs.getObject("age") >> 25
+
+        when:
+        def person = mapper.mapRow(0, columns, rs)
+
+        then:
+        person.name == "John"
+        person.age == 25
+    }
+
+    static class Person {
+        public String name;
+        public Integer age;
+    }
+
+    static class PersonWithDynamic implements DynamicFieldSetter {
+        public String name;
+        public Map<String, Object> extraFields = new HashMap<>();
+
+        @Override
+        void setField(String fieldName, Object value) {
+            extraFields.put(fieldName, value);
+        }
     }
 
 }

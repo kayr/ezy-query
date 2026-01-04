@@ -3,7 +3,7 @@ package io.github.kayr.ezyquery.itests
 import io.github.kayr.ezyquery.EzySql
 import io.github.kayr.ezyquery.api.Sort
 import io.github.kayr.ezyquery.sql.Mappers
-import prod.ProdQuery1
+import io.github.kayr.ezyquery.util.ThrowingFunction
 import prod.Queries
 import prod.QueryWithParams
 import spock.lang.Specification
@@ -151,8 +151,13 @@ class TestCanFetchDataTest extends Specification {
     def 'test that can fetch data using new ez.sql for dynamic embedded'() {
         def q = Queries.selectOfficesDynamic()
 
+
         given:
-        def criteria = ez.from(q).where(q.OFFICE_CODE.eq(1))
+        def criteria = ez.withMapperFactory {
+            Mappers.toObject(it, [(List.class): { it.toString().split(',') as List } as ThrowingFunction])
+        }
+                .from(q)
+                .where(q.OFFICE_CODE.eq(1))
 
         when:
         def r = criteria.list()
@@ -163,6 +168,7 @@ class TestCanFetchDataTest extends Specification {
         r.first().officeCode == "1"
         r.first().country == "UG"
         r.first().addressLine == "Kampala"
+        r.first().commaList == ['comma', 'list']
     }
 
     def 'test  retrieve data with named param'() {
@@ -207,13 +213,13 @@ class TestCanFetchDataTest extends Specification {
 
         when:
         def originalList = criteria.list()
-        def modifiedList = originalList.collect {it.withAddressLine("XXX" + it.addressLine)}
+        def modifiedList = originalList.collect { it.withAddressLine("XXX" + it.addressLine) }
         def count = criteria.count()
 
         then:
         originalList.size() == 3
-        originalList.collect {it.addressLine}.unique() == ['Kampala', 'Nairobi']
-        modifiedList.collect {it.addressLine}.unique() == ['XXXKampala', 'XXXNairobi']
+        originalList.collect { it.addressLine }.unique() == ['Kampala', 'Nairobi']
+        modifiedList.collect { it.addressLine }.unique() == ['XXXKampala', 'XXXNairobi']
 
 
     }

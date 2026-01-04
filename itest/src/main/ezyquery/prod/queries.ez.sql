@@ -12,7 +12,9 @@
        select
            officeCode as officeCode,
            country as country,
-           addressLine1 as addressLine
+           addressLine1 as addressLine,
+           'comma,list' as "commaList_list"
+
        from offices
 
             -- ## Select offices 2

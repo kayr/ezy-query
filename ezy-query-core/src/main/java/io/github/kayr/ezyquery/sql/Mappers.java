@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.util.ReflectionUtil;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
 import io.github.kayr.ezyquery.util.ThrowingSupplier;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -75,27 +76,44 @@ public interface Mappers {
         LinkedHashMap::new, (column, obj, cellValue) -> obj.put(column.getLabel(), cellValue));
   }
 
+  /**
+   * Create a RowMapper for a specific class with custom field mappers.
+   *
+   * @param target the target class
+   * @param fieldMappers a map of type-to-converter function. Use {@link TypeRef} to capture generic
+   *     types.
+   * @param <T> the target type
+   * @return a RowMapper
+   */
   static <T> RowMapper<T> toObject(
-      Class<T> target, Map<Class<?>, ThrowingFunction<Object, Object>> fieldMappers) {
+      Class<T> target, Map<? extends Type, ThrowingFunction<Object, Object>> fieldMappers) {
 
     boolean isDynamic = DynamicFieldSetter.class.isAssignableFrom(target);
 
-    return toObject(
-        () -> ReflectionUtil.construct(target),
-        (col, obj, cellValue) -> {
-          Field targetField = ReflectionUtil.getField(target, col.getLabel());
+    return (rowIndex, columns, rs) -> {
+      T obj = ReflectionUtil.construct(target);
+      for (ColumnInfo column : columns) {
+        String label = column.getLabel();
+        Object cellValue = rs.getObject(label);
 
-          if (targetField == null) {
-            if (isDynamic) ((DynamicFieldSetter) obj).setField(col.getLabel(), cellValue);
-            return;
-          }
+        Field targetField = ReflectionUtil.getField(target, label);
 
-          ThrowingFunction<Object, Object> converter = fieldMappers.get(targetField.getType());
+        if (targetField == null) {
+          if (isDynamic) ((DynamicFieldSetter) obj).setField(label, cellValue);
+          continue;
+        }
 
-          Object convertedValue = converter != null ? converter.apply(cellValue) : cellValue;
+        ThrowingFunction<Object, Object> converter = fieldMappers.get(targetField.getGenericType());
+        if (converter == null) {
+          converter = fieldMappers.get(targetField.getType());
+        }
 
-          if (isDynamic) ((DynamicFieldSetter) obj).setField(col.getLabel(), convertedValue);
-          else ReflectionUtil.setNonSyntheticField(obj, targetField, convertedValue);
-        });
+        Object convertedValue = converter != null ? converter.apply(cellValue) : cellValue;
+
+        if (isDynamic) ((DynamicFieldSetter) obj).setField(label, convertedValue);
+        else ReflectionUtil.setNonSyntheticField(obj, targetField, convertedValue);
+      }
+      return obj;
+    };
   }
 }

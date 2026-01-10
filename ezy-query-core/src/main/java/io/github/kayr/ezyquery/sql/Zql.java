@@ -17,9 +17,19 @@ public class Zql {
   }
 
   private final ConnectionProvider connectionProvider;
+  private final BinderRegistry binderRegistry;
 
   public Zql(ConnectionProvider connectionProvider) {
+    this(connectionProvider, new BinderRegistry());
+  }
+
+  public Zql(ConnectionProvider connectionProvider, BinderRegistry binderRegistry) {
     this.connectionProvider = connectionProvider;
+    this.binderRegistry = binderRegistry;
+  }
+
+  public Zql withBinder(Class<?> type, ParameterBinder binder) {
+    return new Zql(connectionProvider, binderRegistry.withBinder(type, binder));
   }
 
   public <T> List<T> rows(Mappers.RowMapper<T> mapper, String sql, List<Object> params) {
@@ -130,9 +140,13 @@ public class Zql {
     }
   }
 
-  public static void setValues(PreparedStatement preparedStatement, Object... values) {
-    for (int i = 0; i < values.length; i++) {
-      JdbcUtils.setObject(preparedStatement, i + 1, values[i]);
+  public void setValues(PreparedStatement preparedStatement, Object... values) {
+    try {
+      for (int i = 0; i < values.length; i++) {
+        binderRegistry.bind(preparedStatement, i + 1, values[i]);
+      }
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error setting values on statement", e);
     }
   }
 

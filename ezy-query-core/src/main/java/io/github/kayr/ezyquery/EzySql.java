@@ -5,6 +5,7 @@ import io.github.kayr.ezyquery.api.cnd.ICond;
 import io.github.kayr.ezyquery.parser.QueryAndParams;
 import io.github.kayr.ezyquery.sql.ConnectionProvider;
 import io.github.kayr.ezyquery.sql.Mappers;
+import io.github.kayr.ezyquery.sql.ParameterBinder;
 import io.github.kayr.ezyquery.sql.Zql;
 import io.github.kayr.ezyquery.util.CoercionUtil;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
@@ -43,6 +44,10 @@ public class EzySql {
 
   public static EzySql withZql(Zql zql) {
     return new EzySql(zql);
+  }
+
+  public EzySql withBinder(Class<?> type, ParameterBinder binder) {
+    return new EzySql(zql.withBinder(type, binder), mapperFactory);
   }
 
   public static EzySql withDataSource(DataSource dataSource) {

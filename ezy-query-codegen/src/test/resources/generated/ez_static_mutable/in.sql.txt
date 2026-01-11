@@ -1,0 +1,11 @@
+       -- ## static:Select Users
+            select * from users
+            where name = :name
+            and address = :address
+
+
+            -- ## Select Products
+            select * from products
+            where product_id = :product_id and product_id = :product_id
+
+

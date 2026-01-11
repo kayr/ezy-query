@@ -47,4 +47,21 @@ class EzySqlQueryGenTest extends Specification {
         generated.toString().trim() == resource.v2.trim()
     }
 
+    def "test ez sql files are parsed with mutable setters"() {
+
+        def resource = TestUtil.load("ez_static_mutable")
+
+
+        def properties = new Properties()
+        properties.setProperty("staticQuery.mutable","true")
+        when:
+        def generated = EzySqlQueryGen.of("package", "Query", new BatchQueryGen.SourceCode(resource.v1, Path.of('ez_static',"in.sql.txt")), properties)
+                .generate()
+
+        TestUtil.overWriteFile("ez_static_mutable",generated.toString())
+
+        then:
+        generated.toString().trim() == resource.v2.trim()
+    }
+
 }

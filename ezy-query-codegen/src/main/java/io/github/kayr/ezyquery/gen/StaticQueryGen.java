@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.lang.model.element.Modifier;
 
-@lombok.RequiredArgsConstructor(staticName = "of")
+@lombok.RequiredArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class StaticQueryGen implements WritesCode {
 
   @lombok.SneakyThrows
@@ -22,6 +22,17 @@ public class StaticQueryGen implements WritesCode {
   private final String packageName;
   private final String mainClassName;
   private final String sql;
+  private final CodeStyle style;
+
+  public static StaticQueryGen of(String packageName, String mainClassName, String sql) {
+    return of(packageName, mainClassName, sql, false);
+  }
+
+  public static StaticQueryGen of(
+      String packageName, String mainClassName, String sql, boolean mutable) {
+    return new StaticQueryGen(
+        packageName, mainClassName, sql, mutable ? new MutableStyle() : new ImmutableStyle());
+  }
 
   public JavaFile javaFile() {
 
@@ -70,8 +81,8 @@ public class StaticQueryGen implements WritesCode {
 
     ClassName className = ClassName.get(packageName, mainClassName, theClassName);
 
-    FieldSpec.Builder fSqlField =
-        FieldSpec.builder(SqlParts.class, "sql", Modifier.PRIVATE, Modifier.FINAL);
+    FieldSpec.Builder fSqlField = FieldSpec.builder(SqlParts.class, "sql", Modifier.PRIVATE);
+    style.applySqlFieldModifiers(fSqlField);
 
     MethodSpec mDefaultConstructor =
         CodeElf.publicMethod("<init>", TypeName.VOID)
@@ -95,22 +106,24 @@ public class StaticQueryGen implements WritesCode {
             .addStatement("return sql.getQuery()")
             .build();
 
-    MethodSpec mSetParam =
+    MethodSpec.Builder mSetParamBuilder =
         CodeElf.publicMethod("setParam", className)
             .addParameter(String.class, "param")
-            .addParameter(Object.class, "value")
-            .addStatement("return new $T(sql.setParam(param, value))", className)
-            .build();
+            .addParameter(Object.class, "value");
 
-    MethodSpec mSetParams =
+    style.applySetParamBody(mSetParamBuilder, className);
+    MethodSpec mSetParam = mSetParamBuilder.build();
+
+    MethodSpec.Builder mSetParamsBuilder =
         CodeElf.publicMethod("setParams", className)
             .addParameter(CodeElf.paramType(Map.class, String.class, Object.class), "params")
             .addStatement("SqlParts sql = this.sql")
             .beginControlFlow("for (Map.Entry<String, Object> entry : params.entrySet())")
             .addStatement("sql = sql.setParam(entry.getKey(), entry.getValue())")
-            .endControlFlow()
-            .addStatement("return new $T(sql)", className)
-            .build();
+            .endControlFlow();
+
+    style.applySetParamsBody(mSetParamsBuilder, className);
+    MethodSpec mSetParams = mSetParamsBuilder.build();
 
     return TypeSpec.classBuilder(className)
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -126,7 +139,7 @@ public class StaticQueryGen implements WritesCode {
         .build();
   }
 
-  private static List<MethodSpec> methodsForSet(SqlParts sqlParts, ClassName className) {
+  private List<MethodSpec> methodsForSet(SqlParts sqlParts, ClassName className) {
     Set<MethodSpec> setMethods = new LinkedHashSet<>(); // use a set to avoid duplicates
 
     List<SqlParts.IPart> parts = sqlParts.getParts();
@@ -135,20 +148,72 @@ public class StaticQueryGen implements WritesCode {
         SqlParts.IPart.Param paramPart = (SqlParts.IPart.Param) part;
         String methodName = StringCaseUtil.toCamelCase(paramPart.asString());
 
-        MethodSpec setMethod =
-            CodeElf.publicMethod(methodName, className)
-                .addParameter(Object.class, methodName)
-                .addStatement(
-                    "return new $T(sql.setParam($S, $L))",
-                    className,
-                    paramPart.asString(),
-                    methodName)
-                .build();
+        MethodSpec.Builder setMethodBuilder =
+            CodeElf.publicMethod(methodName, className).addParameter(Object.class, methodName);
 
-        setMethods.add(setMethod);
+        style.applyParamSetterBody(setMethodBuilder, className, paramPart.asString(), methodName);
+
+        setMethods.add(setMethodBuilder.build());
       }
     }
     return new ArrayList<>(setMethods);
+  }
+
+  interface CodeStyle {
+    void applySqlFieldModifiers(FieldSpec.Builder builder);
+
+    void applySetParamBody(MethodSpec.Builder builder, ClassName className);
+
+    void applySetParamsBody(MethodSpec.Builder builder, ClassName className);
+
+    void applyParamSetterBody(
+        MethodSpec.Builder builder, ClassName className, String paramName, String argName);
+  }
+
+  static class MutableStyle implements CodeStyle {
+    @Override
+    public void applySqlFieldModifiers(FieldSpec.Builder builder) {}
+
+    @Override
+    public void applySetParamBody(MethodSpec.Builder builder, ClassName className) {
+      builder.addStatement("this.sql = sql.setParam(param, value)").addStatement("return this");
+    }
+
+    @Override
+    public void applySetParamsBody(MethodSpec.Builder builder, ClassName className) {
+      builder.addStatement("this.sql = sql").addStatement("return this");
+    }
+
+    @Override
+    public void applyParamSetterBody(
+        MethodSpec.Builder builder, ClassName className, String paramName, String argName) {
+      builder
+          .addStatement("this.sql = sql.setParam($S, $L)", paramName, argName)
+          .addStatement("return this");
+    }
+  }
+
+  static class ImmutableStyle implements CodeStyle {
+    @Override
+    public void applySqlFieldModifiers(FieldSpec.Builder builder) {
+      builder.addModifiers(Modifier.FINAL);
+    }
+
+    @Override
+    public void applySetParamBody(MethodSpec.Builder builder, ClassName className) {
+      builder.addStatement("return new $T(sql.setParam(param, value))", className);
+    }
+
+    @Override
+    public void applySetParamsBody(MethodSpec.Builder builder, ClassName className) {
+      builder.addStatement("return new $T(sql)", className);
+    }
+
+    @Override
+    public void applyParamSetterBody(
+        MethodSpec.Builder builder, ClassName className, String paramName, String argName) {
+      builder.addStatement("return new $T(sql.setParam($S, $L))", className, paramName, argName);
+    }
   }
 }
 

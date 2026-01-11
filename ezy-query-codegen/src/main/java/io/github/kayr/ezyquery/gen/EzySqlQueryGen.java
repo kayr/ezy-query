@@ -55,7 +55,7 @@ public class EzySqlQueryGen implements WritesCode {
         mSections.add(method.build());
 
       } catch (Exception e) {
-        throw new CodeGenException("Failed to parse section :" + section.name(), e);
+        throw new CodeGenException("Failed to parse section : [" + section.name() + "]", e);
       }
     }
 
@@ -100,7 +100,8 @@ public class EzySqlQueryGen implements WritesCode {
   }
 
   private TypeSpec generateStaticClass(String sectionName, SectionsParser.Section section) {
-    return StaticQueryGen.of(packageName, mainClassName, section.sql())
+    boolean mutable = "true".equals(properties.getProperty("staticQuery.mutable"));
+    return StaticQueryGen.of(packageName, mainClassName, section.sql(), mutable)
         .createSectionClass(sectionName, section.sql())
         .toBuilder()
         .addModifiers(Modifier.STATIC)

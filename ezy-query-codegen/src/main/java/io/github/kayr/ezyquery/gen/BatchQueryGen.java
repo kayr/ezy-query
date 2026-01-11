@@ -84,8 +84,7 @@ public class BatchQueryGen {
         return writesCode.writeTo(path);
       } catch (Exception x) {
         throw new CodeGenException(
-            "Failed to generate code for: " + code.path + ". Did forget to mark it as .static.sql",
-            x);
+            "Failed to generate code for: " + code.path + ". \n   Error: " + x.getMessage(), x);
       }
     };
   }

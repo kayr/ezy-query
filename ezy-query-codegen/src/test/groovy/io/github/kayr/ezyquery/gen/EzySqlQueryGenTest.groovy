@@ -58,8 +58,6 @@ class EzySqlQueryGenTest extends Specification {
         def generated = EzySqlQueryGen.of("package", "Query", new BatchQueryGen.SourceCode(resource.v1, Path.of('ez_static',"in.sql.txt")), properties)
                 .generate()
 
-        TestUtil.overWriteFile("ez_static_mutable",generated.toString())
-
         then:
         generated.toString().trim() == resource.v2.trim()
     }

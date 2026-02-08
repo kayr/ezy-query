@@ -48,7 +48,8 @@ public class EzyQueryBuildTask extends DefaultTask {
   }
 
   private void collectEzyQueryDirs(SourceSet sourceSet) {
-    List<File> ezyQueryDirs = EzyQueryGradleHelper.findAllEzyQuerySourceDirectories(sourceSet);
+    List<File> ezyQueryDirs =
+        EzyQueryGradleHelper.resolveEzyQueryDirectories(getProject(), sourceSet, false);
 
     for (File dir : ezyQueryDirs) {
       if (!dir.exists()) continue;

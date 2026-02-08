@@ -3,7 +3,6 @@ package io.github.kayr.gradle.ezyquery;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
@@ -29,7 +28,8 @@ public class EzyQueryInitTask extends DefaultTask {
     SourceSetContainer sourceSets = EzyQueryGradleHelper.getSourceSets(getProject());
 
     for (SourceSet sourceSet : sourceSets) {
-      List<File> ezyQueryDirs = resolveEzyQueryDirs(sourceSet);
+      List<File> ezyQueryDirs =
+          EzyQueryGradleHelper.resolveEzyQueryDirectories(getProject(), sourceSet, true);
 
       for (File ezyQueryDir : ezyQueryDirs) {
         if (!ezyQueryDir.exists()) {
@@ -38,35 +38,5 @@ public class EzyQueryInitTask extends DefaultTask {
         }
       }
     }
-  }
-
-  /**
-   * Resolve ezyquery directories for a source set. Creates an {@code ezyquery} sibling directory
-   * next to each java srcDir. For example, if the source set has java srcDirs {@code
-   * src/core/main/java} and {@code src/savings/main/java}, this returns {@code
-   * src/core/main/ezyquery} and {@code src/savings/main/ezyquery}.
-   *
-   * <p>Falls back to the conventional location ({@code src/{sourceSetName}/ezyquery}) if there are
-   * no java srcDirs with a parent directory.
-   */
-  private List<File> resolveEzyQueryDirs(SourceSet sourceSet) {
-    File buildDir = getProject().getLayout().getBuildDirectory().getAsFile().get();
-    List<File> dirs = new ArrayList<>();
-    for (File javaSrcDir : sourceSet.getJava().getSrcDirs()) {
-      if (javaSrcDir.getParentFile() == null) continue;
-      // Skip generated source dirs (under the build directory)
-      if (isChildOf(javaSrcDir, buildDir)) continue;
-      dirs.add(new File(javaSrcDir.getParentFile(), "ezyquery"));
-    }
-    if (!dirs.isEmpty()) {
-      return dirs;
-    }
-
-    // Fallback: conventional location
-    return List.of(getProject().file("src/" + sourceSet.getName() + "/ezyquery"));
-  }
-
-  private static boolean isChildOf(File child, File parent) {
-    return child.toPath().startsWith(parent.toPath());
   }
 }

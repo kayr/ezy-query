@@ -2,7 +2,7 @@ package io.github.kayr.gradle.ezyquery;
 
 import io.github.kayr.ezyquery.EzyQueryVersion;
 import java.io.File;
-import java.util.Optional;
+import java.util.List;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
@@ -68,38 +68,25 @@ public class EzyQueryPlugin implements Plugin<Project> {
    *   <li>Existing resource srcDirs — any directory named "ezyquery"
    *   <li>Sibling of each java srcDir — e.g. if java srcDir is {@code src/core/main/java}, checks
    *       for {@code src/core/main/ezyquery}
+   *   <li>Conventional location — {@code src/{sourceSetName}/ezyquery}
    * </ol>
    *
    * This means the user only needs to place an {@code ezyquery} folder next to their java source
    * folder and the plugin will find it — no manual resource srcDir configuration needed.
    */
   private void autoConfigureEzyQueryDirs(SourceSet sourceSet, Project project) {
-    // Strategy 1: check if any resource srcDir is already named "ezyquery"
-    Optional<File> existing = EzyQueryGradleHelper.findEzyQuerySourceDirectory(sourceSet);
-    if (existing.isPresent()) {
-      return; // already configured by the user
-    }
+    List<File> ezyQueryDirs =
+        EzyQueryGradleHelper.resolveEzyQueryDirectories(project, sourceSet, false);
 
-    // Strategy 2: look for an "ezyquery" sibling next to each java srcDir
-    boolean found = false;
-    for (File javaSrcDir : sourceSet.getJava().getSrcDirs()) {
-      if (javaSrcDir.getParentFile() == null) continue;
-      File ezyQueryDir = new File(javaSrcDir.getParentFile(), "ezyquery");
-      if (ezyQueryDir.isDirectory()) {
-        logger.lifecycle(
-            "EzyQuery: auto-discovered ezyquery dir: {} for sourceSet: {}",
-            ezyQueryDir,
-            sourceSet.getName());
-        sourceSet.getResources().srcDir(ezyQueryDir);
-        found = true;
-      }
-    }
-    if (found) return;
+    for (File ezyQueryDir : ezyQueryDirs) {
+      if (!ezyQueryDir.isDirectory()) continue;
+      if (sourceSet.getResources().getSrcDirs().contains(ezyQueryDir)) continue;
 
-    // Strategy 3: fallback to the conventional location (src/main/ezyquery or src/test/ezyquery)
-    File conventional = project.file("src/" + sourceSet.getName() + "/ezyquery");
-    if (conventional.isDirectory()) {
-      sourceSet.getResources().srcDir(conventional);
+      logger.lifecycle(
+          "EzyQuery: auto-discovered ezyquery dir: {} for sourceSet: {}",
+          ezyQueryDir,
+          sourceSet.getName());
+      sourceSet.getResources().srcDir(ezyQueryDir);
     }
   }
 }

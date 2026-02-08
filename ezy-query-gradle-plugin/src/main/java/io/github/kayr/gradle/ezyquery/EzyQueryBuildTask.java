@@ -3,9 +3,11 @@ package io.github.kayr.gradle.ezyquery;
 import io.github.kayr.ezyquery.gen.BatchQueryGen;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
@@ -17,10 +19,10 @@ public class EzyQueryBuildTask extends DefaultTask {
 
   private final EzyQueryPluginExtension extension;
   private final DirectoryProperty testOutputDir;
-  private final DirectoryProperty testInputDir;
-
   private final DirectoryProperty mainOutputDir;
-  private final DirectoryProperty mainInputDir;
+
+  private final ConfigurableFileCollection mainInputDirs;
+  private final ConfigurableFileCollection testInputDirs;
 
   @Inject
   public EzyQueryBuildTask(EzyQueryPluginExtension extension) {
@@ -28,72 +30,67 @@ public class EzyQueryBuildTask extends DefaultTask {
     testOutputDir = getProject().getObjects().directoryProperty();
     mainOutputDir = getProject().getObjects().directoryProperty();
 
-    testInputDir = getProject().getObjects().directoryProperty();
-    mainInputDir = getProject().getObjects().directoryProperty();
+    mainInputDirs = getProject().getObjects().fileCollection();
+    testInputDirs = getProject().getObjects().fileCollection();
 
     setInputAndOutputDir();
     setDescription("Generates EzyQuery classes");
   }
 
   private void setInputAndOutputDir() {
-
     testOutputDir.set(extension.testOutputDir());
     mainOutputDir.set(extension.mainOutputDir());
 
     SourceSetContainer sourceSets = EzyQueryGradleHelper.getSourceSets(getProject());
     for (SourceSet sourceSet : sourceSets) {
-      mayBeSetEzyQueryDir(sourceSet);
+      collectEzyQueryDirs(sourceSet);
     }
   }
 
-  private void mayBeSetEzyQueryDir(SourceSet sourceSet) {
-    Optional<File> ezyQueryDir = EzyQueryGradleHelper.findEzyQuerySourceDirectory(sourceSet);
+  private void collectEzyQueryDirs(SourceSet sourceSet) {
+    List<File> ezyQueryDirs = EzyQueryGradleHelper.findAllEzyQuerySourceDirectories(sourceSet);
 
-    //noinspection SimplifyOptionalCallChains
-    if (!ezyQueryDir.isPresent()) return;
+    for (File dir : ezyQueryDirs) {
+      if (!dir.exists()) continue;
 
-    File theInputDir = ezyQueryDir.get();
-
-    if (!theInputDir.exists()) return;
-
-    String sourceSetName = sourceSet.getName();
-
-    switch (sourceSetName) {
-      case SourceSet.MAIN_SOURCE_SET_NAME:
-        mainInputDir.set(theInputDir);
-        mainOutputDir.set(extension.mainOutputDir());
-        break;
-      case SourceSet.TEST_SOURCE_SET_NAME:
-        testInputDir.set(theInputDir);
-        testOutputDir.set(extension.testOutputDir());
-        break;
+      switch (sourceSet.getName()) {
+        case SourceSet.MAIN_SOURCE_SET_NAME:
+          mainInputDirs.from(dir);
+          break;
+        case SourceSet.TEST_SOURCE_SET_NAME:
+          testInputDirs.from(dir);
+          break;
+      }
     }
   }
 
   @TaskAction
   public void generate() {
     logger.log(LogLevel.LIFECYCLE, "EzyQuery: Generating Query Classes");
-    // generate for main files
-    generate(mainInputDir, mainOutputDir);
-    generate(testInputDir, testOutputDir);
+    generateAll(mainInputDirs.getFiles(), mainOutputDir);
+    generateAll(testInputDirs.getFiles(), testOutputDir);
   }
 
-  private void generate(DirectoryProperty input, DirectoryProperty output) {
-    if (!input.isPresent() || !input.get().getAsFile().exists()) return;
+  private void generateAll(Set<File> inputDirs, DirectoryProperty output) {
+    for (File inputDir : inputDirs) {
+      if (!inputDir.exists()) continue;
 
-    Path outPath = output.get().getAsFile().toPath();
-    Path inputPath = input.get().getAsFile().toPath();
+      Path outPath = output.get().getAsFile().toPath();
+      Path inputPath = inputDir.toPath();
 
-    EzyQueryFileUtils.createDirs(outPath);
-    logger.log(LogLevel.LIFECYCLE, "Generating Classes to: " + outPath + " : From : " + inputPath);
+      EzyQueryFileUtils.createDirs(outPath);
+      logger.log(
+          LogLevel.LIFECYCLE, "Generating Classes to: " + outPath + " : From : " + inputPath);
 
-    BatchQueryGen.create(inputPath, outPath).generateAndWrite();
+      BatchQueryGen.create(inputPath, outPath).generateAndWrite();
+    }
   }
 
-  @InputDirectory
+  @InputFiles
+  @SkipWhenEmpty
   @org.gradle.api.tasks.Optional
-  public DirectoryProperty getMainInputDir() {
-    return mainInputDir;
+  public ConfigurableFileCollection getMainInputDirs() {
+    return mainInputDirs;
   }
 
   @OutputDirectory
@@ -101,10 +98,11 @@ public class EzyQueryBuildTask extends DefaultTask {
     return mainOutputDir;
   }
 
-  @InputDirectory
+  @InputFiles
+  @SkipWhenEmpty
   @org.gradle.api.tasks.Optional
-  public DirectoryProperty getTestInputDir() {
-    return testInputDir;
+  public ConfigurableFileCollection getTestInputDirs() {
+    return testInputDirs;
   }
 
   @OutputDirectory

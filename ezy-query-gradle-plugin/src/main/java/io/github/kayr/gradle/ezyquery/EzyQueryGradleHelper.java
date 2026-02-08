@@ -1,8 +1,10 @@
 package io.github.kayr.gradle.ezyquery;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
@@ -35,5 +37,12 @@ public class EzyQueryGradleHelper {
   public static Optional<File> findEzyQuerySourceDirectory(SourceSet sourceSet) {
     Set<File> srcDirs = sourceSet.getResources().getSrcDirs();
     return srcDirs.stream().filter(f -> f.getName().equals("ezyquery")).findFirst();
+  }
+
+  public static List<File> findAllEzyQuerySourceDirectories(SourceSet sourceSet) {
+    Set<File> srcDirs = sourceSet.getResources().getSrcDirs();
+    return srcDirs.stream()
+        .filter(f -> f.getName().equals("ezyquery"))
+        .collect(Collectors.toList());
   }
 }

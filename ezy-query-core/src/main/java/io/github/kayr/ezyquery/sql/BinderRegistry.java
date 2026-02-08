@@ -7,18 +7,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BinderRegistry {
-  private final Map<Class<?>, ParameterBinder> binders;
+  private final Map<Class<?>, ParameterBinder<?>> binders;
 
   public BinderRegistry() {
     this(Collections.emptyMap());
   }
 
-  private BinderRegistry(Map<Class<?>, ParameterBinder> binders) {
+  private BinderRegistry(Map<Class<?>, ParameterBinder<?>> binders) {
     this.binders = Collections.unmodifiableMap(new HashMap<>(binders));
   }
 
-  public <T> BinderRegistry withBinder(Class<T> type, ParameterBinder binder) {
-    Map<Class<?>, ParameterBinder> newBinders = new HashMap<>(this.binders);
+  public <T> BinderRegistry withBinder(Class<T> type, ParameterBinder<?> binder) {
+    Map<Class<?>, ParameterBinder<?>> newBinders = new HashMap<>(this.binders);
     newBinders.put(type, binder);
 
     return new BinderRegistry(newBinders);
@@ -35,7 +35,8 @@ public class BinderRegistry {
       return;
     }
 
-    ParameterBinder binder = binders.get(value.getClass());
+    @SuppressWarnings("unchecked")
+    ParameterBinder<Object> binder = (ParameterBinder<Object>) binders.get(value.getClass());
     if (binder != null) {
       binder.bind(ps, index, value);
     } else {

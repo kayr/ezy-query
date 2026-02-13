@@ -82,7 +82,7 @@ public class EzyQueryPlugin implements Plugin<Project> {
       if (!ezyQueryDir.isDirectory()) continue;
       if (sourceSet.getResources().getSrcDirs().contains(ezyQueryDir)) continue;
 
-      logger.lifecycle(
+      logger.info(
           "EzyQuery: auto-discovered ezyquery dir: {} for sourceSet: {}",
           ezyQueryDir,
           sourceSet.getName());

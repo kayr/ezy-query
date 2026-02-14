@@ -19,7 +19,7 @@ buildscript {
 }
 
 plugins {
-    id 'io.github.kayr.gradle.ezyquery' version '0.0.30-SNAPSHOT'
+    id 'io.github.kayr.gradle.ezyquery' version '0.0.29'
 }
 ```
 

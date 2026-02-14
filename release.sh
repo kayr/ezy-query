@@ -173,8 +173,8 @@ echo "  -> Pushing branch $MAIN_BRANCH"
 #OFF git push
 
 NEXT_SNAPSHOT_VERSION=$(get_snapshot_version "$NEW_VERSION")
-echo "  -> Updating README.md and gradle.properties to NEXT SNAPSHOT [$NEXT_SNAPSHOT_VERSION]"
-update_version_in_properties_and_readme "$NEXT_SNAPSHOT_VERSION"
+echo "  -> Updating README.md and gradle.properties to NEXT SNAPSHOT [$NEW_VERSION]"
+update_version_in_properties_and_readme "$NEW_VERSION"
 
 echo "  -> Committing NEXT SNAPSHOT changes"
 git commit -am "Prepare for next development cycle: $NEXT_SNAPSHOT_VERSION"

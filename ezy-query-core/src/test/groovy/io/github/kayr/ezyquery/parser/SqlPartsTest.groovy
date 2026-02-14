@@ -1,6 +1,7 @@
 package io.github.kayr.ezyquery.parser
 
 import io.github.kayr.ezyquery.api.RawValue
+import io.github.kayr.ezyquery.api.cnd.Cnd
 import spock.lang.Specification
 
 class SqlPartsTest extends Specification {
@@ -129,6 +130,73 @@ class SqlPartsTest extends Specification {
         query.getQuery().getSql() == ""
         query.getQuery().params.isEmpty()
         query.parts.isEmpty()
+    }
+
+
+    def 'should inline Cnd.raw as raw text without bind params'() {
+        given:
+        def parts = SqlParts.of(
+                SqlParts.textPart("SELECT * FROM "),
+                SqlParts.paramPart("tableName"),
+                SqlParts.textPart(" WHERE id = "),
+                SqlParts.paramPart("id")
+        )
+
+        when:
+        def query = parts.setParam("tableName", Cnd.raw("customers"))
+                .setParam("id", 42)
+                .getQuery()
+
+        then:
+        query.getSql() == "SELECT * FROM customers WHERE id = ?"
+        query.params == [42]
+    }
+
+    def 'should inline schema-qualified Cnd.raw'() {
+        given:
+        def parts = SqlParts.of(
+                SqlParts.textPart("SELECT * FROM "),
+                SqlParts.paramPart("tableName"),
+                SqlParts.textPart(" d WHERE d.id = "),
+                SqlParts.paramPart("id")
+        )
+
+        when:
+        def query = parts.setParam("tableName", Cnd.raw("public.customers"))
+                .setParam("id", 1)
+                .getQuery()
+
+        then:
+        query.getSql() == "SELECT * FROM public.customers d WHERE d.id = ?"
+        query.params == [1]
+    }
+
+    def 'should work with only Cnd.raw params'() {
+        given:
+        def parts = SqlParts.of(
+                SqlParts.textPart("SELECT * FROM "),
+                SqlParts.paramPart("tableName")
+        )
+
+        when:
+        def query = parts.setParam("tableName", Cnd.raw("orders"))
+                .getQuery()
+
+        then:
+        query.getSql() == "SELECT * FROM orders"
+        query.params == []
+    }
+
+    def 'should work with Cnd.raw parsed from raw sql string'() {
+        when:
+        def query = SqlParts.of("SELECT * FROM :tableName WHERE id = :id")
+                .setParam("tableName", Cnd.raw("my_table"))
+                .setParam("id", 99)
+                .getQuery()
+
+        then:
+        query.getSql() == "SELECT * FROM my_table WHERE id = ?"
+        query.params == [99]
     }
 
 

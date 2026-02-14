@@ -41,12 +41,10 @@ Files.walk(javaSrcDir)
                         line =~ /\/\/\s*snippet:(\S+)/
                 def endMatch = line =~ /((\/\/)|(--))\s*endsnippet/
 
-//                println(startMatch)
-
                 if (startMatch) {
                     println("b: ${startMatch[0]}")
                     snippetName = startMatch[0][1]
-                    println("file name $snippetName")
+                    println("snippet name $snippetName")
                     snippetLines = []
                 } else if (endMatch) {
                     def extension = extension(file)
@@ -61,7 +59,9 @@ Files.walk(javaSrcDir)
 
 println("Found snippets")
 snippets.each {
-    println(it.key)
+    println(it.key + ":")
+    println(it.value)
+    println('-----------------------')
 }
 
 // Update Markdown with indentation-aware snippet insertion

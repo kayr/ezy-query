@@ -40,6 +40,7 @@ plugins {
 10. You can sort using a string expression. e.g `customerName asc, customerEmail desc`.
 11. Gradle plugin to generate the java code from your sql files.
 12. Maven plugin
+13. Dynamic table names — supply table names at runtime while keeping your SQL executable.
 
 ## How it works
 
@@ -144,12 +145,13 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
   - [Filtering](#filtering)
   - [Sorting and pagination](#sorting-and-pagination)
   - [Named Parameters](#named-parameters)
+  - [Dynamic Table Names](#dynamic-table-names)
   - [Executing other types of queries(INSERT/UPDATE/DELETE etc)](#executing-other-types-of-queriesinsertupdatedelete-etc)
   - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
   - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
   - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
   - [Overriding default type mappings e.g for newer JDBC drivers.](#overriding-default-type-mappings-eg-for-newer-jdbc-drivers)
-  - [Optionally select fields to be returned.](#optionally-select-fields-to-be-returned)
+  - [Optionally selecting fields to be returned.](#optionally-selecting-fields-to-be-returned)
   - [Using on older versions of Gradle.](#using-on-older-versions-of-gradle)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -312,7 +314,7 @@ You can add named parameters to static parts of your sql query and pass them at 
 parts of the query are not necessarily dynamic e.g if you have an sql query that has derived tables that need named
 params.
 
-Name parameters are supported in the where clause, join conditions and order by clauses.
+Name parameters arvar Pe supported in the where clause, join conditions and order by clauses.
 
 Given the following sql query.
 
@@ -360,11 +362,52 @@ LIMIT 50 OFFSET 0
 
 You can see that the `GOLD` param has been added to the list of params.
 
+### Dynamic Table Names
+
+Supply table names at runtime using the `_dyn_` alias convention. Prefix a table alias with `_dyn_` in your SQL, and
+EzyQuery converts it into a named parameter. Set the actual table name with `Cnd.raw()` when executing the query.
+
+**Step 1:** Write your SQL with `_dyn_` aliases.
+
+<!-- snippet:dyn-table-sql -->
+```sql
+-- ## dynamic:Select offices dynamic
+select
+    _dyn_o.officeCode as officeCode,
+    _dyn_o.country as country,
+    _dyn_e.firstName as employeeName
+from some_offices_table as _dyn_o
+inner join some_employees_table as _dyn_e on _dyn_e.officeCode = _dyn_o.officeCode
+where _dyn_o.country = :countryFilter
+```
+<!-- endsnippet-->
+
+**Step 2:** Set the table names at runtime with `Cnd.raw()`.
+
+<!-- snippet:dyn-table-usage -->
+```groovy
+        var Q = DynTableQuery.selectOfficesDynamic()
+        var P = SelectOfficesDynamic.PARAMS
+        def results = ez.from(Q)
+                .setParam(P.DYN_O, Cnd.raw("offices"))
+                .setParam(P.DYN_E, Cnd.raw("employees"))
+                .setParam(P.COUNTRY_FILTER, "UG")
+                .list()
+```
+<!-- endsnippet-->
+
+EzyQuery detects the `_dyn_` prefix on each alias and replaces the table name with a named parameter. At runtime,
+`Cnd.raw()` inlines the value directly into the SQL as raw text — no `?` placeholder. The alias stays intact, so column
+references like `_dyn_o.country` resolve correctly.
+
+**Important:** `Cnd.raw()` inlines values without parameterization. Use it only for trusted inputs like table names from
+your own code — never from user input.
+
 ### Executing other types of queries(INSERT/UPDATE/DELETE etc)
 
 Ezyquery was mainly built to provide dynamically ways to filter your data at runtime using a relatively safe and easy to
-use API. However, you can also use it to execute any arbitrary sql query like inserts, deletes or updates. Parameters are
-extracted and made available as method calls in your query.
+use API. However, you can also use it to execute any arbitrary sql query like inserts, deletes or updates. Parameters
+are extracted and made available as method calls in your query.
 
 **Example**:
 

@@ -1,0 +1,4 @@
+SELECT _dyn_c.name as custName, _dyn_o.total as orderTotal
+FROM customers AS _dyn_c
+JOIN orders AS _dyn_o ON _dyn_o.customer_id = _dyn_c.id
+WHERE _dyn_c.active = 1

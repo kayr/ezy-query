@@ -15,6 +15,10 @@ public class SqlCond implements ICond {
     return new SqlCond(Elf.mayBeAddParens(sql), Elf.copyList(params));
   }
 
+  public static SqlCond raw(String sql, List<Object> params) {
+    return new SqlCond(sql, Elf.copyList(params));
+  }
+
   @Override
   public EzyExpr asExpr() {
     return new SqlExpr(sql, params);

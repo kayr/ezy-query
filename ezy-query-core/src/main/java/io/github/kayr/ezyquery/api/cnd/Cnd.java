@@ -168,6 +168,15 @@ public class Cnd {
     return SqlCond.sql(sql, Arrays.asList(params));
   }
 
+  /// Similar to {@link #sql(String, Object...)} but the sql is inlined is not wrapped in
+  // parentheses.
+  /// avoid using this function when building dynamic where clauses. This is more useful when you
+  // have
+  /// static sql fragments like table names.
+  public static SqlCond raw(String sql, Object... params) {
+    return SqlCond.raw(sql, Arrays.asList(params));
+  }
+
   private static Conds combine(Object left, Object right, BinaryExpr.Op operator) {
     if (left instanceof ICond && right instanceof ICond)
       return combine(((ICond) left), (ICond) right, operator);

@@ -150,5 +150,15 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
+    def 'test with dynamic table name'() {
+        def data = TestUtil.load('dyn-table')
+        when:
+        def generated = generateCode(data.v1)
+        def expected = data.v2.trim()
+
+        then:
+        generated == expected
+    }
+
 
 }

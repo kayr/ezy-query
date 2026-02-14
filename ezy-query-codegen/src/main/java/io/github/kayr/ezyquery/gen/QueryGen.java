@@ -29,6 +29,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 
@@ -551,9 +552,17 @@ public class QueryGen implements WritesCode {
     return paramType(List.class, paramType(Field.class, WildcardTypeName.subtypeOf(Object.class)));
   }
 
+  private static final String DYN_TABLE_PREFIX = "_dyn_";
+
   /** schema field */
   private Pair<FieldSpec, SqlParts> fieldSchema(PlainSelect plainSelect) {
     List<Join> joins = Optional.ofNullable(plainSelect.getJoins()).orElse(Collections.emptyList());
+
+    // Process _dyn_ aliases on FromItem and Join tables before building the string
+    processDynAlias(plainSelect.getFromItem());
+    for (Join j : joins) {
+      processDynAlias(j.getRightItem());
+    }
 
     StringBuilder sb = new StringBuilder();
     String fromTable =
@@ -579,6 +588,25 @@ public class QueryGen implements WritesCode {
             .initializer(buildSqlParts(sqlParts).build())
             .build();
     return Pair.of(schemaField, sqlParts);
+  }
+
+  private static void processDynAlias(FromItem fromItem) {
+    if (!(fromItem instanceof Table)) {
+      return;
+    }
+    Table table = (Table) fromItem;
+    Alias alias = table.getAlias();
+    if (alias == null) {
+      return;
+    }
+    String aliasName = alias.getName();
+    if (!aliasName.startsWith(DYN_TABLE_PREFIX)) {
+      return;
+    }
+    // Replace the table name with :aliasName so NamedParamParser picks it up
+    table.setName(":" + aliasName);
+    // Keep the alias as-is (_dyn_c stays _dyn_c) but drop the AS keyword for cleaner output
+    // alias.setUseAs(false);
   }
 
   private List<FieldSpec> fieldConstants(List<EzyQueryFieldSpec> fieldList) {

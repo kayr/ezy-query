@@ -1,0 +1,151 @@
+package mypackage.sql;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedParam;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
+import java.lang.Class;
+import java.lang.IllegalArgumentException;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ * SELECT _dyn_c.name as custName, _dyn_o.total as orderTotal
+ * FROM customers AS _dyn_c
+ * JOIN orders AS _dyn_o ON _dyn_o.customer_id = _dyn_c.id
+ * WHERE _dyn_c.active = 1
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class MyQuery implements EzyQueryWithResult<MyQuery.Result> {
+  public static final MyQuery MY_QUERY = new MyQuery();
+
+  public static final Params PARAMS = new Params();
+
+  public final Field<Object> CUST_NAME = Field.of("_dyn_c.name", "custName", Object.class,Field.ExpressionType.COLUMN);
+
+  public final Field<Object> ORDER_TOTAL = Field.of("_dyn_o.total", "orderTotal", Object.class,Field.ExpressionType.COLUMN);
+
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.paramPart("_dyn_c"),
+      SqlParts.textPart(" AS _dyn_c\n"
+          + "JOIN "),
+      SqlParts.paramPart("_dyn_o"),
+      SqlParts.textPart(" AS _dyn_o ON _dyn_o.customer_id = _dyn_c.id")
+  );
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  private MyQuery() {
+    init();
+  }
+
+  private void init() {
+    fields.add(CUST_NAME);
+    fields.add(ORDER_TOTAL);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public SqlParts schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<SqlParts> whereClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("_dyn_c.active = 1")
+          ));
+  }
+
+  @Override
+  public Optional<SqlParts> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+    return Result.class;
+  }
+
+  public static class Result implements DynamicFieldSetter {
+    private Object custName;
+
+    private Object orderTotal;
+
+    public Object getCustName() {
+      return custName;
+    }
+
+    public Result withCustName(Object custName) {
+      Result theCopy = this.copy();
+      theCopy.custName = custName;
+      return theCopy;
+    }
+
+    public Object getOrderTotal() {
+      return orderTotal;
+    }
+
+    public Result withOrderTotal(Object orderTotal) {
+      Result theCopy = this.copy();
+      theCopy.orderTotal = orderTotal;
+      return theCopy;
+    }
+
+    public Result copy() {
+      Result theCopy = new Result();
+      theCopy.custName = this.custName;
+      theCopy.orderTotal = this.orderTotal;
+      return theCopy;
+    }
+
+    @Override
+    public String toString() {
+      return "MyQuery.Result{"
+      + "custName = " + custName
+      + ", orderTotal = " + orderTotal
+       + "}";
+    }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "custName":
+          this.custName = (Object) value;
+          break;
+        case "orderTotal":
+          this.orderTotal = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam DYN_C = NamedParam.of("_dyn_c");
+
+      public final NamedParam DYN_O = NamedParam.of("_dyn_o");
+    }
+  }

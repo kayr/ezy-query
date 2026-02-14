@@ -4,6 +4,7 @@ import io.github.kayr.ezyquery.api.*;
 import io.github.kayr.ezyquery.api.cnd.Cnd;
 import io.github.kayr.ezyquery.api.cnd.Conds;
 import io.github.kayr.ezyquery.api.cnd.ICond;
+import io.github.kayr.ezyquery.api.cnd.SqlCond;
 import io.github.kayr.ezyquery.util.Elf;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -151,6 +152,12 @@ public class SqlParts {
       Elf.assertTrue(paramValue instanceof ICond, "Param [" + part.name + "] is not a condition");
       //noinspection DataFlowIssue
       return leftQuery.append(toQuery((ICond) paramValue, (NamedCriteriaParam) param));
+    }
+
+    if (paramValue instanceof SqlCond) {
+      SqlCond sqlCond = (SqlCond) paramValue;
+      return leftQuery.append(
+          EzySqlTranspiler.transpile(Collections.emptyList(), sqlCond.asExpr()));
     }
 
     List<Object> actualValue = convertToValueParam(paramValue);

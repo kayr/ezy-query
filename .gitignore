@@ -9,3 +9,4 @@ test-plugin
 test-manual
 /ezy-query-core/src/main/java/io/github/kayr/ezyquery/EzyQueryVersion.java
 questions.txt
+/.augment/

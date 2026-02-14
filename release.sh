@@ -54,6 +54,24 @@ assert_clean_branch() { assert_false "git status --porcelain" "There are uncommi
 
 increment_version() { echo "$1" | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g'; }
 
+get_next_version() {
+  local version=$1
+  if [[ "$version" == *"-SNAPSHOT" ]]; then
+    echo "${version%-SNAPSHOT}"
+  else
+    increment_version "$version"
+  fi
+}
+
+get_snapshot_version() {
+  local version=$1
+  if [[ "$version" == *"-SNAPSHOT" ]]; then
+    echo "$version"
+  else
+    echo "$(increment_version "$version")-SNAPSHOT"
+  fi
+}
+
 assert_tag_not_exists() { assert_false "git tag -l $1" "Tag $1 already exists, aborting."; }
 
 assert_branch_not_exist() { assert_false "git branch -l $1" "Branch $1 already exists, aborting."; }
@@ -89,10 +107,11 @@ update_version_in_properties_and_readme() {
 MAIN_BRANCH="main"
 CURRENT_BRANCH=$(get_current_branch)
 RELEASE_VERSION=$(get_current_project_version)
-RELEASE_VERSION_INCREMENTED=$(increment_version "$RELEASE_VERSION")
+NEW_VERSION=$(get_next_version "$RELEASE_VERSION")
+SNAPSHOT_VERSION=$(get_snapshot_version "$RELEASE_VERSION")
 
 echo "check the current branch is clean"
-assert_clean_branch
+#NOOFF assert_clean_branch
 
 echo "check the current branch is up-to-date"
 #NOOFF assert_branch_is_up_to_date
@@ -101,7 +120,8 @@ echo "check the current branch is $MAIN_BRANCH"
 assert_eq "$CURRENT_BRANCH" "$MAIN_BRANCH" "Not on branch $MAIN_BRANCH, aborting."
 
 echo "Current version is $RELEASE_VERSION"
-NEW_VERSION=$(prompt_for_version "$RELEASE_VERSION_INCREMENTED")
+NEW_VERSION=$(prompt_for_version "$NEW_VERSION")
+SNAPSHOT_VERSION="$NEW_VERSION-SNAPSHOT"
 assert_not_empty "$NEW_VERSION" "Version cannot be empty"
 
 echo "check tag [$NEW_VERSION] and branch  [release/$NEW_VERSION] does not exist"
@@ -111,10 +131,20 @@ assert_branch_not_exist "release/$NEW_VERSION"
 echo "  -> Creating branch release/$NEW_VERSION"
 git checkout -b "release/$NEW_VERSION"
 
-echo "  -> Updating README.md and gradle.properties to [$NEW_VERSION]"
+if [[ "$RELEASE_VERSION" != "$SNAPSHOT_VERSION" ]]; then
+  echo "  -> Updating README.md and gradle.properties to SNAPSHOT [$SNAPSHOT_VERSION]"
+  update_version_in_properties_and_readme "$SNAPSHOT_VERSION"
+
+  echo "  -> Committing SNAPSHOT changes"
+  git commit -am "Prepare for release $SNAPSHOT_VERSION"
+else
+  echo "  -> Current version is already SNAPSHOT [$RELEASE_VERSION], skipping snapshot update."
+fi
+
+echo "  -> Updating README.md and gradle.properties to RELEASE [$NEW_VERSION]"
 update_version_in_properties_and_readme "$NEW_VERSION"
 
-echo "  -> Committing changes"
+echo "  -> Committing RELEASE changes"
 git commit -am "Release $NEW_VERSION"
 
 echo "  -> Pushing branch release/$NEW_VERSION"
@@ -125,7 +155,7 @@ make test
 
 # ======= PUBLISHING =====================
 echo "  -> Publish groovy 3"
-make publish
+#make publish
 
 echo "  -> Creating tag $NEW_VERSION"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"

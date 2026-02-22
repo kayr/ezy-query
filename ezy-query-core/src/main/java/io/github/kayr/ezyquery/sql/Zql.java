@@ -5,6 +5,8 @@ import io.github.kayr.ezyquery.api.UnCaughtException;
 import io.github.kayr.ezyquery.util.Elf;
 import io.github.kayr.ezyquery.util.ThrowingFunction;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -210,6 +212,63 @@ public class Zql {
 
   public boolean execute(Query query) {
     return execute(query.getSql(), query.getParams());
+  }
+
+  public int[] batch(String sql, List<List<Object>> paramSets) {
+    Connection connection = connectionProvider.getConnectionUnChecked();
+    try (PreparedStatement statement = JdbcUtils.preparedStatement(connection, sql)) {
+      addBatches(statement, paramSets);
+      return JdbcUtils.executeBatch(statement);
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error executing batch", e);
+    } finally {
+      closeConnection(connectionProvider, connection);
+    }
+  }
+
+  public int[] batch(List<Query> queries) {
+    if (queries.isEmpty()) {
+      return new int[0];
+    }
+    return batch(queries.get(0).getSql(), toParamSets(queries));
+  }
+
+  public List<Object> batchInsert(String sql, List<List<Object>> paramSets) {
+    Connection connection = connectionProvider.getConnectionUnChecked();
+    try (PreparedStatement statement = JdbcUtils.preparedStatementWithKeys(connection, sql)) {
+      addBatches(statement, paramSets);
+      JdbcUtils.executeBatch(statement);
+      try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+        return JdbcUtils.getAllGeneratedKeys(generatedKeys);
+      }
+    } catch (Exception e) {
+      throw new UnCaughtException("Error executing batch insert", e);
+    } finally {
+      closeConnection(connectionProvider, connection);
+    }
+  }
+
+  public List<Object> batchInsert(List<Query> queries) {
+    if (queries.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return batchInsert(queries.get(0).getSql(), toParamSets(queries));
+  }
+
+  private void addBatches(PreparedStatement statement, List<List<Object>> paramSets)
+      throws SQLException {
+    for (List<Object> params : paramSets) {
+      setValues(statement, params.toArray());
+      statement.addBatch();
+    }
+  }
+
+  private static List<List<Object>> toParamSets(List<Query> queries) {
+    List<List<Object>> paramSets = new ArrayList<>();
+    for (Query query : queries) {
+      paramSets.add(query.getParams());
+    }
+    return paramSets;
   }
 
   public static RawValue raw(Object value) {

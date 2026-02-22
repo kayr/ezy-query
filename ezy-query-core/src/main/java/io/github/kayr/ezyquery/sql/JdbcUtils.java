@@ -130,4 +130,12 @@ public class JdbcUtils {
       throw new UnCaughtException("Error getting all generated keys", e);
     }
   }
+
+  public static int[] executeBatch(PreparedStatement statement) {
+    try {
+      return statement.executeBatch();
+    } catch (SQLException e) {
+      throw new UnCaughtException("Error executing batch", e);
+    }
+  }
 }

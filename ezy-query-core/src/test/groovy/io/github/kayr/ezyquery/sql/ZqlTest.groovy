@@ -613,6 +613,163 @@ class ZqlTest extends Specification {
         count == 5 // After insertions in previous tests
     }
 
+    def 'test batch insert uses binder registry'() {
+        given:
+        def zql = db.ezySql().zql.withBinder(String, { ps, i, v ->
+            ps.setString(i, v.toUpperCase())
+        } as ParameterBinder)
+        def sql = "INSERT INTO items (name, price, category) VALUES (?, ?, ?)"
+        def paramSets = [
+                ['batch item 1', 10.00, 'bindercat'],
+                ['batch item 2', 20.00, 'bindercat'],
+                ['batch item 3', 30.00, 'bindercat'],
+        ]
+
+        when:
+        def results = zql.batch(sql, paramSets)
+
+        then:
+        results.length == 3
+        results.every { it == 1 }
+
+        and:
+        def items = db.ezySql().zql.rows(Mappers.toMap(), "SELECT * FROM items WHERE category = ? ORDER BY name", ['BINDERCAT'])
+        items.size() == 3
+        items[0].name == 'BATCH ITEM 1'
+        items[1].name == 'BATCH ITEM 2'
+        items[2].name == 'BATCH ITEM 3'
+    }
+
+    def 'test batch update'() {
+        given:
+        def zql = db.ezySql().zql
+        zql.execute("CREATE TABLE IF NOT EXISTS batch_update_test (id INT PRIMARY KEY, name VARCHAR(100))", [])
+        zql.update("INSERT INTO batch_update_test (id, name) VALUES (?, ?)", [1, 'A'])
+        zql.update("INSERT INTO batch_update_test (id, name) VALUES (?, ?)", [2, 'B'])
+
+        when:
+        def results = zql.batch("UPDATE batch_update_test SET name = ? WHERE id = ?", [
+                ['A-Updated', 1],
+                ['B-Updated', 2],
+        ])
+
+        then:
+        results.length == 2
+        results.every { it == 1 }
+
+        and:
+        def rows = zql.rows(Mappers.toMap(), "SELECT * FROM batch_update_test ORDER BY id")
+        rows[0].name == 'A-Updated'
+        rows[1].name == 'B-Updated'
+
+        cleanup:
+        zql.execute("DROP TABLE IF EXISTS batch_update_test", [])
+    }
+
+    def 'test batch with empty param sets'() {
+        given:
+        def zql = db.ezySql().zql
+        def sql = "INSERT INTO items (name, price, category) VALUES (?, ?, ?)"
+
+        when:
+        def results = zql.batch(sql, [])
+
+        then:
+        results.length == 0
+    }
+
+    def 'test batch with list of Query objects'() {
+        given:
+        def zql = db.ezySql().zql
+        def queries = (1..3).collect { i ->
+            new Query() {
+                String getSql() { "INSERT INTO items (name, price, category) VALUES (?, ?, ?)" }
+                List<Object> getParams() { ["Query Item $i" as String, i * 10.0, 'QueryBatch'] }
+            }
+        }
+
+        when:
+        def results = zql.batch(queries)
+
+        then:
+        results.length == 3
+        results.every { it == 1 }
+
+        and:
+        def items = zql.rows(Mappers.toMap(), "SELECT * FROM items WHERE category = ? ORDER BY name", ['QueryBatch'])
+        items.size() == 3
+        items[0].name == 'Query Item 1'
+        items[1].name == 'Query Item 2'
+        items[2].name == 'Query Item 3'
+    }
+
+    def 'test batch with empty list of Query objects'() {
+        given:
+        def zql = db.ezySql().zql
+
+        when:
+        def results = zql.batch([] as List<Query>)
+
+        then:
+        results.length == 0
+    }
+
+    def 'test batchInsert returns generated keys'() {
+        given:
+        def zql = db.ezySql().zql
+        def sql = "INSERT INTO items (name, price, category) VALUES (?, ?, ?)"
+        def paramSets = [
+                ['BatchIns 1', 10.00, 'BatchIns'],
+                ['BatchIns 2', 20.00, 'BatchIns'],
+                ['BatchIns 3', 30.00, 'BatchIns'],
+        ]
+
+        when:
+        def keys = zql.batchInsert(sql, paramSets)
+
+        then:
+        keys.size() == 3
+        keys.every { it instanceof Integer && (Integer) it > 0 }
+
+        and:
+        def items = zql.rows(Mappers.toMap(), "SELECT * FROM items WHERE category = ? ORDER BY name", ['BatchIns'])
+        items.size() == 3
+        items[0].name == 'BatchIns 1'
+        items[1].name == 'BatchIns 2'
+        items[2].name == 'BatchIns 3'
+    }
+
+    def 'test batchInsert with list of Query objects'() {
+        given:
+        def zql = db.ezySql().zql
+        def queries = (1..3).collect { i ->
+            new Query() {
+                String getSql() { "INSERT INTO items (name, price, category) VALUES (?, ?, ?)" }
+                List<Object> getParams() { ["QBatchIns $i" as String, i * 10.0, 'QBatchIns'] }
+            }
+        }
+
+        when:
+        def keys = zql.batchInsert(queries)
+
+        then:
+        keys.size() == 3
+        keys.every { it instanceof Integer && (Integer) it > 0 }
+
+        and:
+        def items = zql.rows(Mappers.toMap(), "SELECT * FROM items WHERE category = ? ORDER BY name", ['QBatchIns'])
+        items.size() == 3
+    }
+
+    def 'test batchInsert with empty params returns empty list'() {
+        given:
+        def zql = db.ezySql().zql
+
+        expect:
+        zql.batchInsert("INSERT INTO items (name, price, category) VALUES (?, ?, ?)", []).isEmpty()
+        zql.batchInsert([] as List<Query>).isEmpty()
+    }
+
     def 'test query method with Query object and result set consumer'() {
         given:
         def zql = db.ezySql().zql

@@ -78,18 +78,13 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
    where email = :email;
    ```
    <!-- endsnippet -->
-   The above query has two types of queries dynamic and static.
-    - **Dynamic queries**: These are pre-processed by ezy-query to allow for advanced filtering, sorting, and
-      pagination. If you prefix your query name with dynamic e.g `-- ## dynamic:get all customers` then ezy query will
-      pre-process to allow for advance feature. Only select statements can be dynamic queries.
-    - **Static queries**: These only get basic preprocessing to extract the named parameters and mostly left untouched.
-      These are useful for other types of queries for example insert, delete, update statements or any other types of
-      sql. EzyQuery will not try to validate the sql syntax like the case for dynamic queries. These are creating by
-      prefixing the name with *static:* e.g. `## static: update customer status`
-2. Run `./gradlew ezyBuild` to convert your SQL query file to a java class. This will generate a java class for you.
-   The class name will be generated based on your file name. The class `CustomerQueries` will contain two query classes
-   that can be accessed via the static methods e.g. `CustomerQueries.getAllCustomers()`. Below is a snippet of what will
-   be generated.
+   Each query is either **dynamic** or **static**.
+    - **Dynamic** (`-- ## dynamic:get all customers`): EzyQuery parses the SQL genearates java code that enables dynamic filtering, sorting, and
+        pagination. Supports SELECT statements only. 
+    - **Static** (`-- ## static:update customer status`): EzyQuery extracts named parameters but leaves the SQL untouched—no 
+      syntax validation. Use for INSERT, UPDATE, DELETE, or any other statement.
+2. Run `./gradlew ezyBuild`. This generates a Java class named after the SQL file. Access each query through a static
+   method—e.g., `CustomerQueries.getAllCustomers()`. Here is a snippet:
    ```java
    //This is a snippet of the generated class
    public class CustomerQueries {

@@ -285,4 +285,73 @@ $doc
 
         //endsnippet
     }
+
+    def 'batch with raw sql'() {
+        given:
+        var zql = ezySql.getZql() //nosnippet
+
+        when://nosnippet
+        //snippet:batch-raw-sql
+        var results = zql.batch("UPDATE customers SET score = ? WHERE email = ?", List.of(
+                List.of(100, "john@example.com"),
+                List.of(200, "jane@example.com")
+        ))
+        //endsnippet
+
+        then:
+        results.every { it == 1 }
+    }
+
+    def 'batch with query objects'() {
+        given:
+        var zql = ezySql.getZql() //nosnippet
+
+        when://nosnippet
+        //snippet:batch-query-objects
+        var Q = CustomerQueries.updateCustomer()
+        var results = zql.batch(List.of(
+                Q.email("john@example.com").score(100).getQuery(),
+                Q.email("jane@example.com").score(200).getQuery()
+        ))
+        //endsnippet
+
+        then:
+        results.every { it == 1 }
+    }
+
+    def 'batch insert with generated keys'() {
+        given:
+        var zql = ezySql.getZql() //nosnippet
+        zql.execute("CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100))", []) //nosnippet
+
+        when://nosnippet
+        //snippet:batch-insert-keys
+        List<Object> keys = zql.batchInsert(
+                "INSERT INTO products (name) VALUES (?)", List.of(
+                        List.of("Widget"),
+                        List.of("Gadget")
+                ))
+        //endsnippet
+
+        then:
+        keys.size() == 2
+    }
+
+    def 'batch insert with query objects'() {
+        given:
+        var zql = ezySql.getZql() //nosnippet
+        zql.execute("CREATE TABLE IF NOT EXISTS products (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100))", []) //nosnippet
+
+        when://nosnippet
+        //snippet:batch-insert-query-objects
+        var Q = CustomerQueries.insertProduct()
+        List<Object> keys = zql.batchInsert(List.of(
+                Q.name("Widget").getQuery(),
+                Q.name("Gadget").getQuery()
+        ))
+        //endsnippet
+
+        then:
+        keys.size() == 2
+    }
 }

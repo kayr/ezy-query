@@ -32,3 +32,6 @@ update customers c
 set c.score = :score
 where email = :email;
 -- endsnippet
+
+-- ## static: insert product
+INSERT INTO products (name) VALUES (:name)

@@ -147,6 +147,7 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
   - [Named Parameters](#named-parameters)
   - [Dynamic Table Names](#dynamic-table-names)
   - [Executing other types of queries(INSERT/UPDATE/DELETE etc)](#executing-other-types-of-queriesinsertupdatedelete-etc)
+  - [Batch Operations (Bulk Insert/Update/Delete)](#batch-operations-bulk-insertupdatedelete)
   - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
   - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
   - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
@@ -386,7 +387,7 @@ where _dyn_o.country = :countryFilter
 
 <!-- snippet:dyn-table-usage -->
 ```groovy
-        var Q = DynTableQuery.selectOfficesDynamic()
+        var Q = selectOfficesDynamic()
         var P = SelectOfficesDynamic.PARAMS
         def results = ez.from(Q)
                 .setParam(P.DYN_O, Cnd.raw("offices"))
@@ -441,6 +442,61 @@ Below is how you would execute it using the ezy query sql utility classes.
           assert updateCount > 0
   ```
    <!-- endsnippet-->
+
+### Batch Operations (Bulk Insert/Update/Delete)
+
+Use `batch()` and `batchInsert()` on `Zql` to execute the same SQL statement with multiple parameter sets
+in a single JDBC batch call.
+
+**`batch()`** executes a batch and returns an array of update counts. Pass raw SQL with parameter lists:
+
+<!-- snippet:batch-raw-sql -->
+```groovy
+        var results = zql.batch("UPDATE customers SET score = ? WHERE email = ?", List.of(
+                List.of(100, "john@example.com"),
+                List.of(200, "jane@example.com")
+        ))
+```
+<!-- endsnippet -->
+
+Or pass a list of generated query objects:
+
+<!-- snippet:batch-query-objects -->
+```groovy
+        var Q = CustomerQueries.updateCustomer()
+        var results = zql.batch(List.of(
+                Q.email("john@example.com").score(100).getQuery(),
+                Q.email("jane@example.com").score(200).getQuery()
+        ))
+```
+<!-- endsnippet -->
+
+**`batchInsert()`** executes a batch and returns generated keys:
+
+<!-- snippet:batch-insert-keys -->
+```groovy
+        List<Object> keys = zql.batchInsert(
+                "INSERT INTO products (name) VALUES (?)", List.of(
+                        List.of("Widget"),
+                        List.of("Gadget")
+                ))
+```
+<!-- endsnippet -->
+
+Or with generated query objects:
+
+<!-- snippet:batch-insert-query-objects -->
+```groovy
+        var Q = CustomerQueries.insertProduct()
+        List<Object> keys = zql.batchInsert(List.of(
+                Q.name("Widget").getQuery(),
+                Q.name("Gadget").getQuery()
+        ))
+```
+<!-- endsnippet -->
+
+Both methods respect the binder registry, so any custom `ParameterBinder` registered via `zql.withBinder()`
+applies to batch parameters too.
 
 ### Specifying a custom result mapper
 

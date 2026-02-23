@@ -146,6 +146,8 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
   - [Sorting and pagination](#sorting-and-pagination)
   - [Named Parameters](#named-parameters)
   - [Dynamic Table Names](#dynamic-table-names)
+  - [Derived Tables (Subquery Filtering)](#derived-tables-subquery-filtering)
+  - [Common Table Expressions (CTEs)](#common-table-expressions-ctes)
   - [Executing other types of queries(INSERT/UPDATE/DELETE etc)](#executing-other-types-of-queriesinsertupdatedelete-etc)
   - [Batch Operations (Bulk Insert/Update/Delete)](#batch-operations-bulk-insertupdatedelete)
   - [Custom Parameter Binders](#custom-parameter-binders)
@@ -405,6 +407,134 @@ references like `_dyn_o.country` resolve correctly.
 
 **Important:** `Cnd.raw()` inlines values without parameterization. Use it only for trusted inputs like table names from
 your own code — never from user input.
+
+### Derived Tables (Subquery Filtering)
+
+Place a `:_ezy_<name>` placeholder in a subquery's WHERE clause. The code generator produces a
+`CriteriaHolder` with typed fields for that subquery's columns. At runtime, `setCriteria()` injects
+the filter condition at the placeholder.
+
+**Step 1:** Write your SQL with a `:_ezy_` placeholder inside the subquery.
+
+<!-- snippet:derived-table-sql -->
+```sql
+SELECT
+   o.orderNumber as "orderNumber",
+   c."customerName" as "customerName",
+   o.item as "item",
+   o.price as "price",
+   o.quantity as "quantity"
+FROM
+    orders o
+    inner join (
+        select
+            c.customerNumber as "customerId",
+            c.customerName as "customerName"
+         from
+            customers c
+         where
+            :_ezy_customers
+    ) c on c."customerId" = o.customerNumber
+WHERE
+    c."customerId" in (:customerIds)
+```
+<!-- endsnippet-->
+
+**Step 2:** Inject conditions into the subquery with `setCriteria()`.
+
+<!-- snippet:derived-table-usage -->
+```groovy
+        var Q = OrderSummary.ORDER_SUMMARY;
+        var C = OrderSummary.CRITERIA;
+        var P = OrderSummary.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(P.CUSTOMER_IDS, List.of("1", "2", "3", "4", "5"));
+
+        var results = criteria.list();
+```
+<!-- endsnippet-->
+
+The generated `CRITERIA.CUSTOMERS` holder exposes the subquery's columns (`CUSTOMER_NAME`, `CUSTOMER_ID`)
+as typed fields. The same fluent API used for top-level filtering — `.in()`, `.eq()`, `.gt()`, etc. — works here.
+
+**Generated SQL:**
+<!-- snippet:derived-table-out -->
+```sql
+SELECT 
+  o.orderNumber as "orderNumber", 
+  c."customerName" as "customerName", 
+  o.item as "item", 
+  o.price as "price", 
+  o.quantity as "quantity"
+FROM orders o
+INNER JOIN (SELECT c.customerNumber AS "customerId", c.customerName AS "customerName" FROM customers c WHERE (c.customerName IN (?, ?))) c ON c."customerId" = o.customerNumber
+WHERE (c."customerId" IN (?,?,?,?,?)) AND (1 = 1)
+LIMIT 50 OFFSET 0
+```
+<!-- endsnippet-->
+
+### Common Table Expressions (CTEs)
+
+CTEs follow the same pattern. Place a `:_ezy_` placeholder inside a `WITH ... AS (...)` clause, and
+the runtime API stays identical.
+
+<!-- snippet:cte-sql -->
+```sql
+WITH customer_cte AS (
+    SELECT
+        c.customerNumber as "customerId",
+        c.customerName as "customerName"
+    FROM
+        customers c
+    WHERE
+        :_ezy_customers
+)
+SELECT
+   o.orderNumber as "orderNumber",
+   c."customerName" as "customerName",
+   o.item as "item",
+   o.price as "price",
+   o.quantity as "quantity"
+FROM
+    orders o
+    INNER JOIN customer_cte c ON c."customerId" = o.customerNumber
+WHERE
+    c."customerId" in (:customerIds)
+```
+<!-- endsnippet-->
+
+<!-- snippet:cte-usage -->
+```groovy
+        var Q = OrderSummaryCte.ORDER_SUMMARY_CTE;
+        var C = OrderSummaryCte.CRITERIA;
+        var P = OrderSummaryCte.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(P.CUSTOMER_IDS, List.of("1", "2", "3", "4", "5"));
+
+        var results = criteria.list();
+```
+<!-- endsnippet-->
+
+**Generated SQL:**
+<!-- snippet:cte-out -->
+```sql
+WITH customer_cte AS (SELECT c.customerNumber AS "customerId", c.customerName AS "customerName" FROM customers c WHERE (c.customerName IN (?, ?)))
+SELECT 
+  o.orderNumber as "orderNumber", 
+  c."customerName" as "customerName", 
+  o.item as "item", 
+  o.price as "price", 
+  o.quantity as "quantity"
+FROM orders o
+INNER JOIN customer_cte c ON c."customerId" = o.customerNumber
+WHERE (c."customerId" IN (?,?,?,?,?)) AND (1 = 1)
+LIMIT 50 OFFSET 0
+```
+<!-- endsnippet-->
 
 ### Executing other types of queries(INSERT/UPDATE/DELETE etc)
 

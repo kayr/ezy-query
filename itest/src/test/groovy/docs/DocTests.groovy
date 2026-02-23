@@ -392,4 +392,42 @@ $doc
         results.size() > 0
         results.every { it.customerName == null || it.customerName == it.customerName.toUpperCase() }
     }
+
+    def 'derived table with criteria'() {
+        when://nosnippet
+        //snippet:derived-table-usage
+        var Q = OrderSummary.ORDER_SUMMARY;
+        var C = OrderSummary.CRITERIA;
+        var P = OrderSummary.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(P.CUSTOMER_IDS, List.of("1", "2", "3", "4", "5"));
+
+        var results = criteria.list();
+        //endsnippet
+        genSqlDoc(criteria.getQuery().getSql(), "derived-table")//nosnippet
+
+        then://nosnippet
+        results.size() == 3
+    }
+
+    def 'CTE with criteria'() {
+        when://nosnippet
+        //snippet:cte-usage
+        var Q = OrderSummaryCte.ORDER_SUMMARY_CTE;
+        var C = OrderSummaryCte.CRITERIA;
+        var P = OrderSummaryCte.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"))
+                .setParam(P.CUSTOMER_IDS, List.of("1", "2", "3", "4", "5"));
+
+        var results = criteria.list();
+        //endsnippet
+        genSqlDoc(criteria.getQuery().getSql(), "cte")//nosnippet
+
+        then://nosnippet
+        results.size() == 3
+    }
 }

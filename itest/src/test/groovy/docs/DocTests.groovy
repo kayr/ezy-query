@@ -7,7 +7,9 @@ import io.github.kayr.ezyquery.itests.TestCanFetchDataTest
 import io.github.kayr.ezyquery.parser.SqlParts
 import io.github.kayr.ezyquery.sql.ColumnInfo
 import io.github.kayr.ezyquery.sql.Mappers
+import io.github.kayr.ezyquery.sql.ParameterBinder
 import io.github.kayr.ezyquery.sql.Zql
+import io.github.kayr.ezyquery.util.ThrowingFunction
 import org.h2.result.Row
 import spock.lang.Specification
 
@@ -353,5 +355,41 @@ $doc
 
         then:
         keys.size() == 2
+    }
+
+    def 'custom parameter binder'() {
+        given:
+        var zql = ezySql.getZql() //nosnippet
+
+        when://nosnippet
+        //snippet:custom-binder
+        var customZql = zql.withBinder(String.class, (ps, i, v) -> {
+            ps.setString(i, v.toUpperCase());
+        });
+
+        customZql.update("UPDATE customers SET email = ? WHERE id = ?", List.of("new@example.com", 100));
+        //endsnippet
+
+        then://nosnippet
+        var rows = zql.rows(Mappers.toMap(), "SELECT email FROM customers WHERE id = ?", [100])
+        rows[0].EMAIL == "NEW@EXAMPLE.COM"
+    }
+
+    def 'custom mapper factory'() {
+        when://nosnippet
+        //snippet:custom-mapper-factory
+        ThrowingFunction<Object, Object> toUpper = (v) -> v == null ? null : v.toString().toUpperCase();
+
+        var customEzySql = ezySql.withMapperFactory((Class<?> clazz) -> {
+            return Mappers.toObject(clazz, Map.of(String.class, toUpper));
+        });
+
+        var Q = CustomerQueries.getAllCustomers();
+        var results = customEzySql.from(Q).list();
+        //endsnippet
+
+        then://nosnippet
+        results.size() > 0
+        results.every { it.customerName == null || it.customerName == it.customerName.toUpperCase() }
     }
 }

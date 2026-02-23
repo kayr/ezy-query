@@ -148,6 +148,8 @@ format `WITH ... <CTE> ... SELECT ... FROM ... WHERE ... JOIN ... ORDER BY ... L
   - [Dynamic Table Names](#dynamic-table-names)
   - [Executing other types of queries(INSERT/UPDATE/DELETE etc)](#executing-other-types-of-queriesinsertupdatedelete-etc)
   - [Batch Operations (Bulk Insert/Update/Delete)](#batch-operations-bulk-insertupdatedelete)
+  - [Custom Parameter Binders](#custom-parameter-binders)
+  - [Custom Mapper Factory](#custom-mapper-factory)
   - [Specifying a custom result mapper](#specifying-a-custom-result-mapper)
   - [Adding a default where clause to a generate query](#adding-a-default-where-clause-to-a-generate-query)
   - [Adding data types to the generated pojo.](#adding-data-types-to-the-generated-pojo)
@@ -497,6 +499,40 @@ Or with generated query objects:
 
 Both methods respect the binder registry, so any custom `ParameterBinder` registered via `zql.withBinder()`
 applies to batch parameters too.
+
+### Custom Parameter Binders
+
+Register a `ParameterBinder` to control how a Java type is bound to a `PreparedStatement`.
+Call `withBinder()` on `Zql` or `EzySql` — it returns a new immutable instance with the binder registered.
+
+<!-- snippet:custom-binder -->
+```groovy
+        var customZql = zql.withBinder(String.class, (ps, i, v) -> {
+            ps.setString(i, v.toUpperCase());
+        });
+
+        customZql.update("UPDATE customers SET email = ? WHERE id = ?", List.of("new@example.com", 100));
+```
+<!-- endsnippet -->
+
+The binder applies to all operations: `update()`, `batch()`, `batchInsert()`, and queries.
+
+### Custom Mapper Factory
+
+By default, `EzySql` maps query results to generated POJOs via `DynamicFieldSetter` (falling back to reflection for plain classes). Override this with `withMapperFactory()` to transform or decorate results as they are read from the database.
+
+<!-- snippet:custom-mapper-factory -->
+```groovy
+        ThrowingFunction<Object, Object> toUpper = (v) -> v == null ? null : v.toString().toUpperCase();
+
+        var customEzySql = ezySql.withMapperFactory((Class<?> clazz) -> {
+            return Mappers.toObject(clazz, Map.of(String.class, toUpper));
+        });
+
+        var Q = CustomerQueries.getAllCustomers();
+        var results = customEzySql.from(Q).list();
+```
+<!-- endsnippet -->
 
 ### Specifying a custom result mapper
 

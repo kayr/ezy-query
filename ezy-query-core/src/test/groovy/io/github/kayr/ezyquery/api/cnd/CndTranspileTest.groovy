@@ -63,7 +63,7 @@ class CndTranspileTest extends Specification {
         Cnd.negate("10")                                     || ['10']                   | '-10'                                 | '-?'
         Cnd.expr("'name' = 'john'")                          || ['name', 'john']         | "('name' = 'john')"                   | "(? = ?)"
         Cnd.expr("1 in (0)")                                 || [1, 0]                   | "1 in [0]"                            | "? IN (?)"
-        Cnd.expr("1 in (0) and 2 > 1")                       || [1, 0, 2, 1]             | "(1 in [0] AND 2 > 1)"                | "(? IN (?) AND ? > ?)"
+        Cnd.expr("(1 in (0)) and 2 > 1")                      || [1, 0, 2, 1]             | "((1 in [0]) AND 2 > 1)"              | "((? IN (?)) AND ? > ?)"
         Cnd.expr("name = 'john'")                            || ['john']                 | "(#name = 'john')"                    | "(t.name = ?)"
         Cnd.sql("some sql expression", "param1", "param2")   || ['param1', 'param2']     | "(some sql expression)"               | "(some sql expression)"
         Cnd.sql("(some sql expression)", "param1", "param2") || ['param1', 'param2']     | "(some sql expression)"               | "(some sql expression)"

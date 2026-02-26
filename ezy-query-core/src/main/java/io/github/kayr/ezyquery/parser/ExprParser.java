@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.BooleanValue;
 import net.sf.jsqlparser.expression.operators.arithmetic.*;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -193,6 +194,21 @@ public class ExprParser {
         });
 
     register(Parenthesis.class, parenExpr -> new ParensExpr(toEzyExpr(parenExpr.getExpression())));
+
+    // JSQLParser 5.x: true/false are now BooleanValue, not Column
+    register(BooleanValue.class, bv -> new ConstExpr(bv.getValue(), ConstExpr.Type.BOOLEAN));
+
+    // JSQLParser 5.x: parenthesized expressions like (expr) are now ParenthesedExpressionList
+    register(
+        ParenthesedExpressionList.class,
+        paren -> {
+          java.util.List<? extends Expression> items = paren.getExpressions();
+          if (items.size() == 1) {
+            return new ParensExpr(toEzyExpr(items.get(0)));
+          }
+          throw new EzyParseException(
+              "UnSupported multi-item ParenthesedExpressionList: " + expression);
+        });
 
     register(
         InExpression.class,

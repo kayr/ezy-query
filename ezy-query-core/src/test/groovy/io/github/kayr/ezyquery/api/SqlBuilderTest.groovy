@@ -112,16 +112,15 @@ class SqlBuilderTest extends Specification {
         def query = SqlBuilder.buildSql(ezyQuery, criteria)
 
 
-        def expected = '''
-                    SELECT 
-                      t.name as "name", 
-                      t.age as "age", 
-                      t.office as "office", 
-                      t.maxAge as "maxAge"
-                    FROM my_table
-                    WHERE (t.name = ? AND t.age > ?)
-                    ORDER BY t.name ASC
-                    LIMIT 10 OFFSET 2'''.stripIndent().trim()
+        def expected = 'SELECT \n' +
+                '  t.name as "name", \n' +
+                '  t.age as "age", \n' +
+                '  t.office as "office", \n' +
+                '  t.maxAge as "maxAge"\n' +
+                'FROM my_table\n' +
+                'WHERE (t.name = ? AND t.age > ?)\n' +
+                'ORDER BY t.name ASC\n' +
+                'LIMIT 10 OFFSET 2'
         then:
 
 

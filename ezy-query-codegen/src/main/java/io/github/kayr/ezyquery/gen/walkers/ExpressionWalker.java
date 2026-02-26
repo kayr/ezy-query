@@ -9,7 +9,8 @@ public class ExpressionWalker extends EzyExpressionVisitorAdapter {
   private final WalkContext context;
 
   @Override
-  public void visit(JdbcNamedParameter jdbcNamedParameter) {
-    context.namedParamVisited(jdbcNamedParameter);
+  public <S> Void visit(JdbcNamedParameter jdbcNamedParameter, S context) {
+    this.context.namedParamVisited(jdbcNamedParameter);
+    return null;
   }
 }

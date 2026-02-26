@@ -91,7 +91,7 @@ public class QueryGen implements WritesCode {
     TypeSpec resultClass = resultClass(fieldList);
     ClassName resultClassName = ClassName.get(packageName, className, resultClass.name);
 
-    List<WithItem> withItemsList = plainSelect.getWithItemsList();
+    List<WithItem<?>> withItemsList = plainSelect.getWithItemsList();
     Pair<MethodSpec, List<SqlParts>> withMethodAndParts = buildWithMethod(withItemsList);
 
     SqlParts whereParts = toSqlPart(plainSelect.getWhere());
@@ -321,7 +321,7 @@ public class QueryGen implements WritesCode {
         .build();
   }
 
-  private Pair<MethodSpec, List<SqlParts>> buildWithMethod(List<WithItem> withItems) {
+  private Pair<MethodSpec, List<SqlParts>> buildWithMethod(List<WithItem<?>> withItems) {
 
     if (Elf.isEmpty(withItems)) {
       return Pair.of(null, Collections.emptyList());
@@ -334,7 +334,7 @@ public class QueryGen implements WritesCode {
 
     List<SqlParts> withClauseParts = new ArrayList<>();
 
-    for (WithItem withItem : withItems) {
+    for (WithItem<?> withItem : withItems) {
       String name = toCamelCase(unquote(withItem.getAlias().getName()));
 
       String withClause = withItem.toString();

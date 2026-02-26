@@ -9,7 +9,8 @@ public class StatementWalker extends EzyStatementVisitorAdapter {
   private WalkContext context;
 
   @Override
-  public void visit(Select select) {
-    select.accept(context.getSelectWalker());
+  public <S> Void visit(Select select, S context) {
+    select.accept(this.context.getSelectWalker(), null);
+    return null;
   }
 }

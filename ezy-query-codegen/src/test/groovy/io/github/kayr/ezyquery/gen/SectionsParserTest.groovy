@@ -14,12 +14,12 @@ class SectionsParserTest extends Specification {
             where name = 'john'
             and age > 30
             order by name
-            
+
             --## Select Orders
             -- normal comment leave no space between -- and ## above
             select * from orders
             where user_id = 1
-        """.stripIndent().trim()
+            """.stripIndent().trim()
 
         when:
         def sections = SectionsParser.splitUp(sql)

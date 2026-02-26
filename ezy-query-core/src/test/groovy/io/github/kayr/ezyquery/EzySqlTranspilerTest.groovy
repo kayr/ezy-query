@@ -213,7 +213,7 @@ class EzySqlTranspilerTest extends Specification {
 
         when:
         def expr = '''
-'Julius Ceaser' = name and age in (10, 20, 30,maxAge)
+'Julius Ceaser' = name and (age in (10, 20, 30,maxAge))
 or (office = 'London' and age > 20)
 '''
 
@@ -227,7 +227,7 @@ or (office = 'London' and age > 20)
         def result = EzySqlTranspiler.transpile(fields, expr)
         println(result)
         then:
-        result.toString() == 'Result{sql=\'? = t.name AND t.age IN (?, ?, ?, t.maxAge) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'
+        result.toString() == 'Result{sql=\'? = t.name AND (t.age IN (?, ?, ?, t.maxAge)) OR (t.office = ? AND t.age > ?)\', params=[Julius Ceaser, 10, 20, 30, London, 20]}'
         assert result.params == [
                 'Julius Ceaser',
                 10,

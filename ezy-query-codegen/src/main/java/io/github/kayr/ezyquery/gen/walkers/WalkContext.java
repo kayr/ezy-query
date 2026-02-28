@@ -14,10 +14,10 @@ public class WalkContext {
 
   public static final String EZY_MARKER = "_ezy_";
   // region The Visitor Walkers
-  @lombok.Getter private final SelectWalker selectWalker = SelectWalker.of(this);
-  @lombok.Getter private final StatementWalker statementWalker = StatementWalker.of(this);
-  @lombok.Getter private final FromWalker fromWalker = FromWalker.of(this);
-  @lombok.Getter private final ExpressionWalker expressionWalker = ExpressionWalker.of(this);
+  @lombok.Getter private final SelectWalker selectWalker = new SelectWalker();
+  @lombok.Getter private final StatementWalker statementWalker = new StatementWalker();
+  @lombok.Getter private final FromWalker fromWalker = new FromWalker();
+  @lombok.Getter private final ExpressionWalker expressionWalker = new ExpressionWalker();
   // endregion
 
   // region Fields

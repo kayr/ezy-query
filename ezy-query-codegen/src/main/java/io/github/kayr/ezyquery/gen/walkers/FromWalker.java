@@ -4,60 +4,58 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.piped.FromQuery;
 import net.sf.jsqlparser.statement.select.*;
 
-@lombok.AllArgsConstructor(staticName = "of")
-public class FromWalker implements FromItemVisitor<Void> {
-
-  private WalkContext context;
+public class FromWalker implements FromItemVisitor<Object> {
 
   @Override
-  public <S> Void visit(Table tableName, S context) {
-    return null;
+  public <S> Object visit(Table tableName, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(ParenthesedSelect selectBody, S context) {
+  public <S> Object visit(ParenthesedSelect selectBody, S context) {
+    WalkContext wc = (WalkContext) context;
     Select select = selectBody.getSelect();
-    select.accept(this.context.getSelectWalker(), null);
-    return null;
+    select.accept(wc.getSelectWalker(), context);
+    return context;
   }
 
   @Override
-  public <S> Void visit(LateralSubSelect lateralSubSelect, S context) {
-    return null;
+  public <S> Object visit(LateralSubSelect lateralSubSelect, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(TableFunction tableFunction, S context) {
-    return null;
+  public <S> Object visit(TableFunction tableFunction, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(ParenthesedFromItem aThis, S context) {
-    return null;
+  public <S> Object visit(ParenthesedFromItem aThis, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(Values values, S context) {
-    return null;
+  public <S> Object visit(Values values, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(PlainSelect plainSelect, S context) {
-    return null;
+  public <S> Object visit(PlainSelect plainSelect, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(SetOperationList setOperationList, S context) {
-    return null;
+  public <S> Object visit(SetOperationList setOperationList, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(TableStatement tableStatement, S context) {
-    return null;
+  public <S> Object visit(TableStatement tableStatement, S context) {
+    return context;
   }
 
   @Override
-  public <S> Void visit(FromQuery fromQuery, S context) {
-    return null;
+  public <S> Object visit(FromQuery fromQuery, S context) {
+    return context;
   }
 }

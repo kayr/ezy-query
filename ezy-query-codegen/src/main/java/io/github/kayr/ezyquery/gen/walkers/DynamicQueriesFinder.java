@@ -12,7 +12,7 @@ public class DynamicQueriesFinder {
 
   public Map<String, WalkContext.SelectExpr> lookup() {
     WalkContext context = WalkContext.create();
-    statement.accept(context.getStatementWalker());
+    statement.accept(context.getStatementWalker(), context);
     return context.getDynamicSelects();
   }
 

@@ -73,7 +73,8 @@ id = 9 and name = 'john' or name += 'doe' '''
 
         then:
         EzyParseException e = thrown()
-        e.message.startsWith("Failed to parse statement: could only parse partial expression")
+        e.message.startsWith("Failed to parse statement:")
+        e.cause != null
     }
 
     def 'test up support operators operators2'() {

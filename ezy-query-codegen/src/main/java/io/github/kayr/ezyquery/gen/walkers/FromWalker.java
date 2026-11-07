@@ -58,4 +58,9 @@ public class FromWalker implements FromItemVisitor<Object> {
   public <S> Object visit(FromQuery fromQuery, S context) {
     return context;
   }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.imprt.Import value, S context) {
+    return context;
+  }
 }

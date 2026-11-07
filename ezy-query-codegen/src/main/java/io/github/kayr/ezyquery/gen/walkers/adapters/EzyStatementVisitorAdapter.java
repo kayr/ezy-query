@@ -270,4 +270,56 @@ public class EzyStatementVisitorAdapter implements StatementVisitor<Object> {
   public <S> Object visit(ParenthesedDelete parenthesedDelete, S context) {
     throw new UnsupportedOperationException("visit(ParenthesedDelete parenthesedDelete)");
   }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.SessionStatement value, S context) {
+    throw new UnsupportedOperationException("visit(SessionStatement)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.imprt.Import value, S context) {
+    throw new UnsupportedOperationException("visit(Import)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.export.Export value, S context) {
+    throw new UnsupportedOperationException("visit(Export)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.lock.LockStatement value, S context) {
+    throw new UnsupportedOperationException("visit(LockStatement)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.create.policy.CreatePolicy value, S context) {
+    throw new UnsupportedOperationException("visit(CreatePolicy)");
+  }
+
+  @Override
+  public <S> Object visit(
+      net.sf.jsqlparser.statement.create.database.CreateDatabase value, S context) {
+    throw new UnsupportedOperationException("visit(CreateDatabase)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.create.user.CreateUser value, S context) {
+    throw new UnsupportedOperationException("visit(CreateUser)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.create.event.CreateEvent value, S context) {
+    throw new UnsupportedOperationException("visit(CreateEvent)");
+  }
+
+  @Override
+  public <S> Object visit(
+      net.sf.jsqlparser.statement.create.trigger.CreateTrigger value, S context) {
+    throw new UnsupportedOperationException("visit(CreateTrigger)");
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.statement.create.event.AlterEvent value, S context) {
+    throw new UnsupportedOperationException("visit(AlterEvent)");
+  }
 }

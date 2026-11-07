@@ -226,7 +226,7 @@ You have multiple options to filter provide filters to your query:
    it like this
     ```groovy
     dependency {
-        implementation 'com.github.jsqlparser:jsqlparser:5.3'
+        implementation 'com.github.jsqlparser:jsqlparser:5.4'
     }
     ```
    or maven
@@ -235,7 +235,7 @@ You have multiple options to filter provide filters to your query:
     <dependency>
         <groupId>com.github.jsqlparser</groupId>
         <artifactId>jsqlparser</artifactId>
-        <version>5.3</version>
+        <version>5.4</version>
     </dependency>
     ```
 4. **Filtering with maps:** This is where you can use the java maps to build filters for a query. This is useful for

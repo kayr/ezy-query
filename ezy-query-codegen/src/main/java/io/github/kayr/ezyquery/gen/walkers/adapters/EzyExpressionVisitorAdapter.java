@@ -559,4 +559,30 @@ public class EzyExpressionVisitorAdapter implements ExpressionVisitor<Object> {
 
   // endregion
 
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.expression.DateUnitExpression value, S context) {
+    return context;
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.expression.KeyExpression value, S context) {
+    return context;
+  }
+
+  @Override
+  public <S> Object visit(
+      net.sf.jsqlparser.expression.PostgresNamedFunctionParameter value, S context) {
+    return context;
+  }
+
+  @Override
+  public <S> Object visit(
+      net.sf.jsqlparser.expression.operators.relational.Intersects value, S context) {
+    return context;
+  }
+
+  @Override
+  public <S> Object visit(net.sf.jsqlparser.expression.TernaryExpression value, S context) {
+    return context;
+  }
 }

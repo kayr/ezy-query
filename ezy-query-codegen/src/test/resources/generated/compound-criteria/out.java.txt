@@ -1,0 +1,165 @@
+package example;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.CriteriaHolder;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedCriteriaParam;
+import io.github.kayr.ezyquery.api.NamedParam;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
+import java.lang.Class;
+import java.lang.IllegalArgumentException;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ * SELECT q.id AS id FROM (
+ *     SELECT a.id AS id FROM active_items a WHERE :_ezy_active
+ *     UNION ALL
+ *     SELECT b.id AS id FROM archived_items b WHERE :_ezy_archived
+ * ) q
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class CompoundCriteria implements EzyQueryWithResult<CompoundCriteria.Result> {
+  public static final CompoundCriteria COMPOUND_CRITERIA = new CompoundCriteria();
+
+  public static final Params PARAMS = new Params();
+
+  public static final Criteria CRITERIA = new Criteria();
+
+  public final Field<Object> ID = Field.of("q.id", "id", Object.class,Field.ExpressionType.COLUMN);
+
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("(SELECT a.id AS id FROM active_items a WHERE "),
+      SqlParts.paramPart("_ezy_active"),
+      SqlParts.textPart(" UNION ALL SELECT b.id AS id FROM archived_items b WHERE "),
+      SqlParts.paramPart("_ezy_archived"),
+      SqlParts.textPart(") q")
+  );
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  private CompoundCriteria() {
+    init();
+  }
+
+  private void init() {
+    fields.add(ID);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public SqlParts schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<SqlParts> whereClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<SqlParts> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+    return Result.class;
+  }
+
+  public static class Result implements DynamicFieldSetter {
+    private Object id;
+
+    public Object getId() {
+      return id;
+    }
+
+    @Override
+    public String toString() {
+      return "CompoundCriteria.Result{"
+      + "id = " + id
+       + "}";
+    }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "id":
+          this.id = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam EZY_ACTIVE = NamedParam.of("_ezy_active");
+
+      public final NamedParam EZY_ARCHIVED = NamedParam.of("_ezy_archived");
+    }
+
+    public static final class Criteria {
+      public final Active ACTIVE = new Active();
+
+      public final Archived ARCHIVED = new Archived();
+    }
+
+    public static class Active implements CriteriaHolder {
+      public final Field<Object> ID = Field.of("a.id", "id", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private Active() {
+        init();
+      }
+
+      private void init() {
+        fields.add(ID);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_active", fields);
+      }
+    }
+
+    public static class Archived implements CriteriaHolder {
+      public final Field<Object> ID = Field.of("b.id", "id", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private Archived() {
+        init();
+      }
+
+      private void init() {
+        fields.add(ID);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_archived", fields);
+      }
+    }
+  }

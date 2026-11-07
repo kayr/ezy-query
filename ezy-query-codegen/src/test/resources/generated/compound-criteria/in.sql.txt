@@ -1,0 +1,5 @@
+SELECT q.id AS id FROM (
+    SELECT a.id AS id FROM active_items a WHERE :_ezy_active
+    UNION ALL
+    SELECT b.id AS id FROM archived_items b WHERE :_ezy_archived
+) q

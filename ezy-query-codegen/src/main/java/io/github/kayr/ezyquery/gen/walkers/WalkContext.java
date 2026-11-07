@@ -1,12 +1,15 @@
 package io.github.kayr.ezyquery.gen.walkers;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.AccessLevel;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 
 @lombok.NoArgsConstructor(staticName = "create")
@@ -16,50 +19,43 @@ public class WalkContext {
   // region The Visitor Walkers
   @lombok.Getter private final SelectWalker selectWalker = new SelectWalker();
   @lombok.Getter private final StatementWalker statementWalker = new StatementWalker();
-  @lombok.Getter private final FromWalker fromWalker = new FromWalker();
-  @lombok.Getter private final ExpressionWalker expressionWalker = new ExpressionWalker();
+
+  @lombok.Getter
+  private final FromWalker fromWalker = (FromWalker) selectWalker.getFromItemVisitor();
+
+  @lombok.Getter
+  private final ExpressionWalker expressionWalker =
+      (ExpressionWalker) selectWalker.getExpressionVisitor();
   // endregion
 
   // region Fields
   @lombok.Getter private final Map<String, SelectExpr> dynamicSelects = new HashMap<>();
-  private SelectExpr currentSelect;
-  private int duplicateCount = 0;
+  private final Deque<SelectExpr> selectStack = new ArrayDeque<>();
   // endregion
 
   void startedSelect(Select select) {
-
-    if (currentSelect != null && currentSelect.select == select) {
-      duplicateCount++;
+    SelectExpr currentSelect = selectStack.peek();
+    if (currentSelect != null
+        && (currentSelect.select == select || isChildOfCurrentParenSelect(select))) {
+      // Wrapper/body delegation shares a logical owner but still has balanced visitor calls.
+      selectStack.push(currentSelect);
       return;
     }
 
-    if (isChildOfCurrentParenSelect(select)) {
-      return;
-    }
-
-    SelectExpr s = new SelectExpr(select, currentSelect);
-
+    SelectExpr owner = new SelectExpr(select, currentSelect);
     if (currentSelect != null) {
-      currentSelect.addChild(s);
+      currentSelect.addChild(owner);
     }
-    currentSelect = s;
+    selectStack.push(owner);
   }
 
   void endedSelect(Select select) {
-
-    if (currentSelect.getSelect() == select && duplicateCount > 0) {
-      duplicateCount--;
-      return;
-    }
-
-    if (isChildOfCurrentParenSelect(select)) {
-      return;
-    }
-
-    if (currentSelect.select != select) {
+    SelectExpr currentSelect = selectStack.peek();
+    if (currentSelect == null
+        || (currentSelect.select != select && !isChildOfCurrentParenSelect(select))) {
       throw new IllegalStateException("Selects do not match");
     }
-    currentSelect = currentSelect.parent;
+    selectStack.pop();
   }
 
   /**
@@ -68,6 +64,7 @@ public class WalkContext {
    * will need to validate the context.
    */
   void namedParamVisited(JdbcNamedParameter jdbcNamedParameter) {
+    SelectExpr currentSelect = selectStack.peek();
     if (currentSelect == null) {
       throw new IllegalStateException("No Select Found for named param: " + jdbcNamedParameter);
     }
@@ -77,11 +74,22 @@ public class WalkContext {
       return;
     }
 
-    String queryName = name; // .substring(EZY_MARKER.length());
-    dynamicSelects.put(queryName, currentSelect);
+    Select owner = currentSelect.select;
+    while (owner instanceof ParenthesedSelect) {
+      owner = ((ParenthesedSelect) owner).getSelect();
+    }
+    if (!(owner instanceof PlainSelect)) {
+      throw new IllegalArgumentException(
+          "Cannot determine criteria fields for marker "
+              + name
+              + " in "
+              + owner.getClass().getSimpleName());
+    }
+    dynamicSelects.put(name, currentSelect);
   }
 
   private boolean isChildOfCurrentParenSelect(Select select) {
+    SelectExpr currentSelect = selectStack.peek();
     return currentSelect != null
         && currentSelect.getSelect() instanceof ParenthesedSelect
         && ((ParenthesedSelect) currentSelect.getSelect()).getSelect() == select;

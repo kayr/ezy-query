@@ -1,0 +1,147 @@
+package example;
+
+import io.github.kayr.ezyquery.EzyQueryWithResult;
+import io.github.kayr.ezyquery.api.CriteriaHolder;
+import io.github.kayr.ezyquery.api.EzyCriteria;
+import io.github.kayr.ezyquery.api.Field;
+import io.github.kayr.ezyquery.api.NamedCriteriaParam;
+import io.github.kayr.ezyquery.api.NamedParam;
+import io.github.kayr.ezyquery.api.SqlBuilder;
+import io.github.kayr.ezyquery.parser.QueryAndParams;
+import io.github.kayr.ezyquery.parser.SqlParts;
+import io.github.kayr.ezyquery.sql.DynamicFieldSetter;
+import java.lang.Class;
+import java.lang.IllegalArgumentException;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.processing.Generated;
+
+/**
+ * SELECT o.id AS orderId FROM orders o
+ * WHERE o.customer_id = :customerId AND EXISTS (
+ *     SELECT i.product_id AS productId FROM order_items i
+ *     WHERE i.order_id = o.id AND :_ezy_items
+ * )
+ */
+@Generated(
+    value = "io.github.kayr.ezyquery.gen.QueryGen",
+    date = "0000-00-00 00:00:00"
+)
+public class OrderSearch implements EzyQueryWithResult<OrderSearch.Result> {
+  public static final OrderSearch ORDER_SEARCH = new OrderSearch();
+
+  public static final Params PARAMS = new Params();
+
+  public static final Criteria CRITERIA = new Criteria();
+
+  public final Field<Object> ORDER_ID = Field.of("o.id", "orderId", Object.class,Field.ExpressionType.COLUMN);
+
+  private final SqlParts schema = SqlParts.of(
+      SqlParts.textPart("orders o")
+  );
+
+  private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+  private OrderSearch() {
+    init();
+  }
+
+  private void init() {
+    fields.add(ORDER_ID);
+  }
+
+  public QueryAndParams query(EzyCriteria criteria) {
+    return SqlBuilder.buildSql(this, criteria);
+  }
+
+  @Override
+  public SqlParts schema() {
+    return this.schema;
+  }
+
+  @Override
+  public Optional<SqlParts> whereClause() {
+    return Optional.of(
+          SqlParts.of(
+              SqlParts.textPart("o.customer_id = "),
+              SqlParts.paramPart("customerId"),
+              SqlParts.textPart(" AND EXISTS (SELECT i.product_id AS productId FROM order_items i WHERE i.order_id = o.id AND "),
+              SqlParts.paramPart("_ezy_items"),
+              SqlParts.textPart(")")
+          ));
+  }
+
+  @Override
+  public Optional<SqlParts> orderByClause() {
+    return Optional.empty();
+  }
+
+  @Override
+  public List<Field<?>> fields() {
+    return this.fields;
+  }
+
+  @Override
+  public Class<Result> resultClass() {
+    return Result.class;
+  }
+
+  public static class Result implements DynamicFieldSetter {
+    private Object orderId;
+
+    public Object getOrderId() {
+      return orderId;
+    }
+
+    @Override
+    public String toString() {
+      return "OrderSearch.Result{"
+      + "orderId = " + orderId
+       + "}";
+    }
+
+    @Override
+    public void setField(String fieldName, Object value) {
+      switch(fieldName) {
+        case "orderId":
+          this.orderId = (Object) value;
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown field: " + fieldName);
+        }
+      }
+    }
+
+    public static class Params {
+      public final NamedParam CUSTOMER_ID = NamedParam.of("customerId");
+
+      public final NamedParam EZY_ITEMS = NamedParam.of("_ezy_items");
+    }
+
+    public static final class Criteria {
+      public final Items ITEMS = new Items();
+    }
+
+    public static class Items implements CriteriaHolder {
+      public final Field<Object> PRODUCT_ID = Field.of("i.product_id", "productId", Object.class,Field.ExpressionType.COLUMN);
+
+      private final List<Field<?>> fields = new ArrayList<Field<?>>();
+
+      private Items() {
+        init();
+      }
+
+      private void init() {
+        fields.add(PRODUCT_ID);
+      }
+
+      @Override
+      public NamedCriteriaParam getName() {
+        return NamedCriteriaParam.of("_ezy_items", fields);
+      }
+    }
+  }

@@ -119,6 +119,30 @@ class QueryGenTest extends Specification {
         generated == expected
     }
 
+    def 'test nested EXISTS criteria snapshot'() {
+        given:
+        def fixture = TestUtil.load('order-search')
+
+        when:
+        def generated = new NoTimeQueryGen('example', 'OrderSearch', fixture.v1, fixture.v3)
+                .javaCode().toString().trim()
+
+        then:
+        generated == fixture.v2.trim()
+    }
+
+    def 'test compound branch criteria snapshot'() {
+        given:
+        def fixture = TestUtil.load('compound-criteria')
+
+        when:
+        def generated = new NoTimeQueryGen('example', 'CompoundCriteria', fixture.v1, fixture.v3)
+                .javaCode().toString().trim()
+
+        then:
+        generated == fixture.v2.trim()
+    }
+
     def 'test employee-customer-summary'() {
         def data = TestUtil.load('employee-customer-summary')
         when:

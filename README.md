@@ -472,6 +472,69 @@ LIMIT 50 OFFSET 0
 ```
 <!-- endsnippet-->
 
+### Filters Inside Expressions and Nested Queries
+
+The same criteria API works when a subquery appears inside an expression, such as `EXISTS`.
+For example, generate `OrderSearch` from:
+
+<!-- snippet:exists-criteria-sql -->
+```sql
+SELECT o.orderNumber AS "orderNumber"
+FROM orders o
+WHERE o.customerNumber = :customerId
+  AND EXISTS (
+    SELECT c.customerName AS "customerName"
+    FROM customers c
+    WHERE c.customerNumber = o.customerNumber AND :_ezy_customers
+  )
+```
+<!-- endsnippet -->
+
+Then supply the ordinary parameter and the nested filter separately:
+
+<!-- snippet:exists-criteria-usage -->
+```groovy
+        var Q = OrderSearch.ORDER_SEARCH;
+        var C = OrderSearch.CRITERIA;
+        var P = OrderSearch.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setParam(P.CUSTOMER_ID, "2")
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"));
+
+        var results = criteria.list();
+```
+<!-- endsnippet -->
+
+`CRITERIA.CUSTOMERS` gets its fields from the SELECT containing `:_ezy_customers`: here,
+`CUSTOMER_NAME` refers to `c.customerName`. It does not inherit the outer query's `orderNumber` field.
+The condition becomes `c.customerName IN (?, ?)` inside `EXISTS`, with `"John"` and `"Daniel"` bound as values.
+The ordinary `:customerId` parameter is bound through `PARAMS.CUSTOMER_ID` and creates no criteria holder.
+
+Generated SQL:
+
+<!-- snippet:exists-criteria-out -->
+```sql
+SELECT 
+  o.orderNumber as "orderNumber"
+FROM orders o
+WHERE (o.customerNumber = ? AND EXISTS (SELECT c.customerName AS "customerName" FROM customers c WHERE c.customerNumber = o.customerNumber AND (c.customerName IN (?, ?)))) AND (1 = 1)
+LIMIT 50 OFFSET 0
+```
+<!-- endsnippet -->
+
+Place criteria placeholders where a boolean condition belongs, such as `WHERE`, `JOIN ... ON`, or
+`HAVING`; they are not scalar values for `LIMIT` or a SELECT column. Discovery follows nested queries
+through clause expressions, derived tables, CTEs, lateral queries, and grouped FROM clauses.
+Use distinct marker names for separate filters.
+
+For a nested `UNION`, `INTERSECT`, or `EXCEPT`, put each marker in its branch's predicate so its
+holder uses that branch's projected fields. Ownership follows JSqlParser's parsed query tree: a marker
+owned by the compound itself has no single SELECT to supply fields and is rejected. A trailing clause
+can belong to a branch instead; for example, JSqlParser 5.4 can attach a trailing `LIMIT` to the final
+branch. This does not make criteria placeholders valid scalar limits or add top-level compound-query
+generation.
+
 ### Common Table Expressions (CTEs)
 
 CTEs follow the same pattern. Place a `:_ezy_` placeholder inside a `WITH ... AS (...)` clause, and

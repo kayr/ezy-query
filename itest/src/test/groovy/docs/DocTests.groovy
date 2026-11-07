@@ -412,6 +412,30 @@ $doc
         results.size() == 3
     }
 
+    def 'EXISTS subquery with criteria'() {
+        when:
+        //snippet:exists-criteria-usage
+        var Q = OrderSearch.ORDER_SEARCH;
+        var C = OrderSearch.CRITERIA;
+        var P = OrderSearch.PARAMS;
+
+        var criteria = ezySql.from(Q)
+                .setParam(P.CUSTOMER_ID, "2")
+                .setCriteria(C.CUSTOMERS, C.CUSTOMERS.CUSTOMER_NAME.in("John", "Daniel"));
+
+        var results = criteria.list();
+        //endsnippet
+        def rendered = criteria.getQuery()
+        genSqlDoc(rendered.getSql(), "exists-criteria")
+
+        then:
+        results*.orderNumber.sort() == ["4", "5"]
+        rendered.params == ["2", "John", "Daniel"]
+        C.CUSTOMERS.CUSTOMER_NAME.sqlField == "c.customerName"
+        !C.CUSTOMERS.class.fields*.name.contains("ORDER_NUMBER")
+        !rendered.sql.contains(":_ezy_customers")
+    }
+
     def 'CTE with criteria'() {
         when://nosnippet
         //snippet:cte-usage

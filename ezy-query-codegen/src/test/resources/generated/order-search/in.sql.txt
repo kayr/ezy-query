@@ -1,0 +1,5 @@
+SELECT o.id AS orderId FROM orders o
+WHERE o.customer_id = :customerId AND EXISTS (
+    SELECT i.product_id AS productId FROM order_items i
+    WHERE i.order_id = o.id AND :_ezy_items
+)
